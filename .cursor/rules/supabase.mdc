@@ -1,0 +1,32 @@
+---
+description: Supabase usage (Database, Auth, Storage) and SQL modeling
+globs: ["src/**/*.ts", "src/**/*.tsx", "supabase/**/*.sql"]
+alwaysApply: false
+---
+
+# Supabase & Database
+
+## 1. SQL Structure (Dev Mode / No complex migrations)
+
+- We do not manage classic sequential migrations for now.
+- All table definitions must be saved as individual `.sql` files in the `supabase/schema/` directory.
+- Rule: ONE file = ONE table.
+- Naming example: `supabase/schema/users.sql`, `supabase/schema/products.sql`.
+- Store as much data as possible in these tables (we prioritize data collection). Relationships (Foreign Keys) must be clearly defined within these files.
+
+## 2. Supabase Storage (Buckets)
+
+- ALL media files (Images, PDFs, avatars, user uploads) must be stored in Supabase Buckets.
+- Never store base64 images in the database.
+- Favor permissive RLS (Row Level Security) policies in development mode for buckets, but structure folders cleanly (e.g., `avatars/[user_id]/image.png`).
+
+## 3. Supabase Client (Next.js App Router)
+
+- Always use `@supabase/ssr` to create clients.
+- In Server Components / Server Actions: use `createServerClient` with Next.js cookies.
+- In Client Components: use `createBrowserClient`.
+- NEVER expose the `SUPABASE_SERVICE_ROLE_KEY` on the client side.
+
+## 4. Typing
+
+- Always generate and use Supabase TypeScript types (`Database` types) for every query to ensure autocompletion (e.g., `supabase.from<'profiles'>('profiles')`).

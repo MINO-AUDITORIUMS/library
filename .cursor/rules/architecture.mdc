@@ -1,0 +1,25 @@
+---
+description: Architecture, clean code, and component structuring rules
+globs: ["src/**/*.ts", "src/**/*.tsx"]
+alwaysApply: true
+---
+
+# Clean Code and Architecture Principles
+
+## 1. File Size and Modularity
+
+- NO component file should exceed 150-200 lines of code.
+- If a component grows too large, extract the logic into Custom Hooks (e.g., `useMyFeature.ts`) and the UI into sub-components.
+- Single Responsibility Principle (SRP): One component = one visual or logical task.
+
+## 2. Structure and Reusability (Local Design System)
+
+- Never hardcode a UI component that could be reused (cards, section headers, layout wrappers).
+- Strictly separate "Dumb/UI" components (which only display props, without complex state logic) from "Smart/Containers" components (which fetch data or manage state).
+- Shared components must go into `src/components/ui` or `src/components/shared`.
+- Page-specific components must remain close to that page (e.g., `src/app/dashboard/_components/`).
+
+## 3. Strict Typing (TypeScript)
+
+- Explicitly export and type all component `Props`.
+- Do NOT use the `any` type. Use generics if necessary.

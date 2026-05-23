@@ -1,0 +1,27 @@
+---
+description: Strict rules for UI, Tailwind CSS, and Shadcn UI usage
+globs: ["src/**/*.tsx", "src/components/**/*.tsx"]
+alwaysApply: true
+---
+
+# Design System and Shadcn UI
+
+## Absolute Rule
+
+NEVER use native HTML elements (`<button>`, `<input>`, `<select>`, `<table>`, etc.) if an equivalent Shadcn component exists. The interface must be 100% consistent.
+
+## Available Shadcn Components in the Project
+
+If you need any of these interfaces, use the corresponding Shadcn component. If it is not yet installed in the project, generate the code assuming it will be (importing from `@/components/ui/`):
+
+- **Forms & Inputs:** Form (react-hook-form + zod), Button, Input, InputOTP, Textarea, Checkbox, RadioGroup, Select, Switch, Slider, Label, Toggle, ToggleGroup.
+- **Navigation & Menus:** NavigationMenu, Menubar, Breadcrumb, DropdownMenu, ContextMenu, Tabs, Pagination.
+- **Modals & Overlays:** Dialog, AlertDialog, Sheet (Sidebar/Drawer), Drawer, Popover, HoverCard, Tooltip.
+- **Data Display:** Table, Card, Carousel, Chart (Recharts), Calendar, Avatar, Badge, Accordion, Collapsible, ScrollArea, Separator, AspectRatio.
+- **Feedback:** Alert, Skeleton, Progress, Sonner (Toasts).
+
+## UI Best Practices
+
+- For forms, ALWAYS use the combined Shadcn `Form` structure with `zod` for validation.
+- Use Tailwind CSS for all additional styling via the `className` prop and the Shadcn `cn()` utility function.
+- Maintain consistency with the CSS variables (primary colors, radius) defined in `globals.css`.
