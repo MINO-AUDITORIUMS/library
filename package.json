@@ -9,7 +9,9 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:schema": "bash supabase/apply_schema.sh --linked",
+    "db:schema:reset": "bash supabase/apply_schema.sh --linked --reset --yes"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
