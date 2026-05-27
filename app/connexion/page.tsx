@@ -19,25 +19,35 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import {
+  ALLOWED_EMAIL_DOMAINS,
+  getEmailDomain,
+  isAllowedEmail,
+} from "@/lib/auth/allowed-domains"
 import { routes } from "@/lib/routes"
 import { createClient } from "@/lib/supabase/client"
 
-const ALLOWED_DOMAINS = ["mino.co", "imagine-nation.co", "pm.me"] as const
+function formatAuthError(raw: string) {
+  const message = raw.replace(/\+/g, " ").trim()
+  if (!message) return "Connexion annulée ou invalide."
 
-function getEmailDomain(email: string) {
-  const at = email.lastIndexOf("@")
-  if (at < 0) return null
-  const domain = email
-    .slice(at + 1)
-    .trim()
-    .toLowerCase()
-  return domain.length ? domain : null
+  if (message.toLowerCase().includes("accès refusé")) {
+    return message
+  }
+
+  if (message.toLowerCase().includes("database error saving new user")) {
+    return "Connexion refusée : ton compte Google n'utilise pas un domaine autorisé."
+  }
+
+  return message
 }
 
-function isAllowedEmail(email: string) {
-  const domain = getEmailDomain(email)
-  if (!domain) return false
-  return ALLOWED_DOMAINS.includes(domain as (typeof ALLOWED_DOMAINS)[number])
+function showAuthError(raw: string) {
+  const message = formatAuthError(raw)
+  const isLong =
+    message.toLowerCase().includes("connexion refusée") ||
+    message.toLowerCase().includes("accès refusé")
+  toast.error(message, { duration: isLong ? 9000 : undefined })
 }
 
 export default function ConnexionPage() {
@@ -45,17 +55,18 @@ export default function ConnexionPage() {
   const [submitting, setSubmitting] = useState<"google" | "magic" | null>(null)
   const searchParams = useSearchParams()
 
+  const authError = searchParams.get("authError")
   const canSubmitMagic = useMemo(() => isAllowedEmail(email), [email])
   const domain = useMemo(() => getEmailDomain(email), [email])
 
   useEffect(() => {
-    const error = searchParams.get("authError")
-    if (!error) return
-    toast.error(error)
-  }, [searchParams])
+    if (!authError) return
+    showAuthError(authError)
+  }, [authError])
 
   useEffect(() => {
     if (typeof window === "undefined") return
+    if (authError) return
 
     function readHashToast() {
       const hash = window.location.hash
@@ -70,13 +81,13 @@ export default function ConnexionPage() {
 
       if (!message) return
 
-      toast.error(message.replace(/\+/g, " "))
+      showAuthError(message)
     }
 
     readHashToast()
     window.addEventListener("hashchange", readHashToast)
     return () => window.removeEventListener("hashchange", readHashToast)
-  }, [])
+  }, [authError])
 
   async function onGoogle() {
     setSubmitting("google")
@@ -102,7 +113,7 @@ export default function ConnexionPage() {
       toast.error(
         domain == null
           ? "Entrez un email valide."
-          : `Domaine non autorisé (${domain}). Autorisés : ${ALLOWED_DOMAINS.join(
+          : `Domaine non autorisé (${domain}). Autorisés : ${ALLOWED_EMAIL_DOMAINS.join(
               ", "
             )}.`
       )
@@ -196,7 +207,7 @@ export default function ConnexionPage() {
                 <p className="text-xs text-muted-foreground">
                   Domaines autorisés :{" "}
                   <span className="font-medium">
-                    {ALLOWED_DOMAINS.join(", ")}
+                    {ALLOWED_EMAIL_DOMAINS.join(", ")}
                   </span>
                   .
                 </p>

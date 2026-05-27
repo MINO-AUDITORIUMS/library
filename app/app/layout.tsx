@@ -10,28 +10,11 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { getEmailDomain, isAllowedEmail } from "@/lib/auth/allowed-domains"
 import { routes } from "@/lib/routes"
 import { createClient } from "@/lib/supabase/server"
 
 import { UserFooter } from "@/app/app/user-footer"
-
-const ALLOWED_DOMAINS = ["mino.co", "pm.me"] as const
-
-function getEmailDomain(email: string) {
-  const at = email.lastIndexOf("@")
-  if (at < 0) return null
-  const domain = email
-    .slice(at + 1)
-    .trim()
-    .toLowerCase()
-  return domain.length ? domain : null
-}
-
-function isAllowedEmail(email: string) {
-  const domain = getEmailDomain(email)
-  if (!domain) return false
-  return ALLOWED_DOMAINS.includes(domain as (typeof ALLOWED_DOMAINS)[number])
-}
 
 export default async function AppLayout({
   children,
@@ -49,14 +32,10 @@ export default async function AppLayout({
   if (!email || !isAllowedEmail(email)) {
     await supabase.auth.signOut()
     const domain = email ? getEmailDomain(email) : null
-    const redirectUrl = new URL(routes.connexion, "http://localhost:3000")
-    redirectUrl.searchParams.set(
-      "authError",
-      domain
-        ? `Domaine non autorisé (${domain}).`
-        : "Email manquant ou invalide."
-    )
-    redirect(redirectUrl.pathname + redirectUrl.search)
+    const message = domain
+      ? `Domaine non autorisé (${domain}).`
+      : "Email manquant ou invalide."
+    redirect(`${routes.connexion}?authError=${encodeURIComponent(message)}`)
   }
 
   return (

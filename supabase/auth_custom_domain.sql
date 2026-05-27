@@ -5,10 +5,17 @@ security definer
 set search_path = ''
 as $$
 declare
-  allowed_domain text := 'mino.co';
+  allowed_domains text[] := array['mino.co', 'imagine-nation.co', 'pm.me'];
+  domain text;
 begin
-  if new.email not like '%@' || allowed_domain then
-    raise exception 'Accès refusé : Seules les adresses @% sont autorisées à s''inscrire.', allowed_domain;
+  if new.email is null then
+    raise exception 'Accès refusé : Email manquant.';
+  end if;
+
+  domain := lower(split_part(new.email, '@', 2));
+
+  if domain is null or domain = '' or not (domain = any (allowed_domains)) then
+    raise exception 'Accès refusé : Domaine non autorisé (%).', domain;
   end if;
 
   return new;
