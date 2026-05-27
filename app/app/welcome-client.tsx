@@ -15,7 +15,7 @@ export function WelcomeClient({ email, showSuccessToast }: WelcomeClientProps) {
   }, [email, showSuccessToast])
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-2xl items-center justify-center px-6">
+    <main className="mx-auto flex max-w-2xl items-center justify-center">
       <p className="text-balance text-center text-xl font-medium">
         Bienvenue {email}
       </p>
