@@ -1,6 +1,7 @@
 export const routes = {
   home: "/",
   connexion: "/connexion",
+  app: "/app",
   bibliotheque: "/bibliotheque",
   authCallback: "/auth/callback",
 } as const

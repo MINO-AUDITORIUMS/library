@@ -1,8 +1,10 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Image from "next/image"
+import { useSearchParams } from "next/navigation"
 import { Loader2, Mail } from "lucide-react"
+import { toast } from "sonner"
 
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button"
 import { MinoLogo } from "@/components/mino-logo"
@@ -17,8 +19,10 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { routes } from "@/lib/routes"
+import { createClient } from "@/lib/supabase/client"
 
-const ALLOWED_DOMAINS = ["mino.co", "pm.me"] as const
+const ALLOWED_DOMAINS = ["mino.co", "imagine-nation.co", "pm.me"] as const
 
 function getEmailDomain(email: string) {
   const at = email.lastIndexOf("@")
@@ -39,60 +43,93 @@ function isAllowedEmail(email: string) {
 export default function ConnexionPage() {
   const [email, setEmail] = useState("")
   const [submitting, setSubmitting] = useState<"google" | "magic" | null>(null)
-  const [status, setStatus] = useState<
-    | { kind: "idle" }
-    | { kind: "error"; message: string }
-    | { kind: "success"; message: string }
-  >({ kind: "idle" })
+  const searchParams = useSearchParams()
 
   const canSubmitMagic = useMemo(() => isAllowedEmail(email), [email])
   const domain = useMemo(() => getEmailDomain(email), [email])
 
-  function fakeWait(ms: number) {
-    return new Promise<void>((resolve) => setTimeout(resolve, ms))
-  }
+  useEffect(() => {
+    const error = searchParams.get("authError")
+    if (!error) return
+    toast.error(error)
+  }, [searchParams])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    function readHashToast() {
+      const hash = window.location.hash
+      if (!hash) return
+
+      const raw = hash.startsWith("#") ? hash.slice(1) : hash
+      const params = new URLSearchParams(raw)
+
+      const description = params.get("error_description")
+      const fallback = params.get("error")
+      const message = description ?? fallback
+
+      if (!message) return
+
+      toast.error(message.replace(/\+/g, " "))
+    }
+
+    readHashToast()
+    window.addEventListener("hashchange", readHashToast)
+    return () => window.removeEventListener("hashchange", readHashToast)
+  }, [])
 
   async function onGoogle() {
-    setStatus({ kind: "idle" })
     setSubmitting("google")
-    await fakeWait(650)
-    setSubmitting(null)
-    setStatus({
-      kind: "success",
-      message:
-        "Google SSO (UI only). Branchez votre auth quand vous serez prêt.",
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}${routes.authCallback}`,
+      },
     })
+
+    setSubmitting(null)
+
+    if (error) {
+      toast.error(error.message)
+    }
   }
 
   async function onMagicLink(e: React.FormEvent) {
     e.preventDefault()
-    setStatus({ kind: "idle" })
 
     if (!canSubmitMagic) {
-      setStatus({
-        kind: "error",
-        message:
-          domain == null
-            ? "Entrez un email valide."
-            : `Domaine non autorisé (${domain}). Autorisés : ${ALLOWED_DOMAINS.join(
-                ", "
-              )}.`,
-      })
+      toast.error(
+        domain == null
+          ? "Entrez un email valide."
+          : `Domaine non autorisé (${domain}). Autorisés : ${ALLOWED_DOMAINS.join(
+              ", "
+            )}.`
+      )
       return
     }
 
     setSubmitting("magic")
-    await fakeWait(750)
-    setSubmitting(null)
-    setStatus({
-      kind: "success",
-      message: `Lien magique envoyé à ${email} (UI only).`,
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}${routes.authCallback}`,
+      },
     })
+    setSubmitting(null)
+
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+
+    toast.success(`Lien magique envoyé à ${email}.`)
   }
 
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background p-6">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/15 via-background to-background" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-primary/15 via-background to-background" />
       <div className="pointer-events-none absolute -top-32 -right-32 size-96 rounded-full bg-primary/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-32 -left-32 size-96 rounded-full bg-primary/5 blur-3xl" />
 
@@ -168,7 +205,7 @@ export default function ConnexionPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={submitting !== null || !canSubmitMagic}
+                disabled={submitting !== null || email.trim().length === 0}
               >
                 {submitting === "magic" ? (
                   <Loader2 className="size-4 animate-spin" />
@@ -178,19 +215,6 @@ export default function ConnexionPage() {
                 <span className="ml-2">Envoyer un lien magique</span>
               </Button>
             </form>
-
-            {status.kind !== "idle" ? (
-              <div
-                className={
-                  status.kind === "success"
-                    ? "rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-300"
-                    : "rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive"
-                }
-                role={status.kind === "error" ? "alert" : "status"}
-              >
-                {status.message}
-              </div>
-            ) : null}
           </CardContent>
         </Card>
       </div>
