@@ -1,0 +1,10 @@
+---
+description: Do not add code comments in this project
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mdc", "**/*.md"]
+alwaysApply: true
+---
+
+# No Comments Policy
+
+- Do not add code comments (including JSDoc, block comments, and inline comments).
+- Prefer clear naming and small functions/components over explanatory comments.
