@@ -50,21 +50,13 @@ export function AlbumDetailSplit({
         <AlbumTracklistCard tracks={tracks} />
       </div>
 
-      <div
-        className="flex min-h-0 flex-col lg:overflow-hidden"
-        style={
-          commentsMaxHeight !== undefined
-            ? { height: commentsMaxHeight, maxHeight: commentsMaxHeight }
-            : undefined
-        }
-      >
-        <AlbumCommentsSection
-          albumId={albumId}
-          initialComments={comments}
-          currentUserId={currentUserId}
-          currentUserEmail={currentUserEmail}
-        />
-      </div>
+      <AlbumCommentsSection
+        albumId={albumId}
+        initialComments={comments}
+        currentUserId={currentUserId}
+        currentUserEmail={currentUserEmail}
+        maxHeight={commentsMaxHeight}
+      />
     </div>
   )
 }

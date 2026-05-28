@@ -17,6 +17,7 @@ export type AlbumCommentsSectionProps = {
   initialComments: AlbumComment[]
   currentUserId: string
   currentUserEmail: string
+  maxHeight?: number
 }
 
 function authorLabel(comment: AlbumComment) {
@@ -29,7 +30,9 @@ export function AlbumCommentsSection({
   initialComments,
   currentUserId,
   currentUserEmail,
+  maxHeight,
 }: AlbumCommentsSectionProps) {
+  const isScrollable = maxHeight !== undefined
   const router = useRouter()
   const [comments, setComments] = useState(initialComments)
   const [draft, setDraft] = useState("")
@@ -99,7 +102,13 @@ export function AlbumCommentsSection({
   }
 
   return (
-    <Card className="flex h-full min-h-0 flex-col gap-0 overflow-hidden py-0">
+    <Card
+      className={cn(
+        "flex flex-col gap-0 py-0",
+        isScrollable && "min-h-0 overflow-hidden"
+      )}
+      style={isScrollable ? { maxHeight } : undefined}
+    >
       <CardHeader className="shrink-0 border-b border-border/60 px-4 py-4">
         <CardTitle className="flex items-center gap-2 text-base">
           <MessageSquareIcon className="size-4" />
@@ -107,8 +116,19 @@ export function AlbumCommentsSection({
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden px-4 py-4">
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-1">
+      <CardContent
+        className={cn(
+          "flex flex-col gap-0 px-4 py-4",
+          isScrollable && "min-h-0 flex-1 overflow-hidden"
+        )}
+      >
+        <div
+          className={cn(
+            "space-y-3",
+            isScrollable &&
+              "min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1"
+          )}
+        >
           {comments.length === 0 ? (
             <p className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
               Aucun commentaire pour l&apos;instant. Sois le premier à laisser
