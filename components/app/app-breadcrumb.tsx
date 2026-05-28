@@ -1,6 +1,6 @@
 "use client"
 
-import { Fragment, useMemo } from "react"
+import { Fragment, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -12,7 +12,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { getMockAlbumById } from "@/lib/catalog/mock-albums"
 import { routes } from "@/lib/routes"
 
 type Crumb = {
@@ -20,7 +19,7 @@ type Crumb = {
   href?: string
 }
 
-function buildCrumbs(pathname: string): Crumb[] {
+function buildCrumbs(pathname: string, albumTitle: string | null): Crumb[] {
   if (pathname === routes.app) {
     return [{ label: "Accueil" }]
   }
@@ -41,13 +40,11 @@ function buildCrumbs(pathname: string): Crumb[] {
   }
 
   const albumMatch = pathname.match(/^\/bibliotheque\/([^/]+)$/)
-  if (albumMatch) {
-    const id = albumMatch[1]
-    const album = getMockAlbumById(id)
+  if (albumMatch && albumMatch[1] !== "nouveau") {
     return [
       { label: "Accueil", href: routes.app },
       { label: "Bibliothèque", href: routes.bibliotheque },
-      { label: album?.title ?? "Album" },
+      { label: albumTitle ?? "Album" },
     ]
   }
 
@@ -56,7 +53,44 @@ function buildCrumbs(pathname: string): Crumb[] {
 
 export function AppBreadcrumb() {
   const pathname = usePathname()
-  const crumbs = useMemo(() => buildCrumbs(pathname), [pathname])
+  const [albumTitle, setAlbumTitle] = useState<string | null>(null)
+
+  const albumId = useMemo(() => {
+    const match = pathname.match(/^\/bibliotheque\/([^/]+)$/)
+    if (!match || match[1] === "nouveau") return null
+    return match[1]
+  }, [pathname])
+
+  useEffect(() => {
+    if (!albumId) {
+      setAlbumTitle(null)
+      return
+    }
+
+    let cancelled = false
+
+    async function loadTitle() {
+      try {
+        const response = await fetch(`/api/albums/${albumId}?titleOnly=1`)
+        const data = (await response.json()) as { title?: string }
+        if (!cancelled && response.ok && data.title) {
+          setAlbumTitle(data.title)
+        }
+      } catch {
+        if (!cancelled) setAlbumTitle(null)
+      }
+    }
+
+    loadTitle()
+    return () => {
+      cancelled = true
+    }
+  }, [albumId])
+
+  const crumbs = useMemo(
+    () => buildCrumbs(pathname, albumTitle),
+    [pathname, albumTitle]
+  )
 
   return (
     <Breadcrumb className="min-w-0 flex-1">

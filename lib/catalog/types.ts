@@ -17,6 +17,7 @@ export type AlbumSummary = {
   tags: string[]
   genre: string
   coverHue: number
+  coverImageUrl: string | null
 }
 
 export type AlbumDetail = AlbumSummary & {

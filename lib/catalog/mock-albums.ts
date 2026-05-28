@@ -12,6 +12,7 @@ const summaries: AlbumSummary[] = [
     tags: ["Incontournable", "Jazz"],
     genre: "Jazz",
     coverHue: 220,
+    coverImageUrl: null,
   },
   {
     id: "2",
@@ -24,6 +25,7 @@ const summaries: AlbumSummary[] = [
     tags: ["Coup de cœur"],
     genre: "Electronic",
     coverHue: 45,
+    coverImageUrl: null,
   },
   {
     id: "3",
@@ -36,6 +38,7 @@ const summaries: AlbumSummary[] = [
     tags: ["Blockbuster"],
     genre: "R&B",
     coverHue: 280,
+    coverImageUrl: null,
   },
   {
     id: "4",
@@ -48,6 +51,7 @@ const summaries: AlbumSummary[] = [
     tags: ["Electronic"],
     genre: "Electronic",
     coverHue: 200,
+    coverImageUrl: null,
   },
   {
     id: "5",
@@ -60,6 +64,7 @@ const summaries: AlbumSummary[] = [
     tags: [],
     genre: "House",
     coverHue: 30,
+    coverImageUrl: null,
   },
   {
     id: "6",
@@ -72,6 +77,7 @@ const summaries: AlbumSummary[] = [
     tags: ["Coup de cœur", "Indie"],
     genre: "Alternative",
     coverHue: 160,
+    coverImageUrl: null,
   },
   {
     id: "7",
@@ -84,6 +90,7 @@ const summaries: AlbumSummary[] = [
     tags: ["Incontournable"],
     genre: "Hip-Hop",
     coverHue: 15,
+    coverImageUrl: null,
   },
   {
     id: "8",
@@ -96,6 +103,7 @@ const summaries: AlbumSummary[] = [
     tags: ["Classique"],
     genre: "Rock",
     coverHue: 340,
+    coverImageUrl: null,
   },
   {
     id: "9",
@@ -108,6 +116,7 @@ const summaries: AlbumSummary[] = [
     tags: ["Jazz tardif"],
     genre: "Folk",
     coverHue: 210,
+    coverImageUrl: null,
   },
   {
     id: "10",
@@ -120,6 +129,7 @@ const summaries: AlbumSummary[] = [
     tags: [],
     genre: "Psychedelic",
     coverHue: 120,
+    coverImageUrl: null,
   },
   {
     id: "11",
@@ -132,6 +142,7 @@ const summaries: AlbumSummary[] = [
     tags: ["Hip-Hop"],
     genre: "Hip-Hop",
     coverHue: 25,
+    coverImageUrl: null,
   },
   {
     id: "12",
@@ -144,6 +155,7 @@ const summaries: AlbumSummary[] = [
     tags: ["Experimental"],
     genre: "Electronic",
     coverHue: 190,
+    coverImageUrl: null,
   },
 ]
 

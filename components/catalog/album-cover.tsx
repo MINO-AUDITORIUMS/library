@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 export type AlbumCoverProps = {
   title: string
   hue: number
+  imageUrl?: string | null
   size?: "sm" | "md" | "lg"
   className?: string
 }
@@ -18,9 +19,24 @@ const sizeClasses = {
 export function AlbumCover({
   title,
   hue,
+  imageUrl,
   size = "md",
   className,
 }: AlbumCoverProps) {
+  if (imageUrl) {
+    return (
+      <img
+        src={imageUrl}
+        alt={`Pochette de ${title}`}
+        className={cn(
+          "shrink-0 object-cover ring-1 ring-border/60",
+          sizeClasses[size],
+          className
+        )}
+      />
+    )
+  }
+
   return (
     <div
       role="img"

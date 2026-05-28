@@ -28,7 +28,12 @@ export function AlbumCard({ album, className }: AlbumCardProps) {
       className={cn("group block h-full", className)}
     >
       <Card className="flex h-full flex-col gap-0 overflow-hidden py-0 transition-colors hover:bg-muted/30">
-        <AlbumCover title={album.title} hue={album.coverHue} size="md" />
+        <AlbumCover
+          title={album.title}
+          hue={album.coverHue}
+          imageUrl={album.coverImageUrl}
+          size="md"
+        />
         <CardContent className="flex min-h-[148px] flex-1 flex-col gap-2 px-3 py-3">
           <div className="space-y-0.5">
             <p className="line-clamp-2 min-h-10 font-medium leading-snug group-hover:text-primary">
@@ -39,7 +44,7 @@ export function AlbumCard({ album, className }: AlbumCardProps) {
             </p>
           </div>
           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span>{album.releaseYear}</span>
+            <span>{album.releaseYear > 0 ? album.releaseYear : "—"}</span>
             <span>{formatLabels[album.format]}</span>
           </div>
           <div className="min-h-5">

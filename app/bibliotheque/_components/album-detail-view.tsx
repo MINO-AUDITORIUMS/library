@@ -7,10 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import {
-  formatDuration,
-  formatTrackDuration,
-} from "@/lib/catalog/mock-albums"
+import { formatDuration, formatTrackDuration } from "@/lib/catalog/format"
 import type { AlbumDetail } from "@/lib/catalog/types"
 import { routes } from "@/lib/routes"
 
@@ -40,7 +37,12 @@ export function AlbumDetailView({ album }: AlbumDetailViewProps) {
       </Button>
 
       <div className="grid gap-8 md:grid-cols-[minmax(0,240px)_1fr]">
-        <AlbumCover title={album.title} hue={album.coverHue} size="lg" />
+        <AlbumCover
+          title={album.title}
+          hue={album.coverHue}
+          imageUrl={album.coverImageUrl}
+          size="lg"
+        />
 
         <div className="space-y-4">
           <div className="space-y-2">
@@ -70,7 +72,10 @@ export function AlbumDetailView({ album }: AlbumDetailViewProps) {
           <CardTitle>Informations</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <MetaItem label="Année" value={String(album.releaseYear)} />
+          <MetaItem
+            label="Année"
+            value={album.releaseYear > 0 ? String(album.releaseYear) : "—"}
+          />
           <MetaItem label="Genre" value={`${album.genre} · ${album.subgenre}`} />
           <MetaItem label="Label" value={album.label} />
           <MetaItem label="Maison de disques" value={album.recordCompany} />
@@ -96,6 +101,11 @@ export function AlbumDetailView({ album }: AlbumDetailViewProps) {
           <CardTitle>Tracklist</CardTitle>
         </CardHeader>
         <CardContent className="space-y-0 p-0">
+          {album.tracks.length === 0 ? (
+            <p className="px-4 py-6 text-sm text-muted-foreground">
+              Aucune piste enregistrée.
+            </p>
+          ) : null}
           {album.tracks.map((track, index) => (
             <div key={track.position}>
               {index > 0 ? <Separator /> : null}

@@ -2,7 +2,8 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { AlbumDetailView } from "@/app/bibliotheque/_components/album-detail-view"
-import { getMockAlbumById } from "@/lib/catalog/mock-albums"
+import { getAlbumDetailById } from "@/lib/catalog/db/albums"
+import { createClient } from "@/lib/supabase/server"
 
 export async function generateMetadata({
   params,
@@ -10,9 +11,10 @@ export async function generateMetadata({
   params: Promise<{ id: string }>
 }): Promise<Metadata> {
   const { id } = await params
-  const album = getMockAlbumById(id)
+  const supabase = await createClient()
+  const album = await getAlbumDetailById(supabase, id)
   return {
-    title: album ? album.title : "Album",
+    title: album?.title ?? "Album",
   }
 }
 
@@ -22,7 +24,8 @@ export default async function AlbumDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const album = getMockAlbumById(id)
+  const supabase = await createClient()
+  const album = await getAlbumDetailById(supabase, id)
   if (!album) notFound()
   return <AlbumDetailView album={album} />
 }

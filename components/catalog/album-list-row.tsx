@@ -21,13 +21,20 @@ export function AlbumListRow({ album, className }: AlbumListRowProps) {
         className
       )}
     >
-      <AlbumCover title={album.title} hue={album.coverHue} size="sm" />
+      <AlbumCover
+        title={album.title}
+        hue={album.coverHue}
+        imageUrl={album.coverImageUrl}
+        size="sm"
+      />
       <div className="min-w-0 flex-1 grid gap-2 sm:grid-cols-[1fr_auto_auto_auto] sm:items-center">
         <div className="min-w-0">
           <p className="truncate font-medium">{album.title}</p>
           <p className="truncate text-sm text-muted-foreground">{album.artist}</p>
         </div>
-        <span className="text-sm text-muted-foreground">{album.releaseYear}</span>
+        <span className="text-sm text-muted-foreground">
+          {album.releaseYear > 0 ? album.releaseYear : "—"}
+        </span>
         <span className="hidden truncate text-sm text-muted-foreground sm:block">
           {album.label}
         </span>

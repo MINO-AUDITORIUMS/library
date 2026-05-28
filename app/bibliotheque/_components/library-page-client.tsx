@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useMemo, useState } from "react"
 
 import { AlbumCard } from "@/components/catalog/album-card"
@@ -8,7 +9,7 @@ import {
   LibraryToolbar,
   type LibraryViewMode,
 } from "@/components/catalog/library-toolbar"
-import { getMockAlbumSummaries } from "@/lib/catalog/mock-albums"
+import { routes } from "@/lib/routes"
 import type { AlbumSummary } from "@/lib/catalog/types"
 
 function matchesQuery(album: AlbumSummary, query: string) {
@@ -23,8 +24,12 @@ function matchesQuery(album: AlbumSummary, query: string) {
   )
 }
 
-export function LibraryPageClient() {
-  const albums = useMemo(() => getMockAlbumSummaries(), [])
+export type LibraryPageClientProps = {
+  initialAlbums: AlbumSummary[]
+}
+
+export function LibraryPageClient({ initialAlbums }: LibraryPageClientProps) {
+  const albums = initialAlbums
   const [query, setQuery] = useState("")
   const [viewMode, setViewMode] = useState<LibraryViewMode>("grid")
 
@@ -44,7 +49,17 @@ export function LibraryPageClient() {
         filteredCount={filtered.length}
       />
 
-      {filtered.length === 0 ? (
+      {albums.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-border px-4 py-12 text-center text-sm text-muted-foreground">
+          Aucun album dans la bibliothèque.{" "}
+          <Link
+            href={routes.bibliothequeNew}
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            Ajouter un premier album
+          </Link>
+        </p>
+      ) : filtered.length === 0 ? (
         <p className="rounded-lg border border-dashed border-border px-4 py-12 text-center text-sm text-muted-foreground">
           Aucun album ne correspond à ta recherche.
         </p>

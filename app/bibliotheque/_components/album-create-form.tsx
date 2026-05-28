@@ -7,31 +7,18 @@ import { ArrowLeftIcon, Loader2Icon, SearchIcon, SparklesIcon } from "lucide-rea
 import { toast } from "sonner"
 
 import { StarRating } from "@/components/catalog/star-rating"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
-import { routes } from "@/lib/routes"
+import type { CatalogSearchHit } from "@/lib/catalog/discogs/types"
+import { albumDetailRoute, routes } from "@/lib/routes"
 
-const mockSearchResults = [
-  {
-    id: "discogs-1",
-    title: "Random Access Memories",
-    artist: "Daft Punk",
-    year: 2013,
-    label: "Columbia",
-  },
-  {
-    id: "discogs-2",
-    title: "Discovery",
-    artist: "Daft Punk",
-    year: 2001,
-    label: "Virgin",
-  },
-]
+function normalizeReleaseDate(value: string) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : ""
+}
 
 type FormState = {
   title: string
@@ -48,6 +35,9 @@ type FormState = {
   description: string
   personalNotes: string
   rating: number | null
+  trackCount: string
+  discogsReleaseId: number | null
+  coverImageUrl: string | null
 }
 
 const emptyForm: FormState = {
@@ -65,6 +55,9 @@ const emptyForm: FormState = {
   description: "",
   personalNotes: "",
   rating: null,
+  trackCount: "",
+  discogsReleaseId: null,
+  coverImageUrl: null,
 }
 
 function FormSection({
@@ -108,9 +101,10 @@ export function AlbumCreateForm() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [searching, setSearching] = useState(false)
-  const [results, setResults] = useState<typeof mockSearchResults>([])
+  const [results, setResults] = useState<CatalogSearchHit[]>([])
   const [form, setForm] = useState<FormState>(emptyForm)
   const [saving, setSaving] = useState(false)
+  const [importingId, setImportingId] = useState<number | null>(null)
 
   function patchForm(partial: Partial<FormState>) {
     setForm((prev) => ({ ...prev, ...partial }))
@@ -118,24 +112,103 @@ export function AlbumCreateForm() {
 
   async function onSearch(e: React.FormEvent) {
     e.preventDefault()
-    if (!searchQuery.trim()) return
+    const q = searchQuery.trim()
+    if (q.length < 2) {
+      toast.error("Saisis au moins 2 caractères.")
+      return
+    }
+
     setSearching(true)
-    await new Promise((r) => setTimeout(r, 600))
-    setResults(mockSearchResults)
-    setSearching(false)
+    setResults([])
+
+    try {
+      const response = await fetch(
+        `/api/catalog/discogs/search?q=${encodeURIComponent(q)}&type=release`
+      )
+      const data = (await response.json()) as {
+        results?: CatalogSearchHit[]
+        error?: string
+      }
+
+      if (!response.ok) {
+        toast.error(data.error ?? "Recherche Discogs impossible.")
+        return
+      }
+
+      setResults(data.results ?? [])
+      if ((data.results ?? []).length === 0) {
+        toast.message("Aucun résultat Discogs pour cette recherche.")
+      }
+    } catch {
+      toast.error("Erreur réseau lors de la recherche Discogs.")
+    } finally {
+      setSearching(false)
+    }
   }
 
-  function applyResult(result: (typeof mockSearchResults)[number]) {
-    patchForm({
-      title: result.title,
-      artist: result.artist,
-      releaseYear: String(result.year),
-      label: result.label,
-      recordCompany: result.label,
-      description: `Import mock depuis Discogs — ${result.title}.`,
-    })
-    setResults([])
-    toast.success("Fiche pré-remplie (données de démo)")
+  async function applyResult(hit: CatalogSearchHit) {
+    if (hit.type !== "release") {
+      toast.error("Seules les releases sont importables pour l'instant.")
+      return
+    }
+
+    setImportingId(hit.discogsId)
+
+    try {
+      const response = await fetch(
+        `/api/catalog/discogs/releases/${hit.discogsId}`
+      )
+      const data = (await response.json()) as {
+        release?: {
+          title: string
+          artist: string
+          releaseYear: string
+          releaseDate: string
+          genre: string
+          subgenre: string
+          label: string
+          recordCompany: string
+          producers: string
+          country: string
+          format: string
+          description: string
+          trackCount: string
+          discogsReleaseId: number
+          coverUrl: string | null
+        }
+        error?: string
+      }
+
+      if (!response.ok || !data.release) {
+        toast.error(data.error ?? "Import Discogs impossible.")
+        return
+      }
+
+      const release = data.release
+      patchForm({
+        title: release.title,
+        artist: release.artist,
+        releaseYear: release.releaseYear,
+        releaseDate: normalizeReleaseDate(release.releaseDate),
+        genre: release.genre,
+        subgenre: release.subgenre,
+        label: release.label,
+        recordCompany: release.recordCompany,
+        producers: release.producers,
+        country: release.country,
+        format: release.format,
+        description: release.description,
+        trackCount: release.trackCount,
+        discogsReleaseId: release.discogsReleaseId,
+        coverImageUrl: release.coverUrl,
+      })
+      setResults([])
+      toast.success("Fiche pré-remplie depuis Discogs")
+    } catch {
+      toast.error("Erreur réseau lors de l'import Discogs.")
+    } finally {
+      setImportingId(null)
+    }
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -145,10 +218,28 @@ export function AlbumCreateForm() {
       return
     }
     setSaving(true)
-    await new Promise((r) => setTimeout(r, 500))
-    setSaving(false)
-    toast.success("Album enregistré (démo — non persisté)")
-    router.push(routes.bibliotheque)
+
+    try {
+      const response = await fetch("/api/albums", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      })
+      const data = (await response.json()) as { id?: string; error?: string }
+
+      if (!response.ok || !data.id) {
+        toast.error(data.error ?? "Impossible d'enregistrer l'album.")
+        return
+      }
+
+      toast.success("Album enregistré.")
+      router.push(albumDetailRoute(data.id))
+      router.refresh()
+    } catch {
+      toast.error("Erreur réseau lors de l'enregistrement.")
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -175,7 +266,8 @@ export function AlbumCreateForm() {
             Recherche automatique
           </CardTitle>
           <CardDescription>
-            Zone future Discogs / MusicBrainz — résultats mock pour la démo.
+            Recherche Discogs (releases). Choisis un résultat pour pré-remplir le
+            formulaire.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -198,19 +290,30 @@ export function AlbumCreateForm() {
           {results.length > 0 ? (
             <ul className="space-y-2">
               {results.map((item) => (
-                <li key={item.id}>
+                <li key={`${item.type}-${item.discogsId}`}>
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-auto w-full justify-start px-3 py-3 text-left"
+                    className="h-auto w-full justify-start gap-3 px-3 py-3 text-left"
+                    disabled={importingId !== null}
                     onClick={() => applyResult(item)}
                   >
-                    <div className="min-w-0">
+                    {item.thumbUrl ? (
+                      <img
+                        src={item.thumbUrl}
+                        alt=""
+                        className="size-12 shrink-0 rounded object-cover"
+                      />
+                    ) : null}
+                    <div className="min-w-0 flex-1">
                       <p className="font-medium">{item.title}</p>
                       <p className="text-sm text-muted-foreground">
-                        {item.artist} · {item.year} · {item.label}
+                        {[item.subtitle, item.year].filter(Boolean).join(" · ")}
                       </p>
                     </div>
+                    {importingId === item.discogsId ? (
+                      <Loader2Icon className="size-4 shrink-0 animate-spin" />
+                    ) : null}
                   </Button>
                 </li>
               ))}
@@ -242,7 +345,7 @@ export function AlbumCreateForm() {
         </FormSection>
 
         <FormSection title="Sortie">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <Field id="releaseYear" label="Année">
               <Input
                 id="releaseYear"
@@ -257,6 +360,14 @@ export function AlbumCreateForm() {
                 type="date"
                 value={form.releaseDate}
                 onChange={(e) => patchForm({ releaseDate: e.target.value })}
+              />
+            </Field>
+            <Field id="trackCount" label="Nombre de titres">
+              <Input
+                id="trackCount"
+                type="number"
+                value={form.trackCount}
+                onChange={(e) => patchForm({ trackCount: e.target.value })}
               />
             </Field>
           </div>
@@ -377,12 +488,6 @@ export function AlbumCreateForm() {
         </div>
       </form>
 
-      <p className="text-center text-xs text-muted-foreground">
-        Version test · données non sauvegardées en base
-        <Badge variant="outline" className="ml-2">
-          Mock
-        </Badge>
-      </p>
     </div>
   )
 }
