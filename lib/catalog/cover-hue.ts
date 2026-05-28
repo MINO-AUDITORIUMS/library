@@ -11,5 +11,10 @@ export function discogsIdFromExternalIds(
 ) {
   if (!externalIds) return null
   const id = externalIds.discogs
-  return typeof id === "number" ? id : null
+  if (typeof id === "number" && id > 0) return id
+  if (typeof id === "string") {
+    const parsed = Number.parseInt(id, 10)
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null
+  }
+  return null
 }

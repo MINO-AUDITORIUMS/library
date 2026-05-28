@@ -161,6 +161,7 @@ const summaries: AlbumSummary[] = [
 
 const details: Record<string, Omit<AlbumDetail, keyof AlbumSummary>> = {
   "1": {
+    discogsReleaseId: null,
     releaseDate: "1959-08-17",
     genreName: "Jazz",
     subgenreName: "Modal jazz",
@@ -190,6 +191,7 @@ function defaultDetail(
   summary: AlbumSummary
 ): Omit<AlbumDetail, keyof AlbumSummary> {
   return {
+    discogsReleaseId: null,
     releaseDate: `${summary.releaseYear}-01-01`,
     genreName: summary.genre,
     subgenreName: "",

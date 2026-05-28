@@ -3,7 +3,7 @@ import type { SupabaseClient, User } from "@supabase/supabase-js"
 import { ensureProfile } from "@/lib/auth/ensure-profile"
 
 import { resolveCountryCode } from "@/lib/catalog/country-code"
-import { coverHueFromId } from "@/lib/catalog/cover-hue"
+import { coverHueFromId, discogsIdFromExternalIds } from "@/lib/catalog/cover-hue"
 import {
   getAlbumCoverPublicUrl,
   removeAlbumCover,
@@ -96,6 +96,7 @@ const albumDetailSelect = `
   rating,
   personal_notes,
   cover_storage_path,
+  external_ids,
   created_at,
   countries(name),
   album_genres(genres(name)),
@@ -170,6 +171,7 @@ export function mapAlbumDetail(row: AlbumRow): AlbumDetail {
 
   return {
     ...summary,
+    discogsReleaseId: discogsIdFromExternalIds(row.external_ids),
     releaseDate: row.release_date,
     genreName,
     subgenreName,

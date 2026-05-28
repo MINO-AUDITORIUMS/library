@@ -35,6 +35,7 @@ export type AlbumComment = {
 }
 
 export type AlbumDetail = AlbumSummary & {
+  discogsReleaseId: number | null
   releaseDate: string | null
   genreName: string
   subgenreName: string

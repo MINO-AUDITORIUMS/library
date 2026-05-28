@@ -33,6 +33,13 @@ export type CatalogSearchHit = {
   thumbUrl: string | null
 }
 
+export type DiscogsCommunityStats = {
+  averageRating: number
+  ratingCount: number
+  inCollection: number
+  inWantlist: number
+}
+
 export type CatalogReleaseImport = {
   discogsReleaseId: number
   title: string

@@ -4,6 +4,8 @@ import { notFound } from "next/navigation"
 import { AlbumDetailView } from "@/app/bibliotheque/_components/album-detail-view"
 import { listAlbumComments } from "@/lib/catalog/db/album-comments"
 import { getAlbumDetailById } from "@/lib/catalog/db/albums"
+import { DiscogsApiError } from "@/lib/catalog/discogs/client"
+import { fetchDiscogsCommunityStats } from "@/lib/catalog/discogs/fetch-community"
 import { getAuthenticatedUser } from "@/lib/auth/require-authenticated-user"
 import { createClient } from "@/lib/supabase/server"
 
@@ -37,12 +39,24 @@ export default async function AlbumDetailPage({
 
   if (!album) notFound()
 
+  let discogsCommunity = null
+  if (album.discogsReleaseId) {
+    try {
+      discogsCommunity = await fetchDiscogsCommunityStats(album.discogsReleaseId)
+    } catch (error) {
+      if (!(error instanceof DiscogsApiError && error.status === 503)) {
+        discogsCommunity = null
+      }
+    }
+  }
+
   return (
     <AlbumDetailView
       album={album}
       comments={comments}
       currentUserId={session.user.id}
       currentUserEmail={session.email}
+      discogsCommunity={discogsCommunity}
     />
   )
 }

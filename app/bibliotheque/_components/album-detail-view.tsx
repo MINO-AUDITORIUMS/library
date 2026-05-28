@@ -2,13 +2,14 @@ import Link from "next/link"
 import { ArrowLeftIcon } from "lucide-react"
 
 import { AlbumCover } from "@/components/catalog/album-cover"
-import { StarRating } from "@/components/catalog/star-rating"
+import { AlbumRatingsPanel } from "@/components/catalog/album-ratings-panel"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlbumDetailActions } from "@/app/bibliotheque/_components/album-detail-actions"
 import { AlbumDetailSplit } from "@/app/bibliotheque/_components/album-detail-split"
 import { formatDuration } from "@/lib/catalog/format"
+import type { DiscogsCommunityStats } from "@/lib/catalog/discogs/types"
 import type { AlbumComment, AlbumDetail } from "@/lib/catalog/types"
 import { routes } from "@/lib/routes"
 
@@ -17,6 +18,7 @@ export type AlbumDetailViewProps = {
   comments: AlbumComment[]
   currentUserId: string
   currentUserEmail: string
+  discogsCommunity: DiscogsCommunityStats | null
 }
 
 function MetaItem({ label, value }: { label: string; value: string }) {
@@ -35,6 +37,7 @@ export function AlbumDetailView({
   comments,
   currentUserId,
   currentUserEmail,
+  discogsCommunity,
 }: AlbumDetailViewProps) {
   return (
     <div className="flex w-full flex-col gap-6">
@@ -60,7 +63,10 @@ export function AlbumDetailView({
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight">{album.title}</h1>
             <p className="text-lg text-muted-foreground">{album.artist}</p>
-            <StarRating value={album.rating} size="md" />
+            <AlbumRatingsPanel
+              personalRating={album.rating}
+              discogsCommunity={discogsCommunity}
+            />
           </div>
 
           {album.tags.length > 0 ? (
