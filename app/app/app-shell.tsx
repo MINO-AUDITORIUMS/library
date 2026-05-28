@@ -41,17 +41,9 @@ export function AppShell({ email, children }: AppShellProps) {
     <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader>
-          <div className="flex items-center justify-between gap-2 px-2 py-2">
-            <div className="flex items-center gap-2">
-              <MinoLogo variant="mark" logoClassName="h-6" />
-              <div className="min-w-0">
-                <p className="truncate text-sm leading-none font-semibold">
-                  Library
-                </p>
-              </div>
-            </div>
-            <SidebarTrigger className="md:hidden" />
-          </div>
+          <Link href={routes.app}>
+            <MinoLogo variant="mark" logoClassName="h-12" />
+          </Link>
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
