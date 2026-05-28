@@ -6,7 +6,9 @@ insert into public.countries (code, name) values
   ('JP', 'Japon'),
   ('CA', 'Canada'),
   ('BE', 'Belgique'),
-  ('CH', 'Suisse')
+  ('CH', 'Suisse'),
+  ('XW', 'Monde'),
+  ('XE', 'Europe')
 on conflict (code) do nothing;
 
 insert into public.lyrics_languages (code, name) values

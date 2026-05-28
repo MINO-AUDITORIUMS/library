@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server"
 
 import { getAuthenticatedUser } from "@/lib/auth/require-authenticated-user"
-import { discogsFetch, DiscogsApiError } from "@/lib/catalog/discogs/client"
-import { mapDiscogsRelease } from "@/lib/catalog/discogs/map-release"
+import { buildMergedCatalogImportFromDiscogsReleaseId } from "@/lib/catalog/build-merged-catalog-import"
+import { DiscogsApiError } from "@/lib/catalog/discogs/client"
+import { MusicBrainzApiError } from "@/lib/catalog/musicbrainz/client"
 
 export async function GET(
   _request: Request,
@@ -20,19 +21,14 @@ export async function GET(
       return NextResponse.json({ error: "ID release invalide." }, { status: 400 })
     }
 
-    const data = await discogsFetch<unknown>({
-      path: `/releases/${id}`,
-    })
-
-    return NextResponse.json({
-      release: mapDiscogsRelease(data),
-    })
+    const payload = await buildMergedCatalogImportFromDiscogsReleaseId(id)
+    return NextResponse.json(payload)
   } catch (error) {
-    if (error instanceof DiscogsApiError) {
+    if (error instanceof DiscogsApiError || error instanceof MusicBrainzApiError) {
       return NextResponse.json({ error: error.message }, { status: error.status })
     }
     return NextResponse.json(
-      { error: "Impossible de récupérer la release Discogs." },
+      { error: "Impossible de récupérer la release." },
       { status: 500 }
     )
   }

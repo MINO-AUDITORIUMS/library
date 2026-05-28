@@ -25,6 +25,18 @@ export type DiscogsSearchResponse = {
 }
 
 export type CatalogSearchHit = {
+  key: string
+  title: string
+  artist: string
+  subtitle: string
+  year: string | null
+  thumbUrl: string | null
+  variantCount: number | null
+  discogsMasterId: number | null
+  musicbrainzReleaseGroupId: string | null
+}
+
+export type LegacyDiscogsSearchHit = {
   discogsId: number
   type: DiscogsSearchType
   title: string
@@ -41,7 +53,9 @@ export type DiscogsCommunityStats = {
 }
 
 export type CatalogReleaseImport = {
-  discogsReleaseId: number
+  discogsReleaseId: number | null
+  musicbrainzReleaseId: string | null
+  barcode: string | null
   title: string
   artist: string
   releaseYear: string
@@ -56,4 +70,5 @@ export type CatalogReleaseImport = {
   description: string
   trackCount: string
   coverUrl: string | null
+  certification: string
 }

@@ -25,7 +25,9 @@ export type CreateAlbumInput = {
   personalNotes: string
   trackCount: string
   discogsReleaseId: number | null
+  musicbrainzReleaseId: string | null
   coverImageUrl: string | null
+  certification: string
   tags: string[]
 }
 
@@ -40,6 +42,12 @@ export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
   const discogsRaw = data.discogsReleaseId
   const discogsReleaseId =
     typeof discogsRaw === "number" && discogsRaw > 0 ? discogsRaw : null
+
+  const musicbrainzRaw = data.musicbrainzReleaseId
+  const musicbrainzReleaseId =
+    typeof musicbrainzRaw === "string" && musicbrainzRaw.trim().length > 0
+      ? musicbrainzRaw.trim()
+      : null
 
   const coverRaw = data.coverImageUrl
   const coverImageUrl =
@@ -70,7 +78,10 @@ export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
       typeof data.personalNotes === "string" ? data.personalNotes : "",
     trackCount: typeof data.trackCount === "string" ? data.trackCount : "",
     discogsReleaseId,
+    musicbrainzReleaseId,
     coverImageUrl,
+    certification:
+      typeof data.certification === "string" ? data.certification.trim() : "",
     tags: parseTagNames(data.tags),
   }
 }

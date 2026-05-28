@@ -7,6 +7,7 @@ import { ArrowLeftIcon, Loader2Icon, SearchIcon, SparklesIcon } from "lucide-rea
 import { toast } from "sonner"
 
 import { AlbumTagsField } from "@/components/catalog/album-tags-field"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -17,6 +18,21 @@ import { albumDetailRoute, routes } from "@/lib/routes"
 
 function normalizeReleaseDate(value: string) {
   return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : ""
+}
+
+function buildImportUrl(hit: CatalogSearchHit) {
+  const params = new URLSearchParams()
+  if (hit.discogsMasterId) {
+    params.set("discogsMaster", String(hit.discogsMasterId))
+  }
+  if (hit.musicbrainzReleaseGroupId) {
+    params.set("musicbrainzReleaseGroup", hit.musicbrainzReleaseGroupId)
+  }
+  return `/api/catalog/import?${params.toString()}`
+}
+
+function resultArtistLine(hit: CatalogSearchHit) {
+  return [hit.artist, hit.subtitle, hit.year].filter(Boolean).join(" · ")
 }
 
 type FormState = {
@@ -35,7 +51,9 @@ type FormState = {
   personalNotes: string
   trackCount: string
   discogsReleaseId: number | null
+  musicbrainzReleaseId: string | null
   coverImageUrl: string | null
+  certification: string
   tags: string[]
 }
 
@@ -55,7 +73,9 @@ const emptyForm: FormState = {
   personalNotes: "",
   trackCount: "",
   discogsReleaseId: null,
+  musicbrainzReleaseId: null,
   coverImageUrl: null,
+  certification: "",
   tags: [],
 }
 
@@ -103,7 +123,7 @@ export function AlbumCreateForm() {
   const [results, setResults] = useState<CatalogSearchHit[]>([])
   const [form, setForm] = useState<FormState>(emptyForm)
   const [saving, setSaving] = useState(false)
-  const [importingId, setImportingId] = useState<number | null>(null)
+  const [importingKey, setImportingKey] = useState<string | null>(null)
 
   function patchForm(partial: Partial<FormState>) {
     setForm((prev) => ({ ...prev, ...partial }))
@@ -122,7 +142,7 @@ export function AlbumCreateForm() {
 
     try {
       const response = await fetch(
-        `/api/catalog/discogs/search?q=${encodeURIComponent(q)}&type=release`
+        `/api/catalog/search?q=${encodeURIComponent(q)}`
       )
       const data = (await response.json()) as {
         results?: CatalogSearchHit[]
@@ -130,33 +150,31 @@ export function AlbumCreateForm() {
       }
 
       if (!response.ok) {
-        toast.error(data.error ?? "Recherche Discogs impossible.")
+        toast.error(data.error ?? "Recherche catalogue impossible.")
         return
       }
 
       setResults(data.results ?? [])
       if ((data.results ?? []).length === 0) {
-        toast.message("Aucun résultat Discogs pour cette recherche.")
+        toast.message("Aucune référence principale trouvée.")
       }
     } catch {
-      toast.error("Erreur réseau lors de la recherche Discogs.")
+      toast.error("Erreur réseau lors de la recherche.")
     } finally {
       setSearching(false)
     }
   }
 
   async function applyResult(hit: CatalogSearchHit) {
-    if (hit.type !== "release") {
-      toast.error("Seules les releases sont importables pour l'instant.")
+    if (!hit.discogsMasterId && !hit.musicbrainzReleaseGroupId) {
+      toast.error("Cette référence ne peut pas être importée.")
       return
     }
 
-    setImportingId(hit.discogsId)
+    setImportingKey(hit.key)
 
     try {
-      const response = await fetch(
-        `/api/catalog/discogs/releases/${hit.discogsId}`
-      )
+      const response = await fetch(buildImportUrl(hit))
       const data = (await response.json()) as {
         release?: {
           title: string
@@ -172,14 +190,21 @@ export function AlbumCreateForm() {
           format: string
           description: string
           trackCount: string
-          discogsReleaseId: number
+          discogsReleaseId: number | null
+          musicbrainzReleaseId: string | null
           coverUrl: string | null
+          certification: string
         }
+        sources?: {
+          discogs: boolean
+          musicbrainz: boolean
+        }
+        variantCount?: number | null
         error?: string
       }
 
       if (!response.ok || !data.release) {
-        toast.error(data.error ?? "Import Discogs impossible.")
+        toast.error(data.error ?? "Import impossible.")
         return
       }
 
@@ -199,14 +224,31 @@ export function AlbumCreateForm() {
         description: release.description,
         trackCount: release.trackCount,
         discogsReleaseId: release.discogsReleaseId,
+        musicbrainzReleaseId: release.musicbrainzReleaseId,
         coverImageUrl: release.coverUrl,
+        certification: release.certification,
       })
       setResults([])
-      toast.success("Fiche pré-remplie depuis Discogs")
+
+      const sources = data.sources
+      const variantSuffix =
+        data.variantCount && data.variantCount > 1
+          ? ` (${data.variantCount} éditions analysées)`
+          : ""
+
+      if (sources?.discogs && sources.musicbrainz) {
+        toast.success(
+          `Référence principale importée${variantSuffix} · Discogs + MusicBrainz`
+        )
+      } else if (sources?.musicbrainz) {
+        toast.success(`Référence principale importée${variantSuffix} · MusicBrainz`)
+      } else {
+        toast.success(`Référence principale importée${variantSuffix} · Discogs`)
+      }
     } catch {
-      toast.error("Erreur réseau lors de l'import Discogs.")
+      toast.error("Erreur réseau lors de l'import.")
     } finally {
-      setImportingId(null)
+      setImportingKey(null)
     }
   }
 
@@ -265,8 +307,9 @@ export function AlbumCreateForm() {
             Recherche automatique
           </CardTitle>
           <CardDescription>
-            Recherche Discogs (releases). Choisis un résultat pour pré-remplir le
-            formulaire.
+            Recherche par référence principale (Discogs master + MusicBrainz
+            release group). L&apos;import choisit automatiquement l&apos;édition la
+            plus complète.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -289,12 +332,12 @@ export function AlbumCreateForm() {
           {results.length > 0 ? (
             <ul className="space-y-2">
               {results.map((item) => (
-                <li key={`${item.type}-${item.discogsId}`}>
+                <li key={item.key}>
                   <Button
                     type="button"
                     variant="outline"
                     className="h-auto w-full justify-start gap-3 px-3 py-3 text-left"
-                    disabled={importingId !== null}
+                    disabled={importingKey !== null}
                     onClick={() => applyResult(item)}
                   >
                     {item.thumbUrl ? (
@@ -304,13 +347,18 @@ export function AlbumCreateForm() {
                         className="size-12 shrink-0 rounded object-cover"
                       />
                     ) : null}
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium">{item.title}</p>
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-medium">{item.title}</p>
+                        <Badge variant="secondary" className="text-[10px]">
+                          Référence principale
+                        </Badge>
+                      </div>
                       <p className="text-sm text-muted-foreground">
-                        {[item.subtitle, item.year].filter(Boolean).join(" · ")}
+                        {resultArtistLine(item)}
                       </p>
                     </div>
-                    {importingId === item.discogsId ? (
+                    {importingKey === item.key ? (
                       <Loader2Icon className="size-4 shrink-0 animate-spin" />
                     ) : null}
                   </Button>
@@ -437,6 +485,14 @@ export function AlbumCreateForm() {
                 id="country"
                 value={form.country}
                 onChange={(e) => patchForm({ country: e.target.value })}
+              />
+            </Field>
+            <Field id="certification" label="Certification">
+              <Input
+                id="certification"
+                value={form.certification}
+                onChange={(e) => patchForm({ certification: e.target.value })}
+                placeholder="Or, Platine…"
               />
             </Field>
           </div>

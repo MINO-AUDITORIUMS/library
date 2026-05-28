@@ -2,7 +2,7 @@ import type { SupabaseClient, User } from "@supabase/supabase-js"
 
 import { ensureProfile } from "@/lib/auth/ensure-profile"
 
-import { resolveCountryCode } from "@/lib/catalog/country-code"
+import { countryDisplayName, resolveCountryCode } from "@/lib/catalog/country-code"
 import { coverHueFromId, discogsIdFromExternalIds } from "@/lib/catalog/cover-hue"
 import {
   getAlbumCoverPublicUrl,
@@ -15,6 +15,7 @@ import {
   parseProducers,
   parseReleaseDate,
 } from "@/lib/catalog/create-album-input"
+import { fetchMusicBrainzTracks } from "@/lib/catalog/musicbrainz/fetch-tracks"
 import { minoRatingFromRows } from "@/lib/catalog/db/album-user-ratings"
 import { syncAlbumTags } from "@/lib/catalog/db/tags"
 import type { UpdateAlbumInput } from "@/lib/catalog/update-album-input"
@@ -149,7 +150,11 @@ export function mapAlbumSummary(row: AlbumRow): AlbumSummary {
   const genreName = firstGenre(row)
   const subgenreName = firstSubgenre(row)
   const genre = genreName || subgenreName || "—"
-  const country = readCountry(row) || row.origin_country_code || ""
+  const country =
+    readCountry(row) ||
+    (row.origin_country_code
+      ? countryDisplayName(row.origin_country_code)
+      : "")
 
   return {
     id: row.id,
@@ -264,14 +269,34 @@ async function resolveOriginCountryCode(
   const code = resolveCountryCode(country)
   if (!code) return null
 
-  const { data, error } = await supabase
+  const { data: existing, error: existingError } = await supabase
     .from("countries")
     .select("code")
     .eq("code", code)
     .maybeSingle()
 
-  if (error) throw error
-  return data?.code ?? null
+  if (existingError) throw existingError
+  if (existing?.code) return existing.code
+
+  const name = countryDisplayName(code, country.trim())
+  const { data: inserted, error: insertError } = await supabase
+    .from("countries")
+    .insert({ code, name })
+    .select("code")
+    .maybeSingle()
+
+  if (insertError) {
+    const { data: retry, error: retryError } = await supabase
+      .from("countries")
+      .select("code")
+      .eq("code", code)
+      .maybeSingle()
+
+    if (retryError) throw retryError
+    return retry?.code ?? null
+  }
+
+  return inserted?.code ?? null
 }
 
 async function fetchDiscogsTracks(releaseId: number) {
@@ -300,6 +325,51 @@ async function fetchDiscogsTracks(releaseId: number) {
   }
 
   return parsed
+}
+
+type ParsedImportTrack = {
+  position: number
+  title: string
+  duration_seconds: number | null
+}
+
+function mergeTrackDurations(
+  primary: ParsedImportTrack[],
+  secondary: ParsedImportTrack[]
+) {
+  return primary.map((track, index) => {
+    if (track.duration_seconds) return track
+    const fallback = secondary[index]
+    if (!fallback?.duration_seconds) return track
+    return { ...track, duration_seconds: fallback.duration_seconds }
+  })
+}
+
+async function resolveImportTracks(input: CreateAlbumInput) {
+  let tracks: ParsedImportTrack[] = []
+
+  if (input.discogsReleaseId) {
+    try {
+      tracks = await fetchDiscogsTracks(input.discogsReleaseId)
+    } catch {
+      tracks = []
+    }
+  }
+
+  if (input.musicbrainzReleaseId) {
+    try {
+      const mbTracks = await fetchMusicBrainzTracks(input.musicbrainzReleaseId)
+      if (tracks.length === 0) {
+        tracks = mbTracks
+      } else {
+        tracks = mergeTrackDurations(tracks, mbTracks)
+      }
+    } catch {
+      // MusicBrainz tracklist is optional.
+    }
+  }
+
+  return tracks
 }
 
 export async function listAlbumSummaries(supabase: SupabaseClient) {
@@ -358,6 +428,9 @@ export async function createAlbum(
 
   const externalIds: Record<string, unknown> = {}
   if (input.discogsReleaseId) externalIds.discogs = input.discogsReleaseId
+  if (input.musicbrainzReleaseId) {
+    externalIds.musicbrainz = input.musicbrainzReleaseId
+  }
 
   const { data: album, error } = await supabase
     .from("albums")
@@ -373,6 +446,7 @@ export async function createAlbum(
       record_company: input.recordCompany || null,
       producers: parseProducers(input.producers),
       origin_country_code: originCountryCode,
+      certification: input.certification.trim() || null,
       personal_notes: input.personalNotes.trim() || null,
       external_ids: externalIds,
       cover_storage_path: null,
@@ -426,9 +500,9 @@ export async function createAlbum(
     }
   }
 
-  if (input.discogsReleaseId) {
+  if (input.discogsReleaseId || input.musicbrainzReleaseId) {
     try {
-      const tracks = await fetchDiscogsTracks(input.discogsReleaseId)
+      const tracks = await resolveImportTracks(input)
       if (tracks.length > 0) {
         await supabase.from("album_tracks").insert(
           tracks.map((track) => ({

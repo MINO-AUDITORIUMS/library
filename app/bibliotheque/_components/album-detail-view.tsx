@@ -70,7 +70,7 @@ export function AlbumDetailView({
           <MetaItem label="Genre" value={`${album.genre} · ${album.subgenre}`} />
           <MetaItem label="Label" value={album.label} />
           <MetaItem label="Maison de disques" value={album.recordCompany} />
-          <MetaItem label="Pays" value={album.country} />
+          <MetaItem label="Pays" value={album.country.trim() || "—"} />
           <MetaItem
             label="Durée"
             value={formatDuration(album.totalDurationSeconds)}

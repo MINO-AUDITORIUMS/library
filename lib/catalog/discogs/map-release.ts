@@ -15,6 +15,7 @@ type RawRelease = {
   tracklist?: { position: string; title: string; duration?: string }[]
   images?: { type: string; uri: string; resource_url: string }[]
   extraartists?: { name: string; role?: string }[]
+  identifiers?: { type?: string; value?: string }[]
 }
 
 function primaryArtist(release: RawRelease) {
@@ -45,6 +46,13 @@ function coverUrl(release: RawRelease) {
   return primary?.uri ?? primary?.resource_url ?? null
 }
 
+function readBarcode(release: RawRelease) {
+  const match = (release.identifiers ?? []).find((identifier) =>
+    identifier.type?.toLowerCase().includes("barcode")
+  )
+  return match?.value?.trim() || null
+}
+
 export function mapDiscogsRelease(data: unknown): CatalogReleaseImport {
   const release = data as RawRelease
   const title = release.title ?? ""
@@ -52,6 +60,8 @@ export function mapDiscogsRelease(data: unknown): CatalogReleaseImport {
 
   return {
     discogsReleaseId: release.id,
+    musicbrainzReleaseId: null,
+    barcode: readBarcode(release),
     title: title.replace(/\s*\(\d+\)\s*$/, "").trim() || title,
     artist,
     releaseYear: release.year ? String(release.year) : "",
@@ -66,5 +76,6 @@ export function mapDiscogsRelease(data: unknown): CatalogReleaseImport {
     description: release.notes?.trim() ?? "",
     trackCount: release.tracklist?.length ? String(release.tracklist.length) : "",
     coverUrl: coverUrl(release),
+    certification: "",
   }
 }

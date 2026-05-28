@@ -1,5 +1,5 @@
 import type {
-  CatalogSearchHit,
+  LegacyDiscogsSearchHit,
   DiscogsSearchResponse,
   DiscogsSearchType,
 } from "@/lib/catalog/discogs/types"
@@ -30,10 +30,60 @@ function buildSubtitle(item: RawSearchResult) {
   return parts.join(" · ")
 }
 
+function parseDiscogsMasterTitle(title: string) {
+  const separator = title.indexOf(" - ")
+  if (separator === -1) {
+    return { artist: "", albumTitle: title.trim() }
+  }
+  return {
+    artist: title.slice(0, separator).trim(),
+    albumTitle: title.slice(separator + 3).trim(),
+  }
+}
+
+export function mapDiscogsMasterSearchResponse(
+  data: DiscogsSearchResponse
+) {
+  const raw = data as unknown as {
+    results?: {
+      id: number
+      type: string
+      title?: string
+      year?: string
+      label?: string[]
+      thumb?: string
+      country?: string
+      format?: string[]
+    }[]
+  }
+
+  return (raw.results ?? [])
+    .filter((item) => item.type === "master")
+    .slice(0, 10)
+    .map((item) => {
+      const parsed = parseDiscogsMasterTitle(item.title ?? "Sans titre")
+      const parts = ["Référence principale"]
+      if (item.label?.[0]) parts.push(item.label[0])
+      if (item.year) parts.push(item.year)
+
+      return {
+        key: `discogs-master:${item.id}`,
+        title: parsed.albumTitle || item.title || "Sans titre",
+        artist: parsed.artist,
+        subtitle: parts.join(" · "),
+        year: item.year ?? null,
+        thumbUrl: item.thumb ?? null,
+        variantCount: null,
+        discogsMasterId: item.id,
+        musicbrainzReleaseGroupId: null,
+      }
+    })
+}
+
 export function mapDiscogsSearchResponse(
   data: DiscogsSearchResponse,
   searchType: DiscogsSearchType
-): CatalogSearchHit[] {
+): LegacyDiscogsSearchHit[] {
   const raw = data as unknown as { results?: RawSearchResult[] }
   const results = raw.results ?? []
 
