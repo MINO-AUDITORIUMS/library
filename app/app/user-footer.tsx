@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { LogOutIcon } from "lucide-react"
 import { toast } from "sonner"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { routes } from "@/lib/routes"
 import { createClient } from "@/lib/supabase/client"
@@ -36,7 +37,13 @@ export function UserFooter({ email }: UserFooterProps) {
   return (
     <div className="flex flex-col gap-2 px-2 py-2">
       <div className="min-w-0">
-        <p className="truncate text-xs text-muted-foreground">Connecté</p>
+        <div className="flex items-center gap-1.5">
+          <p className="truncate text-xs text-muted-foreground">Connecté</p>
+          <Badge
+            className="size-2 shrink-0 rounded-full border-0 bg-emerald-500 p-0 shadow-[0_0_0_2px_rgba(16,185,129,0.25)]"
+            aria-label="En ligne"
+          />
+        </div>
         <p className="truncate text-xs font-medium">{email}</p>
       </div>
       <Button
