@@ -3,10 +3,11 @@ import type { SupabaseClient, User } from "@supabase/supabase-js"
 import { ensureProfile } from "@/lib/auth/ensure-profile"
 
 import { resolveCountryCode } from "@/lib/catalog/country-code"
+import { coverHueFromId } from "@/lib/catalog/cover-hue"
 import {
-  coverHueFromId,
-  coverImageFromExternalIds,
-} from "@/lib/catalog/cover-hue"
+  getAlbumCoverPublicUrl,
+  uploadAlbumCoverFromUrl,
+} from "@/lib/catalog/storage/album-cover"
 import type { CreateAlbumInput } from "@/lib/catalog/create-album-input"
 import {
   parseOptionalInt,
@@ -41,6 +42,7 @@ type AlbumRow = {
   official_clips_count: number
   rating: number | null
   personal_notes: string | null
+  cover_storage_path: string | null
   external_ids: Record<string, unknown>
   created_at: string
   countries: { name: string } | { name: string }[] | null
@@ -66,7 +68,7 @@ const albumListSelect = `
   format,
   rating,
   label,
-  external_ids,
+  cover_storage_path,
   album_genres(genres(name)),
   album_subgenres(subgenres(name)),
   album_tags(tags(name))
@@ -90,7 +92,7 @@ const albumDetailSelect = `
   official_clips_count,
   rating,
   personal_notes,
-  external_ids,
+  cover_storage_path,
   created_at,
   countries(name),
   album_genres(genres(name)),
@@ -149,7 +151,7 @@ export function mapAlbumSummary(row: AlbumRow): AlbumSummary {
     tags: mapTags(row),
     genre,
     coverHue: coverHueFromId(row.id),
-    coverImageUrl: coverImageFromExternalIds(row.external_ids),
+    coverImageUrl: getAlbumCoverPublicUrl(row.cover_storage_path),
   }
 }
 
@@ -339,7 +341,6 @@ export async function createAlbum(
 
   const externalIds: Record<string, unknown> = {}
   if (input.discogsReleaseId) externalIds.discogs = input.discogsReleaseId
-  if (input.coverImageUrl) externalIds.discogs_thumb = input.coverImageUrl
 
   const { data: album, error } = await supabase
     .from("albums")
@@ -358,6 +359,7 @@ export async function createAlbum(
       rating: input.rating,
       personal_notes: input.personalNotes.trim() || null,
       external_ids: externalIds,
+      cover_storage_path: null,
       created_by: user.id,
       updated_by: user.id,
     })
@@ -367,6 +369,24 @@ export async function createAlbum(
   if (error) throw error
 
   const albumId = album.id as string
+
+  if (input.coverImageUrl) {
+    try {
+      const coverPath = await uploadAlbumCoverFromUrl(
+        supabase,
+        albumId,
+        input.coverImageUrl
+      )
+      if (coverPath) {
+        await supabase
+          .from("albums")
+          .update({ cover_storage_path: coverPath })
+          .eq("id", albumId)
+      }
+    } catch {
+      // Cover import is optional; album row is already created.
+    }
+  }
 
   if (input.genre) {
     const genreId = await ensureGenre(supabase, input.genre)

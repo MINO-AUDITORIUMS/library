@@ -51,6 +51,7 @@ FILES=(
   supabase/schema/album_attachments.sql
   supabase/schema/album_search.sql
   supabase/storage/album_attachments.sql
+  supabase/storage/album_covers.sql
   supabase/seed/lookups.sql
 )
 

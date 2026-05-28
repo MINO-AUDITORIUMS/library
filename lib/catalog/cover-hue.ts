@@ -6,14 +6,6 @@ export function coverHueFromId(id: string) {
   return hash
 }
 
-export function coverImageFromExternalIds(
-  externalIds: Record<string, unknown> | null | undefined
-) {
-  if (!externalIds) return null
-  const thumb = externalIds.discogs_thumb
-  return typeof thumb === "string" && thumb.length > 0 ? thumb : null
-}
-
 export function discogsIdFromExternalIds(
   externalIds: Record<string, unknown> | null | undefined
 ) {

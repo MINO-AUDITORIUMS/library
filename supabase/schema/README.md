@@ -58,7 +58,7 @@ Exécuter dans le SQL Editor Supabase (dans cet ordre) :
 16. `album_attachments.sql`
 17. `album_search.sql`
 
-Puis : `../storage/album_attachments.sql` (bucket Storage).
+Puis : `../storage/album_attachments.sql` et `../storage/album_covers.sql` (buckets Storage).
 
 Auth domaine : `../auth_custom_domain.sql` (déjà présent).
 
@@ -84,4 +84,4 @@ erDiagram
 - Cache scraping : table `album_import_runs` ou colonnes dédiées — `external_ids` suffit en V1.
 - Rôles / permissions : colonne `role` sur `profiles` + policies RLS affinées.
 - Import CSV en masse : job table + statut par ligne.
-- Couverture album : déjà `cover_storage_path` + bucket Storage.
+- Couverture album : `cover_storage_path` + bucket public `album-covers` (import depuis Discogs à la création).
