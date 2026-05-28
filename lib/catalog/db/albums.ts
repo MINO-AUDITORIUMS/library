@@ -72,7 +72,9 @@ const albumListSelect = `
   release_year,
   format,
   label,
+  origin_country_code,
   cover_storage_path,
+  countries(name),
   album_genres(genres(name)),
   album_subgenres(subgenres(name)),
   album_tags(tags(name)),
@@ -144,7 +146,11 @@ function mapTracks(
 }
 
 export function mapAlbumSummary(row: AlbumRow): AlbumSummary {
-  const genre = firstGenre(row) || firstSubgenre(row) || "—"
+  const genreName = firstGenre(row)
+  const subgenreName = firstSubgenre(row)
+  const genre = genreName || subgenreName || "—"
+  const country = readCountry(row) || row.origin_country_code || ""
+
   return {
     id: row.id,
     title: row.title,
@@ -155,6 +161,9 @@ export function mapAlbumSummary(row: AlbumRow): AlbumSummary {
     minoRating: minoRatingFromRows(row.album_user_ratings),
     tags: mapTags(row),
     genre,
+    genreName,
+    subgenreName,
+    country,
     coverHue: coverHueFromId(row.id),
     coverImageUrl: getAlbumCoverPublicUrl(row.cover_storage_path),
   }
@@ -174,12 +183,9 @@ export function mapAlbumDetail(row: AlbumRow): AlbumDetail {
     ...summary,
     discogsReleaseId: discogsIdFromExternalIds(row.external_ids),
     releaseDate: row.release_date,
-    genreName,
-    subgenreName,
     subgenre: subgenreName || "—",
     recordCompany: row.record_company ?? "—",
     producers: row.producers.length > 0 ? row.producers : ["—"],
-    country: readCountry(row) || row.origin_country_code || "—",
     certification: row.certification,
     trackCount: row.track_count ?? tracks.length,
     totalDurationSeconds: totalDuration,

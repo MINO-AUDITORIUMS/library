@@ -4,6 +4,7 @@ import { AlbumCover } from "@/components/catalog/album-cover"
 import { MinoRatingStars } from "@/components/catalog/mino-rating-stars"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { albumFormatLabels } from "@/lib/catalog/format-labels"
 import type { AlbumSummary } from "@/lib/catalog/types"
 import { albumDetailRoute } from "@/lib/routes"
 import { cn } from "@/lib/utils"
@@ -13,13 +14,7 @@ export type AlbumCardProps = {
   className?: string
 }
 
-const formatLabels: Record<AlbumSummary["format"], string> = {
-  vinyl: "Vinyle",
-  cd: "CD",
-  cassette: "Cassette",
-  digital: "Digital",
-  other: "Autre",
-}
+const formatLabels = albumFormatLabels
 
 export function AlbumCard({ album, className }: AlbumCardProps) {
   return (

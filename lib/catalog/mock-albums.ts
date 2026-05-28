@@ -1,6 +1,24 @@
 import type { AlbumDetail, AlbumSummary } from "@/lib/catalog/types"
 
-const summaries: AlbumSummary[] = [
+type MockSummaryInput = Omit<
+  AlbumSummary,
+  "genreName" | "subgenreName" | "country"
+> & {
+  genreName?: string
+  subgenreName?: string
+  country?: string
+}
+
+function enrichSummary(summary: MockSummaryInput): AlbumSummary {
+  return {
+    ...summary,
+    genreName: summary.genreName ?? (summary.genre === "—" ? "" : summary.genre),
+    subgenreName: summary.subgenreName ?? "",
+    country: summary.country ?? "France",
+  }
+}
+
+const rawSummaries: MockSummaryInput[] = [
   {
     id: "1",
     title: "Kind of Blue",
@@ -11,6 +29,9 @@ const summaries: AlbumSummary[] = [
     minoRating: { average: 5, count: 2 },
     tags: ["Incontournable", "Jazz"],
     genre: "Jazz",
+    genreName: "Jazz",
+    subgenreName: "Modal jazz",
+    country: "États-Unis",
     coverHue: 220,
     coverImageUrl: null,
   },
@@ -159,16 +180,15 @@ const summaries: AlbumSummary[] = [
   },
 ]
 
+const summaries = rawSummaries.map(enrichSummary)
+
 const details: Record<string, Omit<AlbumDetail, keyof AlbumSummary>> = {
   "1": {
     discogsReleaseId: null,
     releaseDate: "1959-08-17",
-    genreName: "Jazz",
-    subgenreName: "Modal jazz",
     subgenre: "Modal jazz",
     recordCompany: "Sony Music",
     producers: ["Teo Macero", "Irving Townsend"],
-    country: "États-Unis",
     certification: "Platine",
     trackCount: 5,
     totalDurationSeconds: 2700,
@@ -193,12 +213,9 @@ function defaultDetail(
   return {
     discogsReleaseId: null,
     releaseDate: `${summary.releaseYear}-01-01`,
-    genreName: summary.genre,
-    subgenreName: "",
-    subgenre: summary.genre,
+    subgenre: summary.subgenreName || summary.genre,
     recordCompany: summary.label,
     producers: ["—"],
-    country: "France",
     certification: null,
     trackCount: 10,
     totalDurationSeconds: 2400,

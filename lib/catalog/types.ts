@@ -23,6 +23,9 @@ export type AlbumSummary = {
   minoRating: MinoRatingSummary
   tags: string[]
   genre: string
+  genreName: string
+  subgenreName: string
+  country: string
   coverHue: number
   coverImageUrl: string | null
 }
@@ -39,12 +42,9 @@ export type AlbumComment = {
 export type AlbumDetail = AlbumSummary & {
   discogsReleaseId: number | null
   releaseDate: string | null
-  genreName: string
-  subgenreName: string
   subgenre: string
   recordCompany: string
   producers: string[]
-  country: string
   certification: string | null
   trackCount: number
   totalDurationSeconds: number
