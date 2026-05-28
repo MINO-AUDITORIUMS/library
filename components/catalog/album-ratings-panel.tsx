@@ -23,7 +23,7 @@ export function AlbumRatingsPanel({
   return (
     <div
       className={cn(
-        "grid gap-3 lg:grid-cols-3",
+        "grid h-full auto-rows-fr gap-3 sm:grid-cols-2 lg:grid-cols-3",
         !discogsCommunity && "lg:grid-cols-2",
         className
       )}

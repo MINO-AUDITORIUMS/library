@@ -1,12 +1,10 @@
 import Link from "next/link"
 import { ArrowLeftIcon } from "lucide-react"
 
-import { AlbumCover } from "@/components/catalog/album-cover"
-import { AlbumRatingsPanel } from "@/components/catalog/album-ratings-panel"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlbumDetailActions } from "@/app/bibliotheque/_components/album-detail-actions"
+import { AlbumDetailHero } from "@/app/bibliotheque/_components/album-detail-hero"
 import { AlbumDetailSplit } from "@/app/bibliotheque/_components/album-detail-split"
 import { formatDuration } from "@/lib/catalog/format"
 import type { AlbumRatingsSnapshot } from "@/lib/catalog/db/album-user-ratings"
@@ -54,41 +52,11 @@ export function AlbumDetailView({
         <AlbumDetailActions albumId={album.id} albumTitle={album.title} />
       </div>
 
-      <div className="grid gap-8 md:grid-cols-[minmax(0,240px)_1fr]">
-        <AlbumCover
-          title={album.title}
-          hue={album.coverHue}
-          imageUrl={album.coverImageUrl}
-          size="lg"
-        />
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-semibold tracking-tight">{album.title}</h1>
-            <p className="text-lg text-muted-foreground">{album.artist}</p>
-            <AlbumRatingsPanel
-              albumId={album.id}
-              myRating={albumRatings.myRating}
-              minoRating={albumRatings.minoRating}
-              discogsCommunity={discogsCommunity}
-            />
-          </div>
-
-          {album.tags.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {album.tags.map((tag) => (
-                <Badge key={tag} variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          ) : null}
-
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {album.description}
-          </p>
-        </div>
-      </div>
+      <AlbumDetailHero
+        album={album}
+        albumRatings={albumRatings}
+        discogsCommunity={discogsCommunity}
+      />
 
       <Card>
         <CardHeader>
