@@ -6,13 +6,16 @@ import { StarRating } from "@/components/catalog/star-rating"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { formatDuration, formatTrackDuration } from "@/lib/catalog/format"
-import type { AlbumDetail } from "@/lib/catalog/types"
+import { AlbumDetailSplit } from "@/app/bibliotheque/_components/album-detail-split"
+import { formatDuration } from "@/lib/catalog/format"
+import type { AlbumComment, AlbumDetail } from "@/lib/catalog/types"
 import { routes } from "@/lib/routes"
 
 export type AlbumDetailViewProps = {
   album: AlbumDetail
+  comments: AlbumComment[]
+  currentUserId: string
+  currentUserEmail: string
 }
 
 function MetaItem({ label, value }: { label: string; value: string }) {
@@ -26,7 +29,12 @@ function MetaItem({ label, value }: { label: string; value: string }) {
   )
 }
 
-export function AlbumDetailView({ album }: AlbumDetailViewProps) {
+export function AlbumDetailView({
+  album,
+  comments,
+  currentUserId,
+  currentUserEmail,
+}: AlbumDetailViewProps) {
   return (
     <div className="flex w-full flex-col gap-6">
       <Button variant="ghost" size="sm" className="w-fit" asChild>
@@ -96,34 +104,13 @@ export function AlbumDetailView({ album }: AlbumDetailViewProps) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Tracklist</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-0 p-0">
-          {album.tracks.length === 0 ? (
-            <p className="px-4 py-6 text-sm text-muted-foreground">
-              Aucune piste enregistrée.
-            </p>
-          ) : null}
-          {album.tracks.map((track, index) => (
-            <div key={track.position}>
-              {index > 0 ? <Separator /> : null}
-              <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
-                <div className="flex min-w-0 items-center gap-3">
-                  <span className="w-6 shrink-0 text-muted-foreground tabular-nums">
-                    {track.position}
-                  </span>
-                  <span className="truncate">{track.title}</span>
-                </div>
-                <span className="shrink-0 text-muted-foreground tabular-nums">
-                  {formatTrackDuration(track.durationSeconds)}
-                </span>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+      <AlbumDetailSplit
+        albumId={album.id}
+        tracks={album.tracks}
+        comments={comments}
+        currentUserId={currentUserId}
+        currentUserEmail={currentUserEmail}
+      />
 
       {album.personalNotes ? (
         <Card>

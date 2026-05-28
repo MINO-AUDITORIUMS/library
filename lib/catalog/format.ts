@@ -8,3 +8,11 @@ export function formatTrackDuration(seconds: number | null) {
   if (seconds == null) return "—"
   return formatDuration(seconds)
 }
+
+export function formatCommentDate(iso: string) {
+  const date = new Date(iso)
+  return new Intl.DateTimeFormat("fr-FR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date)
+}

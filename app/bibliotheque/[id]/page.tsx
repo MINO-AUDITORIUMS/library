@@ -2,7 +2,9 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { AlbumDetailView } from "@/app/bibliotheque/_components/album-detail-view"
+import { listAlbumComments } from "@/lib/catalog/db/album-comments"
 import { getAlbumDetailById } from "@/lib/catalog/db/albums"
+import { getAuthenticatedUser } from "@/lib/auth/require-authenticated-user"
 import { createClient } from "@/lib/supabase/server"
 
 export async function generateMetadata({
@@ -24,8 +26,23 @@ export default async function AlbumDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const session = await getAuthenticatedUser()
+  if (!session) notFound()
+
   const supabase = await createClient()
-  const album = await getAlbumDetailById(supabase, id)
+  const [album, comments] = await Promise.all([
+    getAlbumDetailById(supabase, id),
+    listAlbumComments(supabase, id),
+  ])
+
   if (!album) notFound()
-  return <AlbumDetailView album={album} />
+
+  return (
+    <AlbumDetailView
+      album={album}
+      comments={comments}
+      currentUserId={session.user.id}
+      currentUserEmail={session.email}
+    />
+  )
 }

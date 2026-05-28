@@ -20,6 +20,15 @@ export type AlbumSummary = {
   coverImageUrl: string | null
 }
 
+export type AlbumComment = {
+  id: string
+  body: string
+  createdAt: string
+  authorId: string
+  authorEmail: string
+  authorName: string | null
+}
+
 export type AlbumDetail = AlbumSummary & {
   releaseDate: string | null
   subgenre: string
