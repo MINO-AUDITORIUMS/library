@@ -31,6 +31,8 @@ export type AlbumComment = {
 
 export type AlbumDetail = AlbumSummary & {
   releaseDate: string | null
+  genreName: string
+  subgenreName: string
   subgenre: string
   recordCompany: string
   producers: string[]

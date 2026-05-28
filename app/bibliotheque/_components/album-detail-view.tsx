@@ -6,6 +6,7 @@ import { StarRating } from "@/components/catalog/star-rating"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { AlbumDetailActions } from "@/app/bibliotheque/_components/album-detail-actions"
 import { AlbumDetailSplit } from "@/app/bibliotheque/_components/album-detail-split"
 import { formatDuration } from "@/lib/catalog/format"
 import type { AlbumComment, AlbumDetail } from "@/lib/catalog/types"
@@ -37,12 +38,15 @@ export function AlbumDetailView({
 }: AlbumDetailViewProps) {
   return (
     <div className="flex w-full flex-col gap-6">
-      <Button variant="ghost" size="sm" className="w-fit" asChild>
-        <Link href={routes.bibliotheque}>
-          <ArrowLeftIcon />
-          Bibliothèque
-        </Link>
-      </Button>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Button variant="ghost" size="sm" className="w-fit" asChild>
+          <Link href={routes.bibliotheque}>
+            <ArrowLeftIcon />
+            Bibliothèque
+          </Link>
+        </Button>
+        <AlbumDetailActions albumId={album.id} albumTitle={album.title} />
+      </div>
 
       <div className="grid gap-8 md:grid-cols-[minmax(0,240px)_1fr]">
         <AlbumCover

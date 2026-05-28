@@ -6,6 +6,7 @@ import { resolveCountryCode } from "@/lib/catalog/country-code"
 import { coverHueFromId } from "@/lib/catalog/cover-hue"
 import {
   getAlbumCoverPublicUrl,
+  removeAlbumCover,
   uploadAlbumCoverFromUrl,
 } from "@/lib/catalog/storage/album-cover"
 import type { CreateAlbumInput } from "@/lib/catalog/create-album-input"
@@ -14,6 +15,7 @@ import {
   parseProducers,
   parseReleaseDate,
 } from "@/lib/catalog/create-album-input"
+import type { UpdateAlbumInput } from "@/lib/catalog/update-album-input"
 import { discogsFetch } from "@/lib/catalog/discogs/client"
 import { parseDiscogsDuration } from "@/lib/catalog/discogs/parse-duration"
 import { slugify } from "@/lib/catalog/slug"
@@ -162,10 +164,15 @@ export function mapAlbumDetail(row: AlbumRow): AlbumDetail {
     row.total_duration_seconds ??
     tracks.reduce((sum, track) => sum + (track.durationSeconds ?? 0), 0)
 
+  const genreName = firstGenre(row)
+  const subgenreName = firstSubgenre(row)
+
   return {
     ...summary,
     releaseDate: row.release_date,
-    subgenre: firstSubgenre(row) || "—",
+    genreName,
+    subgenreName,
+    subgenre: subgenreName || "—",
     recordCompany: row.record_company ?? "—",
     producers: row.producers.length > 0 ? row.producers : ["—"],
     country: readCountry(row) || row.origin_country_code || "—",
@@ -443,4 +450,104 @@ export async function createAlbum(
   }
 
   return albumId
+}
+
+async function syncAlbumGenreLinks(
+  supabase: SupabaseClient,
+  albumId: string,
+  genre: string,
+  subgenre: string
+) {
+  await supabase.from("album_subgenres").delete().eq("album_id", albumId)
+  await supabase.from("album_genres").delete().eq("album_id", albumId)
+
+  if (!genre.trim()) return
+
+  const genreId = await ensureGenre(supabase, genre)
+  if (!genreId) return
+
+  await supabase.from("album_genres").insert({ album_id: albumId, genre_id: genreId })
+
+  if (!subgenre.trim()) return
+
+  const subgenreId = await ensureSubgenre(supabase, genreId, subgenre)
+  if (!subgenreId) return
+
+  await supabase
+    .from("album_subgenres")
+    .insert({ album_id: albumId, subgenre_id: subgenreId })
+}
+
+export async function updateAlbum(
+  supabase: SupabaseClient,
+  user: User,
+  albumId: string,
+  input: UpdateAlbumInput
+) {
+  const existing = await getAlbumDetailById(supabase, albumId)
+  if (!existing) return null
+
+  const releaseYear = parseOptionalInt(input.releaseYear)
+  const trackCount = parseOptionalInt(input.trackCount)
+  const releaseDate = parseReleaseDate(input.releaseDate)
+  const originCountryCode = await resolveOriginCountryCode(
+    supabase,
+    input.country
+  )
+
+  const description = input.description.trim()
+  const personalNotes = input.personalNotes.trim()
+
+  const { error } = await supabase
+    .from("albums")
+    .update({
+      title: input.title,
+      artist: input.artist,
+      release_year: releaseYear,
+      release_date: releaseDate,
+      description: description.length > 0 ? description : null,
+      track_count: trackCount,
+      format: input.format,
+      label: input.label || null,
+      record_company: input.recordCompany || null,
+      producers: parseProducers(input.producers),
+      origin_country_code: originCountryCode,
+      rating: input.rating,
+      personal_notes: personalNotes.length > 0 ? personalNotes : null,
+      updated_by: user.id,
+    })
+    .eq("id", albumId)
+
+  if (error) throw error
+
+  await syncAlbumGenreLinks(supabase, albumId, input.genre, input.subgenre)
+
+  return albumId
+}
+
+export async function deleteAlbum(supabase: SupabaseClient, albumId: string) {
+  const { data, error: fetchError } = await supabase
+    .from("albums")
+    .select("id, cover_storage_path")
+    .eq("id", albumId)
+    .maybeSingle()
+
+  if (fetchError) throw fetchError
+  if (!data) return false
+
+  const coverPath = data.cover_storage_path as string | null
+
+  const { error } = await supabase.from("albums").delete().eq("id", albumId)
+
+  if (error) throw error
+
+  if (coverPath?.trim()) {
+    try {
+      await removeAlbumCover(supabase, coverPath)
+    } catch {
+      // Album row is already deleted.
+    }
+  }
+
+  return true
 }

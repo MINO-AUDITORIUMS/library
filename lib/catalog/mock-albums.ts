@@ -162,6 +162,8 @@ const summaries: AlbumSummary[] = [
 const details: Record<string, Omit<AlbumDetail, keyof AlbumSummary>> = {
   "1": {
     releaseDate: "1959-08-17",
+    genreName: "Jazz",
+    subgenreName: "Modal jazz",
     subgenre: "Modal jazz",
     recordCompany: "Sony Music",
     producers: ["Teo Macero", "Irving Townsend"],
@@ -189,6 +191,8 @@ function defaultDetail(
 ): Omit<AlbumDetail, keyof AlbumSummary> {
   return {
     releaseDate: `${summary.releaseYear}-01-01`,
+    genreName: summary.genre,
+    subgenreName: "",
     subgenre: summary.genre,
     recordCompany: summary.label,
     producers: ["—"],

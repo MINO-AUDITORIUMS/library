@@ -39,6 +39,19 @@ function buildCrumbs(pathname: string, albumTitle: string | null): Crumb[] {
     ]
   }
 
+  const albumEditMatch = pathname.match(/^\/bibliotheque\/([^/]+)\/modifier$/)
+  if (albumEditMatch && albumEditMatch[1] !== "nouveau") {
+    return [
+      { label: "Accueil", href: routes.app },
+      { label: "Bibliothèque", href: routes.bibliotheque },
+      {
+        label: albumTitle ?? "Album",
+        href: `/bibliotheque/${albumEditMatch[1]}`,
+      },
+      { label: "Modifier" },
+    ]
+  }
+
   const albumMatch = pathname.match(/^\/bibliotheque\/([^/]+)$/)
   if (albumMatch && albumMatch[1] !== "nouveau") {
     return [
@@ -56,6 +69,9 @@ export function AppBreadcrumb() {
   const [albumTitle, setAlbumTitle] = useState<string | null>(null)
 
   const albumId = useMemo(() => {
+    const editMatch = pathname.match(/^\/bibliotheque\/([^/]+)\/modifier$/)
+    if (editMatch && editMatch[1] !== "nouveau") return editMatch[1]
+
     const match = pathname.match(/^\/bibliotheque\/([^/]+)$/)
     if (!match || match[1] === "nouveau") return null
     return match[1]

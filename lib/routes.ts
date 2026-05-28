@@ -11,4 +11,8 @@ export function albumDetailRoute(id: string) {
   return `/bibliotheque/${id}` as const
 }
 
+export function albumEditRoute(id: string) {
+  return `/bibliotheque/${id}/modifier` as const
+}
+
 export type AppRoute = (typeof routes)[keyof typeof routes]
