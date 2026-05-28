@@ -1,6 +1,6 @@
 import { FractionalStars } from "@/components/catalog/fractional-stars"
+import { RatingSummaryCard } from "@/components/catalog/rating-summary-card"
 import type { DiscogsCommunityStats } from "@/lib/catalog/discogs/types"
-import { cn } from "@/lib/utils"
 
 export type DiscogsCommunityRatingProps = {
   stats: DiscogsCommunityStats
@@ -34,18 +34,9 @@ export function DiscogsCommunityRating({
   const hasRating = stats.ratingCount > 0 && stats.averageRating > 0
 
   return (
-    <div
-      className={cn(
-        "rounded-lg border border-border/70 bg-muted/20 px-4 py-3",
-        className
-      )}
-    >
-      <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-        Communauté Discogs
-      </p>
-
+    <RatingSummaryCard title="Communauté Discogs" className={className}>
       {hasRating ? (
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <p className="text-2xl font-semibold tabular-nums tracking-tight">
             {formatAverage(stats.averageRating)}
             <span className="text-base font-normal text-muted-foreground">
@@ -56,7 +47,7 @@ export function DiscogsCommunityRating({
           <FractionalStars value={stats.averageRating} />
         </div>
       ) : (
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Pas encore de note communautaire
         </p>
       )}
@@ -71,6 +62,6 @@ export function DiscogsCommunityRating({
           <StatRow label="Notes" value={formatCount(stats.ratingCount)} />
         ) : null}
       </div>
-    </div>
+    </RatingSummaryCard>
   )
 }

@@ -5,10 +5,10 @@ import { Loader2Icon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
+import { RatingSummaryCard } from "@/components/catalog/rating-summary-card"
 import { StarRating } from "@/components/catalog/star-rating"
 import { Button } from "@/components/ui/button"
 import type { AlbumRatingsSnapshot } from "@/lib/catalog/db/album-user-ratings"
-import { cn } from "@/lib/utils"
 
 export type PersonalRatingEditorProps = {
   albumId: string
@@ -60,17 +60,8 @@ export function PersonalRatingEditor({
   }
 
   return (
-    <div
-      className={cn(
-        "rounded-lg border border-border/70 bg-muted/10 px-4 py-3",
-        className
-      )}
-    >
-      <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-        Ta note
-      </p>
-
-      <div className="mt-2 space-y-3">
+    <RatingSummaryCard title="Ta note" className={className}>
+      <div className="space-y-3">
         <div className="flex flex-wrap gap-2">
           {[1, 2, 3, 4, 5].map((star) => (
             <Button
@@ -91,6 +82,6 @@ export function PersonalRatingEditor({
           <StarRating value={rating} size="md" />
         </div>
       </div>
-    </div>
+    </RatingSummaryCard>
   )
 }
