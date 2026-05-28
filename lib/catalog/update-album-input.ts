@@ -23,7 +23,6 @@ export type UpdateAlbumInput = {
   format: string
   description: string
   personalNotes: string
-  rating: number | null
   trackCount: string
   tags: string[]
 }
@@ -35,14 +34,6 @@ export function parseUpdateAlbumInput(body: unknown): UpdateAlbumInput | null {
   const title = typeof data.title === "string" ? data.title.trim() : ""
   const artist = typeof data.artist === "string" ? data.artist.trim() : ""
   if (!title || !artist) return null
-
-  const ratingRaw = data.rating
-  const rating =
-    ratingRaw === null || ratingRaw === undefined
-      ? null
-      : typeof ratingRaw === "number" && ratingRaw >= 1 && ratingRaw <= 5
-        ? ratingRaw
-        : null
 
   const formatRaw = typeof data.format === "string" ? data.format.trim() : ""
   const format = FORMATS.has(formatRaw as AlbumFormat)
@@ -65,7 +56,6 @@ export function parseUpdateAlbumInput(body: unknown): UpdateAlbumInput | null {
     description: typeof data.description === "string" ? data.description : "",
     personalNotes:
       typeof data.personalNotes === "string" ? data.personalNotes : "",
-    rating,
     trackCount: typeof data.trackCount === "string" ? data.trackCount : "",
     tags: parseTagNames(data.tags),
   }

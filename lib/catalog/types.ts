@@ -1,3 +1,5 @@
+import type { MinoRatingSummary } from "@/lib/catalog/ratings"
+
 export type AlbumFormat = "vinyl" | "cd" | "cassette" | "digital" | "other"
 
 export type CatalogTag = {
@@ -18,7 +20,7 @@ export type AlbumSummary = {
   releaseYear: number
   label: string
   format: AlbumFormat
-  rating: number | null
+  minoRating: MinoRatingSummary
   tags: string[]
   genre: string
   coverHue: number

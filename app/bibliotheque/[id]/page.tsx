@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { AlbumDetailView } from "@/app/bibliotheque/_components/album-detail-view"
+import { getAlbumRatingsSnapshot } from "@/lib/catalog/db/album-user-ratings"
 import { listAlbumComments } from "@/lib/catalog/db/album-comments"
 import { getAlbumDetailById } from "@/lib/catalog/db/albums"
 import { DiscogsApiError } from "@/lib/catalog/discogs/client"
@@ -32,9 +33,10 @@ export default async function AlbumDetailPage({
   if (!session) notFound()
 
   const supabase = await createClient()
-  const [album, comments] = await Promise.all([
+  const [album, comments, albumRatings] = await Promise.all([
     getAlbumDetailById(supabase, id),
     listAlbumComments(supabase, id),
+    getAlbumRatingsSnapshot(supabase, id, session.user.id),
   ])
 
   if (!album) notFound()
@@ -57,6 +59,7 @@ export default async function AlbumDetailPage({
       currentUserId={session.user.id}
       currentUserEmail={session.email}
       discogsCommunity={discogsCommunity}
+      albumRatings={albumRatings}
     />
   )
 }

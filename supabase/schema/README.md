@@ -55,7 +55,8 @@ Exécuter dans le SQL Editor Supabase (dans cet ordre) :
 13. `album_subgenres.sql`
 14. `album_lyrics_languages.sql`
 15. `album_comments.sql`
-16. `album_attachments.sql`
+16. `album_user_ratings.sql`
+17. `album_attachments.sql`
 17. `album_search.sql`
 
 Puis : `../storage/album_attachments.sql` et `../storage/album_covers.sql` (buckets Storage).
@@ -70,6 +71,7 @@ erDiagram
   albums ||--o{ album_tracks : has
   albums ||--o{ album_video_clips : has
   albums ||--o{ album_comments : has
+  albums ||--o{ album_user_ratings : has
   albums ||--o{ album_attachments : has
   albums }o--o{ tags : album_tags
   albums }o--o{ genres : album_genres

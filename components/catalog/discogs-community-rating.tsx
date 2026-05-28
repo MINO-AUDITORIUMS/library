@@ -1,5 +1,4 @@
-import { StarIcon } from "lucide-react"
-
+import { FractionalStars } from "@/components/catalog/fractional-stars"
 import type { DiscogsCommunityStats } from "@/lib/catalog/discogs/types"
 import { cn } from "@/lib/utils"
 
@@ -17,40 +16,6 @@ function formatAverage(value: number) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(value)
-}
-
-function FractionalStars({
-  value,
-  max = 5,
-  className,
-}: {
-  value: number
-  max?: number
-  className?: string
-}) {
-  const clamped = Math.min(max, Math.max(0, value))
-
-  return (
-    <div
-      className={cn("flex items-center gap-0.5", className)}
-      aria-hidden
-    >
-      {Array.from({ length: max }, (_, index) => {
-        const fill = Math.min(1, Math.max(0, clamped - index))
-        return (
-          <span key={index} className="relative inline-flex size-4">
-            <StarIcon className="size-4 text-muted-foreground/35" />
-            <span
-              className="absolute inset-0 overflow-hidden"
-              style={{ width: `${fill * 100}%` }}
-            >
-              <StarIcon className="size-4 fill-amber-400 text-amber-400" />
-            </span>
-          </span>
-        )
-      })}
-    </div>
-  )
 }
 
 function StatRow({ label, value }: { label: string; value: string }) {

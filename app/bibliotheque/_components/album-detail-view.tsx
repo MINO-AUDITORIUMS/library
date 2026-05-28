@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlbumDetailActions } from "@/app/bibliotheque/_components/album-detail-actions"
 import { AlbumDetailSplit } from "@/app/bibliotheque/_components/album-detail-split"
 import { formatDuration } from "@/lib/catalog/format"
+import type { AlbumRatingsSnapshot } from "@/lib/catalog/db/album-user-ratings"
 import type { DiscogsCommunityStats } from "@/lib/catalog/discogs/types"
 import type { AlbumComment, AlbumDetail } from "@/lib/catalog/types"
 import { routes } from "@/lib/routes"
@@ -19,6 +20,7 @@ export type AlbumDetailViewProps = {
   currentUserId: string
   currentUserEmail: string
   discogsCommunity: DiscogsCommunityStats | null
+  albumRatings: AlbumRatingsSnapshot
 }
 
 function MetaItem({ label, value }: { label: string; value: string }) {
@@ -38,6 +40,7 @@ export function AlbumDetailView({
   currentUserId,
   currentUserEmail,
   discogsCommunity,
+  albumRatings,
 }: AlbumDetailViewProps) {
   return (
     <div className="flex w-full flex-col gap-6">
@@ -64,7 +67,9 @@ export function AlbumDetailView({
             <h1 className="text-3xl font-semibold tracking-tight">{album.title}</h1>
             <p className="text-lg text-muted-foreground">{album.artist}</p>
             <AlbumRatingsPanel
-              personalRating={album.rating}
+              albumId={album.id}
+              myRating={albumRatings.myRating}
+              minoRating={albumRatings.minoRating}
               discogsCommunity={discogsCommunity}
             />
           </div>

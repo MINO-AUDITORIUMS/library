@@ -7,12 +7,10 @@ import { ArrowLeftIcon, Loader2Icon, SearchIcon, SparklesIcon } from "lucide-rea
 import { toast } from "sonner"
 
 import { AlbumTagsField } from "@/components/catalog/album-tags-field"
-import { StarRating } from "@/components/catalog/star-rating"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import type { CatalogSearchHit } from "@/lib/catalog/discogs/types"
 import { albumDetailRoute, routes } from "@/lib/routes"
@@ -35,7 +33,6 @@ type FormState = {
   format: string
   description: string
   personalNotes: string
-  rating: number | null
   trackCount: string
   discogsReleaseId: number | null
   coverImageUrl: string | null
@@ -56,7 +53,6 @@ const emptyForm: FormState = {
   format: "vinyl",
   description: "",
   personalNotes: "",
-  rating: null,
   trackCount: "",
   discogsReleaseId: null,
   coverImageUrl: null,
@@ -457,30 +453,8 @@ export function AlbumCreateForm() {
           </Field>
         </FormSection>
 
-        <FormSection title="Évaluation personnelle">
-          <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">Note (1 à 5 étoiles)</p>
-            <div className="flex flex-wrap gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Button
-                  key={star}
-                  type="button"
-                  variant={form.rating === star ? "default" : "outline"}
-                  size="sm"
-                  onClick={() =>
-                    patchForm({
-                      rating: form.rating === star ? null : star,
-                    })
-                  }
-                >
-                  {star} ★
-                </Button>
-              ))}
-            </div>
-            <StarRating value={form.rating} size="md" />
-          </div>
-          <Separator />
-          <Field id="personalNotes" label="Remarques">
+        <FormSection title="Remarques">
+          <Field id="personalNotes" label="Notes internes">
             <Textarea
               id="personalNotes"
               value={form.personalNotes}

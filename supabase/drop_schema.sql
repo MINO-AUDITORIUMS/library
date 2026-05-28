@@ -1,4 +1,5 @@
 drop table if exists public.album_attachments cascade;
+drop table if exists public.album_user_ratings cascade;
 drop table if exists public.album_comments cascade;
 drop table if exists public.album_lyrics_languages cascade;
 drop table if exists public.album_subgenres cascade;

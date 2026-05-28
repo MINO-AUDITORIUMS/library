@@ -1,7 +1,7 @@
 import Link from "next/link"
 
 import { AlbumCover } from "@/components/catalog/album-cover"
-import { StarRating } from "@/components/catalog/star-rating"
+import { MinoRatingStars } from "@/components/catalog/mino-rating-stars"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import type { AlbumSummary } from "@/lib/catalog/types"
@@ -48,7 +48,7 @@ export function AlbumCard({ album, className }: AlbumCardProps) {
             <span>{formatLabels[album.format]}</span>
           </div>
           <div className="min-h-5">
-            <StarRating value={album.rating} />
+            <MinoRatingStars rating={album.minoRating} />
           </div>
           <div className="mt-auto flex min-h-6 flex-wrap gap-1">
             {album.tags.length > 0

@@ -23,7 +23,6 @@ export type CreateAlbumInput = {
   format: string
   description: string
   personalNotes: string
-  rating: number | null
   trackCount: string
   discogsReleaseId: number | null
   coverImageUrl: string | null
@@ -37,14 +36,6 @@ export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
   const title = typeof data.title === "string" ? data.title.trim() : ""
   const artist = typeof data.artist === "string" ? data.artist.trim() : ""
   if (!title || !artist) return null
-
-  const ratingRaw = data.rating
-  const rating =
-    ratingRaw === null || ratingRaw === undefined
-      ? null
-      : typeof ratingRaw === "number" && ratingRaw >= 1 && ratingRaw <= 5
-        ? ratingRaw
-        : null
 
   const discogsRaw = data.discogsReleaseId
   const discogsReleaseId =
@@ -77,7 +68,6 @@ export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
     description: typeof data.description === "string" ? data.description : "",
     personalNotes:
       typeof data.personalNotes === "string" ? data.personalNotes : "",
-    rating,
     trackCount: typeof data.trackCount === "string" ? data.trackCount : "",
     discogsReleaseId,
     coverImageUrl,

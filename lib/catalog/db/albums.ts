@@ -15,6 +15,7 @@ import {
   parseProducers,
   parseReleaseDate,
 } from "@/lib/catalog/create-album-input"
+import { minoRatingFromRows } from "@/lib/catalog/db/album-user-ratings"
 import { syncAlbumTags } from "@/lib/catalog/db/tags"
 import type { UpdateAlbumInput } from "@/lib/catalog/update-album-input"
 import { discogsFetch } from "@/lib/catalog/discogs/client"
@@ -54,6 +55,7 @@ type AlbumRow = {
     | { subgenres: { name: string } | { name: string }[] | null }[]
     | null
   album_tags: { tags: { name: string } | { name: string }[] | null }[] | null
+  album_user_ratings: { rating: number }[] | null
   album_tracks:
     | {
         position: number
@@ -69,12 +71,12 @@ const albumListSelect = `
   artist,
   release_year,
   format,
-  rating,
   label,
   cover_storage_path,
   album_genres(genres(name)),
   album_subgenres(subgenres(name)),
-  album_tags(tags(name))
+  album_tags(tags(name)),
+  album_user_ratings(rating)
 `
 
 const albumDetailSelect = `
@@ -93,7 +95,6 @@ const albumDetailSelect = `
   origin_country_code,
   certification,
   official_clips_count,
-  rating,
   personal_notes,
   cover_storage_path,
   external_ids,
@@ -151,7 +152,7 @@ export function mapAlbumSummary(row: AlbumRow): AlbumSummary {
     releaseYear: row.release_year ?? 0,
     label: row.label ?? "—",
     format: row.format ?? "other",
-    rating: row.rating,
+    minoRating: minoRatingFromRows(row.album_user_ratings),
     tags: mapTags(row),
     genre,
     coverHue: coverHueFromId(row.id),
@@ -366,7 +367,6 @@ export async function createAlbum(
       record_company: input.recordCompany || null,
       producers: parseProducers(input.producers),
       origin_country_code: originCountryCode,
-      rating: input.rating,
       personal_notes: input.personalNotes.trim() || null,
       external_ids: externalIds,
       cover_storage_path: null,
@@ -517,7 +517,6 @@ export async function updateAlbum(
       record_company: input.recordCompany || null,
       producers: parseProducers(input.producers),
       origin_country_code: originCountryCode,
-      rating: input.rating,
       personal_notes: personalNotes.length > 0 ? personalNotes : null,
       updated_by: user.id,
     })

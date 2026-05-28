@@ -48,6 +48,7 @@ FILES=(
   supabase/schema/album_subgenres.sql
   supabase/schema/album_lyrics_languages.sql
   supabase/schema/album_comments.sql
+  supabase/schema/album_user_ratings.sql
   supabase/schema/album_attachments.sql
   supabase/schema/album_search.sql
   supabase/storage/album_attachments.sql

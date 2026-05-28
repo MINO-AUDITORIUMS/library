@@ -1,36 +1,39 @@
 import { DiscogsCommunityRating } from "@/components/catalog/discogs-community-rating"
-import { StarRating } from "@/components/catalog/star-rating"
+import { MinoTeamRating } from "@/components/catalog/mino-team-rating"
+import { PersonalRatingEditor } from "@/components/catalog/personal-rating-editor"
 import type { DiscogsCommunityStats } from "@/lib/catalog/discogs/types"
+import type { MinoRatingSummary } from "@/lib/catalog/ratings"
 import { cn } from "@/lib/utils"
 
 export type AlbumRatingsPanelProps = {
-  personalRating: number | null
+  albumId: string
+  myRating: number | null
+  minoRating: MinoRatingSummary
   discogsCommunity: DiscogsCommunityStats | null
   className?: string
 }
 
 export function AlbumRatingsPanel({
-  personalRating,
+  albumId,
+  myRating,
+  minoRating,
   discogsCommunity,
   className,
 }: AlbumRatingsPanelProps) {
   return (
     <div
       className={cn(
-        "grid gap-3 sm:grid-cols-2",
-        !discogsCommunity && "sm:grid-cols-1",
+        "grid gap-3 lg:grid-cols-3",
+        !discogsCommunity && "lg:grid-cols-2",
         className
       )}
     >
-      <div className="rounded-lg border border-border/70 bg-muted/10 px-4 py-3">
-        <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          Ta note
-        </p>
-        <div className="mt-2">
-          <StarRating value={personalRating} size="md" />
-        </div>
-      </div>
-
+      <PersonalRatingEditor
+        key={`${albumId}-${myRating ?? "none"}`}
+        albumId={albumId}
+        initialRating={myRating}
+      />
+      <MinoTeamRating rating={minoRating} />
       {discogsCommunity ? (
         <DiscogsCommunityRating stats={discogsCommunity} />
       ) : null}

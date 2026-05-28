@@ -1,7 +1,7 @@
 import Link from "next/link"
 
 import { AlbumCover } from "@/components/catalog/album-cover"
-import { StarRating } from "@/components/catalog/star-rating"
+import { MinoRatingStars } from "@/components/catalog/mino-rating-stars"
 import { Badge } from "@/components/ui/badge"
 import type { AlbumSummary } from "@/lib/catalog/types"
 import { albumDetailRoute } from "@/lib/routes"
@@ -38,7 +38,7 @@ export function AlbumListRow({ album, className }: AlbumListRowProps) {
         <span className="hidden truncate text-sm text-muted-foreground sm:block">
           {album.label}
         </span>
-        <StarRating value={album.rating} />
+        <MinoRatingStars rating={album.minoRating} />
       </div>
       {album.tags[0] ? (
         <Badge variant="outline" className="hidden shrink-0 md:inline-flex">
