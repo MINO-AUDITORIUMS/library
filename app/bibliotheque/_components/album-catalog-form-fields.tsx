@@ -1,3 +1,4 @@
+import { AlbumTagsField } from "@/components/catalog/album-tags-field"
 import { StarRating } from "@/components/catalog/star-rating"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,6 +23,7 @@ export type AlbumCatalogFormState = {
   personalNotes: string
   rating: number | null
   trackCount: string
+  tags: string[]
 }
 
 export function FormSection({
@@ -120,6 +122,16 @@ export function AlbumCatalogFormFields({
             />
           </Field>
         </div>
+      </FormSection>
+
+      <FormSection
+        title="Tags"
+        description="Libellés transverses pour classer et filtrer la bibliothèque."
+      >
+        <AlbumTagsField
+          value={form.tags}
+          onChange={(tags) => onPatch({ tags })}
+        />
       </FormSection>
 
       <FormSection title="Caractéristiques musicales">

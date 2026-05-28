@@ -1,3 +1,4 @@
+import { parseTagNames } from "@/lib/catalog/parse-tag-names"
 import type { AlbumFormat } from "@/lib/catalog/types"
 
 const FORMATS = new Set<AlbumFormat>([
@@ -24,6 +25,7 @@ export type UpdateAlbumInput = {
   personalNotes: string
   rating: number | null
   trackCount: string
+  tags: string[]
 }
 
 export function parseUpdateAlbumInput(body: unknown): UpdateAlbumInput | null {
@@ -65,5 +67,6 @@ export function parseUpdateAlbumInput(body: unknown): UpdateAlbumInput | null {
       typeof data.personalNotes === "string" ? data.personalNotes : "",
     rating,
     trackCount: typeof data.trackCount === "string" ? data.trackCount : "",
+    tags: parseTagNames(data.tags),
   }
 }

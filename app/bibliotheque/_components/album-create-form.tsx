@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { ArrowLeftIcon, Loader2Icon, SearchIcon, SparklesIcon } from "lucide-react"
 import { toast } from "sonner"
 
+import { AlbumTagsField } from "@/components/catalog/album-tags-field"
 import { StarRating } from "@/components/catalog/star-rating"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -38,6 +39,7 @@ type FormState = {
   trackCount: string
   discogsReleaseId: number | null
   coverImageUrl: string | null
+  tags: string[]
 }
 
 const emptyForm: FormState = {
@@ -58,6 +60,7 @@ const emptyForm: FormState = {
   trackCount: "",
   discogsReleaseId: null,
   coverImageUrl: null,
+  tags: [],
 }
 
 function FormSection({
@@ -371,6 +374,16 @@ export function AlbumCreateForm() {
               />
             </Field>
           </div>
+        </FormSection>
+
+        <FormSection
+          title="Tags"
+          description="Libellés transverses pour classer et filtrer la bibliothèque."
+        >
+          <AlbumTagsField
+            value={form.tags}
+            onChange={(tags) => patchForm({ tags })}
+          />
         </FormSection>
 
         <FormSection title="Caractéristiques musicales">

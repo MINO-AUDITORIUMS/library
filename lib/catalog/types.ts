@@ -1,5 +1,10 @@
 export type AlbumFormat = "vinyl" | "cd" | "cassette" | "digital" | "other"
 
+export type CatalogTag = {
+  id: string
+  name: string
+}
+
 export type AlbumTrack = {
   position: number
   title: string

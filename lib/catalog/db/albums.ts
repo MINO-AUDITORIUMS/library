@@ -15,6 +15,7 @@ import {
   parseProducers,
   parseReleaseDate,
 } from "@/lib/catalog/create-album-input"
+import { syncAlbumTags } from "@/lib/catalog/db/tags"
 import type { UpdateAlbumInput } from "@/lib/catalog/update-album-input"
 import { discogsFetch } from "@/lib/catalog/discogs/client"
 import { parseDiscogsDuration } from "@/lib/catalog/discogs/parse-duration"
@@ -449,6 +450,8 @@ export async function createAlbum(
     }
   }
 
+  await syncAlbumTags(supabase, user, albumId, input.tags)
+
   return albumId
 }
 
@@ -521,6 +524,7 @@ export async function updateAlbum(
   if (error) throw error
 
   await syncAlbumGenreLinks(supabase, albumId, input.genre, input.subgenre)
+  await syncAlbumTags(supabase, user, albumId, input.tags)
 
   return albumId
 }

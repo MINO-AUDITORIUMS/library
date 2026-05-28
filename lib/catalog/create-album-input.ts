@@ -1,3 +1,4 @@
+import { parseTagNames } from "@/lib/catalog/parse-tag-names"
 import type { AlbumFormat } from "@/lib/catalog/types"
 
 const FORMATS = new Set<AlbumFormat>([
@@ -26,6 +27,7 @@ export type CreateAlbumInput = {
   trackCount: string
   discogsReleaseId: number | null
   coverImageUrl: string | null
+  tags: string[]
 }
 
 export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
@@ -79,6 +81,7 @@ export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
     trackCount: typeof data.trackCount === "string" ? data.trackCount : "",
     discogsReleaseId,
     coverImageUrl,
+    tags: parseTagNames(data.tags),
   }
 }
 

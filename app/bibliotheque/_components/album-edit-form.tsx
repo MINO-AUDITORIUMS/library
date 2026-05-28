@@ -40,6 +40,7 @@ function albumToFormState(album: AlbumDetail): AlbumCatalogFormState {
     personalNotes: album.personalNotes,
     rating: album.rating,
     trackCount: album.trackCount > 0 ? String(album.trackCount) : "",
+    tags: [...album.tags],
   }
 }
 
