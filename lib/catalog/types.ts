@@ -11,6 +11,8 @@ export type AlbumTrack = {
   position: number
   title: string
   durationSeconds: number | null
+  writers: string[]
+  producers: string[]
 }
 
 export type AlbumSummary = {

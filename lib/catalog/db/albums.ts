@@ -15,12 +15,12 @@ import {
   parseProducers,
   parseReleaseDate,
 } from "@/lib/catalog/create-album-input"
+import { fetchDiscogsTracks } from "@/lib/catalog/discogs/fetch-tracks"
 import { fetchMusicBrainzTracks } from "@/lib/catalog/musicbrainz/fetch-tracks"
+import { mergeImportTracks } from "@/lib/catalog/track-credits"
 import { minoRatingFromRows } from "@/lib/catalog/db/album-user-ratings"
 import { syncAlbumTags } from "@/lib/catalog/db/tags"
 import type { UpdateAlbumInput } from "@/lib/catalog/update-album-input"
-import { discogsFetch } from "@/lib/catalog/discogs/client"
-import { parseDiscogsDuration } from "@/lib/catalog/discogs/parse-duration"
 import { slugify } from "@/lib/catalog/slug"
 import type {
   AlbumDetail,
@@ -62,6 +62,8 @@ type AlbumRow = {
         position: number
         title: string
         duration_seconds: number | null
+        writers: string[]
+        producers: string[]
       }[]
     | null
 }
@@ -106,7 +108,7 @@ const albumDetailSelect = `
   album_genres(genres(name)),
   album_subgenres(subgenres(name)),
   album_tags(tags(name)),
-  album_tracks(position, title, duration_seconds)
+  album_tracks(position, title, duration_seconds, writers, producers)
 `
 
 function readName(value: { name: string } | { name: string }[] | null | undefined) {
@@ -143,6 +145,8 @@ function mapTracks(
       position: track.position,
       title: track.title,
       durationSeconds: track.duration_seconds,
+      writers: track.writers ?? [],
+      producers: track.producers ?? [],
     }))
 }
 
@@ -256,10 +260,30 @@ async function ensureSubgenre(
   return data.id
 }
 
-type RawDiscogsTrack = {
-  position?: string
-  title?: string
-  duration?: string
+async function resolveImportTracks(input: CreateAlbumInput) {
+  let discogsTracks: Awaited<ReturnType<typeof fetchDiscogsTracks>> = []
+  let mbTracks: Awaited<ReturnType<typeof fetchMusicBrainzTracks>> = []
+
+  if (input.discogsReleaseId) {
+    try {
+      discogsTracks = await fetchDiscogsTracks(input.discogsReleaseId)
+    } catch {
+      discogsTracks = []
+    }
+  }
+
+  if (input.musicbrainzReleaseId) {
+    try {
+      mbTracks = await fetchMusicBrainzTracks(input.musicbrainzReleaseId)
+    } catch {
+      mbTracks = []
+    }
+  }
+
+  if (discogsTracks.length === 0) return mbTracks
+  if (mbTracks.length === 0) return discogsTracks
+
+  return mergeImportTracks(discogsTracks, mbTracks)
 }
 
 async function resolveOriginCountryCode(
@@ -297,79 +321,6 @@ async function resolveOriginCountryCode(
   }
 
   return inserted?.code ?? null
-}
-
-async function fetchDiscogsTracks(releaseId: number) {
-  const data = await discogsFetch<{ tracklist?: RawDiscogsTrack[] }>({
-    path: `/releases/${releaseId}`,
-  })
-
-  const tracks = data.tracklist ?? []
-  const parsed: {
-    position: number
-    title: string
-    duration_seconds: number | null
-  }[] = []
-
-  let index = 0
-  for (const track of tracks) {
-    const title = track.title?.trim()
-    if (!title || title.toLowerCase() === "video") continue
-    index += 1
-    const position = Number.parseInt(track.position ?? "", 10)
-    parsed.push({
-      position: Number.isFinite(position) ? position : index,
-      title,
-      duration_seconds: parseDiscogsDuration(track.duration),
-    })
-  }
-
-  return parsed
-}
-
-type ParsedImportTrack = {
-  position: number
-  title: string
-  duration_seconds: number | null
-}
-
-function mergeTrackDurations(
-  primary: ParsedImportTrack[],
-  secondary: ParsedImportTrack[]
-) {
-  return primary.map((track, index) => {
-    if (track.duration_seconds) return track
-    const fallback = secondary[index]
-    if (!fallback?.duration_seconds) return track
-    return { ...track, duration_seconds: fallback.duration_seconds }
-  })
-}
-
-async function resolveImportTracks(input: CreateAlbumInput) {
-  let tracks: ParsedImportTrack[] = []
-
-  if (input.discogsReleaseId) {
-    try {
-      tracks = await fetchDiscogsTracks(input.discogsReleaseId)
-    } catch {
-      tracks = []
-    }
-  }
-
-  if (input.musicbrainzReleaseId) {
-    try {
-      const mbTracks = await fetchMusicBrainzTracks(input.musicbrainzReleaseId)
-      if (tracks.length === 0) {
-        tracks = mbTracks
-      } else {
-        tracks = mergeTrackDurations(tracks, mbTracks)
-      }
-    } catch {
-      // MusicBrainz tracklist is optional.
-    }
-  }
-
-  return tracks
 }
 
 export async function listAlbumSummaries(supabase: SupabaseClient) {
@@ -510,6 +461,8 @@ export async function createAlbum(
             position: track.position,
             title: track.title,
             duration_seconds: track.duration_seconds,
+            writers: track.writers,
+            producers: track.producers,
           }))
         )
 

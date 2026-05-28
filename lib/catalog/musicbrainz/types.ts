@@ -23,6 +23,30 @@ export type MusicBrainzRelation = {
   url?: { resource?: string }
 }
 
+export type MusicBrainzWorkRelation = {
+  type?: string
+  artist?: MusicBrainzRelationArtist
+}
+
+export type MusicBrainzWork = {
+  id?: string
+  title?: string
+  relations?: MusicBrainzWorkRelation[]
+}
+
+export type MusicBrainzRecordingRelation = {
+  type?: string
+  artist?: MusicBrainzRelationArtist
+  work?: MusicBrainzWork
+}
+
+export type MusicBrainzRecording = {
+  id?: string
+  title?: string
+  length?: number
+  relations?: MusicBrainzRecordingRelation[]
+}
+
 export type MusicBrainzRelease = {
   id: string
   title: string
@@ -48,7 +72,7 @@ export type MusicBrainzRelease = {
       position: number
       title: string
       length?: number
-      recording?: { title?: string; length?: number }
+      recording?: MusicBrainzRecording
     }[]
   }[]
   relations?: MusicBrainzRelation[]

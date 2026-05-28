@@ -7,6 +7,45 @@ export type AlbumTracklistCardProps = {
   tracks: AlbumTrack[]
 }
 
+type AlbumTrackRowProps = {
+  track: AlbumTrack
+}
+
+function AlbumTrackRow({ track }: AlbumTrackRowProps) {
+  const hasCredits =
+    track.writers.length > 0 || track.producers.length > 0
+
+  return (
+    <div className="flex items-start justify-between gap-4 px-4 py-3 text-sm">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <span className="w-6 shrink-0 pt-0.5 text-muted-foreground tabular-nums">
+          {track.position}
+        </span>
+        <div className="min-w-0 space-y-1">
+          <p className="truncate">{track.title}</p>
+          {hasCredits ? (
+            <div className="space-y-0.5 text-xs text-muted-foreground">
+              {track.writers.length > 0 ? (
+                <p className="truncate">
+                  Écriture : {track.writers.join(", ")}
+                </p>
+              ) : null}
+              {track.producers.length > 0 ? (
+                <p className="truncate">
+                  Production : {track.producers.join(", ")}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </div>
+      <span className="shrink-0 pt-0.5 text-muted-foreground tabular-nums">
+        {formatTrackDuration(track.durationSeconds)}
+      </span>
+    </div>
+  )
+}
+
 export function AlbumTracklistCard({ tracks }: AlbumTracklistCardProps) {
   return (
     <Card className="flex flex-col">
@@ -22,17 +61,7 @@ export function AlbumTracklistCard({ tracks }: AlbumTracklistCardProps) {
           tracks.map((track, index) => (
             <div key={track.position}>
               {index > 0 ? <Separator /> : null}
-              <div className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
-                <div className="flex min-w-0 items-center gap-3">
-                  <span className="w-6 shrink-0 text-muted-foreground tabular-nums">
-                    {track.position}
-                  </span>
-                  <span className="truncate">{track.title}</span>
-                </div>
-                <span className="shrink-0 text-muted-foreground tabular-nums">
-                  {formatTrackDuration(track.durationSeconds)}
-                </span>
-              </div>
+              <AlbumTrackRow track={track} />
             </div>
           ))
         )}

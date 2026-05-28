@@ -253,6 +253,7 @@ Permet de relier la fiche aux sources sans migration à chaque nouvel ID.
 | Fusion résultats recherche | `lib/catalog/merge-catalog-search.ts` |
 | Pays / ISO | `lib/catalog/country-code.ts`, `lib/catalog/iso-country-codes.ts` |
 | Persistance album | `lib/catalog/db/albums.ts` |
+| Crédits piste | `lib/catalog/track-credits.ts`, `lib/catalog/discogs/fetch-tracks.ts`, `lib/catalog/musicbrainz/fetch-tracks.ts` |
 | UI import | `app/bibliotheque/_components/album-create-form.tsx` |
 
 ---
@@ -266,6 +267,8 @@ Permet de relier la fiche aux sources sans migration à chaque nouvel ID.
 | **Rate limit MusicBrainz** | 1 req/s → import d'une référence peut prendre quelques secondes |
 | **Pays vagues Discogs** | `Worldwide` remplacé par un pays ISO quand MusicBrainz ou une autre édition Discogs est plus précise |
 | **Doublons catalogue** | Pas de détection de doublons à la création (prévu brief v1.1) |
+| **Crédits piste** | Writers via MusicBrainz (works), producers via Discogs (extraartists piste) ; complétés par MB si disponible |
+| **Wikipedia** | Non utilisé pour les crédits (données non structurées) |
 
 ---
 

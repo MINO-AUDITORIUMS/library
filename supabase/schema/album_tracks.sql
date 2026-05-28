@@ -4,6 +4,8 @@ create table if not exists public.album_tracks (
   position smallint not null,
   title text not null,
   duration_seconds integer,
+  writers text[] not null default '{}',
+  producers text[] not null default '{}',
   created_at timestamptz not null default now(),
   constraint album_tracks_position_positive check (position > 0),
   constraint album_tracks_title_not_empty check (char_length(trim(title)) > 0),

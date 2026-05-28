@@ -42,6 +42,7 @@ FILES=(
   supabase/schema/tags.sql
   supabase/schema/albums.sql
   supabase/schema/album_tracks.sql
+  supabase/schema/album_track_credits.sql
   supabase/schema/album_video_clips.sql
   supabase/schema/album_tags.sql
   supabase/schema/album_genres.sql
