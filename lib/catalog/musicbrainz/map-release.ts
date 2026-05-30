@@ -14,15 +14,6 @@ function joinArtistCredit(
     .trim()
 }
 
-function mapMediumFormat(release: MusicBrainzRelease) {
-  const format = release.media?.[0]?.format?.toLowerCase() ?? ""
-  if (format.includes("vinyl") || format.includes("lp")) return "vinyl"
-  if (format.includes("cd")) return "cd"
-  if (format.includes("cassette")) return "cassette"
-  if (format.includes("digital") || format.includes("file")) return "digital"
-  return format ? "other" : ""
-}
-
 function mapProducers(relations: MusicBrainzRelease["relations"]) {
   const names = (relations ?? [])
     .filter((relation) => {
@@ -93,7 +84,6 @@ export function mapMusicBrainzRelease(
     recordCompany: labelName,
     producers: mapProducers(release.relations),
     country: countryDisplayName(release.country ?? ""),
-    format: mapMediumFormat(release),
     description: descriptionParts.join("\n\n"),
     trackCount: trackCountFromRelease(release),
     coverUrl: coverArtArchiveUrl(release.id),

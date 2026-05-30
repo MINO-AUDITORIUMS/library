@@ -76,7 +76,6 @@ export function mergeCatalogImports(
     recordCompany: pickDiscogsFirst(discogs.recordCompany, musicbrainz.recordCompany),
     producers: pickMusicBrainzFirst(musicbrainz.producers, discogs.producers),
     country: pickMergedCountry(discogs.country, musicbrainz.country),
-    format: pickDiscogsFirst(discogs.format, musicbrainz.format),
     description: mergeDescription(discogs.description, musicbrainz.description),
     trackCount: pickTrackCount(discogs.trackCount, musicbrainz.trackCount),
     coverUrl: pickCoverUrl(discogs.coverUrl, musicbrainz.coverUrl),

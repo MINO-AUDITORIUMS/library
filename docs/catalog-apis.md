@@ -178,7 +178,6 @@ Implémentées dans `lib/catalog/merge-catalog-import.ts`.
 | Maison de disques | Discogs | |
 | Producteurs | MusicBrainz | Relations structurées (`artist-rels`) |
 | Pays | Discogs si précis, sinon MB | `Worldwide` / `Europe` ignorés au profit d'un pays ISO |
-| Format (vinyle, CD…) | Discogs | MB ne distingue pas toujours le pressage physique |
 | Description | Discogs + MB | Concaténation si les deux diffèrent |
 | Pochette | Discogs → Cover Art Archive | URL CAA : `coverartarchive.org/release/{mbid}/front` |
 | Track count | Max(Discogs, MB) | |
@@ -203,7 +202,7 @@ Quand l'utilisateur choisit une **référence principale**, l'app ne prend pas u
 ### Discogs (master)
 
 1. `GET /masters/{id}/versions` (jusqu'à 25 éditions)
-2. Score par édition (`lib/catalog/score-release-completeness.ts`) : pays, label, format, barcode, tracklist, notes…
+2. Score par édition (`lib/catalog/score-release-completeness.ts`) : pays, label, barcode, tracklist, notes…
 3. Bonus pour `main_release`
 4. Malus pour pays vagues (`Worldwide`, `Europe`…)
 

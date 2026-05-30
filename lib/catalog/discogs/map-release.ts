@@ -11,7 +11,6 @@ type RawRelease = {
   styles?: string[]
   artists?: { name: string; role?: string }[]
   labels?: { name: string; catno?: string }[]
-  formats?: { name: string; descriptions?: string[] }[]
   tracklist?: { position: string; title: string; duration?: string }[]
   images?: { type: string; uri: string; resource_url: string }[]
   extraartists?: { name: string; role?: string }[]
@@ -21,15 +20,6 @@ type RawRelease = {
 function primaryArtist(release: RawRelease) {
   const main = release.artists?.find((a) => !a.role || a.role === "Main")
   return main?.name ?? release.artists?.[0]?.name ?? ""
-}
-
-function mapFormat(release: RawRelease) {
-  const name = release.formats?.[0]?.name?.toLowerCase() ?? ""
-  if (name.includes("vinyl") || name.includes("lp")) return "vinyl"
-  if (name.includes("cd")) return "cd"
-  if (name.includes("cassette")) return "cassette"
-  if (name.includes("file") || name.includes("digital")) return "digital"
-  return "other"
 }
 
 function mapProducers(release: RawRelease) {
@@ -72,7 +62,6 @@ export function mapDiscogsRelease(data: unknown): CatalogReleaseImport {
     recordCompany: release.labels?.[0]?.name ?? "",
     producers: mapProducers(release),
     country: release.country ?? "",
-    format: mapFormat(release),
     description: release.notes?.trim() ?? "",
     trackCount: release.tracklist?.length ? String(release.tracklist.length) : "",
     coverUrl: coverUrl(release),

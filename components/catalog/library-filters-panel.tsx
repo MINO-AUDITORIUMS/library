@@ -2,7 +2,6 @@
 
 import { RotateCcwIcon, SlidersHorizontalIcon } from "lucide-react"
 
-import { albumFormatLabels } from "@/lib/catalog/format-labels"
 import {
   countActiveLibraryFilters,
   LIBRARY_FILTER_ALL,
@@ -102,7 +101,7 @@ export function LibraryFiltersPanel({
         ) : null}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
         <FilterSelect
           id="library-filter-genre"
           label="Genre"
@@ -146,17 +145,6 @@ export function LibraryFiltersPanel({
             label: country,
           }))}
           onValueChange={(country) => onFiltersChange({ country })}
-        />
-        <FilterSelect
-          id="library-filter-format"
-          label="Format"
-          value={filters.format}
-          placeholder="Format"
-          options={options.formats.map((format) => ({
-            value: format,
-            label: albumFormatLabels[format],
-          }))}
-          onValueChange={(format) => onFiltersChange({ format })}
         />
         <FilterSelect
           id="library-filter-year-from"

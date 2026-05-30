@@ -16,7 +16,6 @@ export type AlbumCatalogFormState = {
   recordCompany: string
   producers: string
   country: string
-  format: string
   description: string
   personalNotes: string
   trackCount: string
@@ -150,7 +149,7 @@ export function AlbumCatalogFormFields({
         </div>
       </FormSection>
 
-      <FormSection title="Production & format">
+      <FormSection title="Production">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="label" label="Label">
             <Input
@@ -172,13 +171,6 @@ export function AlbumCatalogFormFields({
               value={form.producers}
               onChange={(e) => onPatch({ producers: e.target.value })}
               placeholder="Séparés par des virgules"
-            />
-          </Field>
-          <Field id="format" label="Format">
-            <Input
-              id="format"
-              value={form.format}
-              onChange={(e) => onPatch({ format: e.target.value })}
             />
           </Field>
           <Field id="country" label="Pays / origine">

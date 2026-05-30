@@ -91,7 +91,6 @@ export type MusicBrainzPartialImport = {
   recordCompany: string
   producers: string
   country: string
-  format: string
   description: string
   trackCount: string
   coverUrl: string | null

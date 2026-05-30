@@ -46,7 +46,6 @@ type FormState = {
   recordCompany: string
   producers: string
   country: string
-  format: string
   description: string
   personalNotes: string
   trackCount: string
@@ -68,7 +67,6 @@ const emptyForm: FormState = {
   recordCompany: "",
   producers: "",
   country: "",
-  format: "vinyl",
   description: "",
   personalNotes: "",
   trackCount: "",
@@ -187,7 +185,6 @@ export function AlbumCreateForm() {
           recordCompany: string
           producers: string
           country: string
-          format: string
           description: string
           trackCount: string
           discogsReleaseId: number | null
@@ -220,7 +217,6 @@ export function AlbumCreateForm() {
         recordCompany: release.recordCompany,
         producers: release.producers,
         country: release.country,
-        format: release.format,
         description: release.description,
         trackCount: release.trackCount,
         discogsReleaseId: release.discogsReleaseId,
@@ -449,7 +445,7 @@ export function AlbumCreateForm() {
           </div>
         </FormSection>
 
-        <FormSection title="Production & format">
+        <FormSection title="Production">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field id="label" label="Label">
               <Input
@@ -471,13 +467,6 @@ export function AlbumCreateForm() {
                 value={form.producers}
                 onChange={(e) => patchForm({ producers: e.target.value })}
                 placeholder="Séparés par des virgules"
-              />
-            </Field>
-            <Field id="format" label="Format">
-              <Input
-                id="format"
-                value={form.format}
-                onChange={(e) => patchForm({ format: e.target.value })}
               />
             </Field>
             <Field id="country" label="Pays / origine">

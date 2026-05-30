@@ -1,13 +1,4 @@
 import { parseTagNames } from "@/lib/catalog/parse-tag-names"
-import type { AlbumFormat } from "@/lib/catalog/types"
-
-const FORMATS = new Set<AlbumFormat>([
-  "vinyl",
-  "cd",
-  "cassette",
-  "digital",
-  "other",
-])
 
 export type CreateAlbumInput = {
   title: string
@@ -20,7 +11,6 @@ export type CreateAlbumInput = {
   recordCompany: string
   producers: string
   country: string
-  format: string
   description: string
   personalNotes: string
   trackCount: string
@@ -55,11 +45,6 @@ export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
       ? coverRaw.trim()
       : null
 
-  const formatRaw = typeof data.format === "string" ? data.format.trim() : ""
-  const format = FORMATS.has(formatRaw as AlbumFormat)
-    ? (formatRaw as AlbumFormat)
-    : "other"
-
   return {
     title,
     artist,
@@ -72,7 +57,6 @@ export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
       typeof data.recordCompany === "string" ? data.recordCompany.trim() : "",
     producers: typeof data.producers === "string" ? data.producers : "",
     country: typeof data.country === "string" ? data.country.trim() : "",
-    format,
     description: typeof data.description === "string" ? data.description : "",
     personalNotes:
       typeof data.personalNotes === "string" ? data.personalNotes : "",

@@ -8,7 +8,6 @@ function scoreMusicBrainzReleaseSummary(release: MusicBrainzRelease) {
   if (release.barcode?.trim()) score += 4
   if (release["label-info"]?.[0]?.label?.name?.trim()) score += 3
   if (release.date?.trim()) score += 2
-  if (release.media?.[0]?.format?.trim()) score += 2
   if (release.status?.toLowerCase() === "official") score += 3
   const trackCount = release.media?.reduce(
     (sum, medium) => sum + (medium["track-count"] ?? medium.tracks?.length ?? 0),

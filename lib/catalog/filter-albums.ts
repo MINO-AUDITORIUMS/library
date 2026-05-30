@@ -1,28 +1,32 @@
-import type { LibraryFilters } from "@/lib/catalog/library-filters"
-import { LIBRARY_FILTER_ALL } from "@/lib/catalog/library-filters"
 import type { AlbumSummary } from "@/lib/catalog/types"
+import {
+  LIBRARY_FILTER_ALL,
+  type LibraryFilters,
+} from "@/lib/catalog/library-filters"
 
 function parseYear(value: string) {
-  const year = Number.parseInt(value, 10)
-  return Number.isFinite(year) ? year : null
+  if (value === LIBRARY_FILTER_ALL) return null
+  const parsed = Number.parseInt(value, 10)
+  return Number.isFinite(parsed) ? parsed : null
 }
 
 export function matchesLibraryQuery(album: AlbumSummary, query: string) {
-  const q = query.trim().toLowerCase()
-  if (!q) return true
+  const normalized = query.trim().toLowerCase()
+  if (!normalized) return true
 
   const haystack = [
     album.title,
     album.artist,
     album.label,
-    album.genre,
     album.genreName,
     album.subgenreName,
     album.country,
     ...album.tags,
   ]
+    .join(" ")
+    .toLowerCase()
 
-  return haystack.some((value) => value.toLowerCase().includes(q))
+  return haystack.includes(normalized)
 }
 
 export function filterAlbums(
@@ -57,13 +61,6 @@ export function filterAlbums(
       return false
     }
 
-    if (
-      filters.format !== LIBRARY_FILTER_ALL &&
-      album.format !== filters.format
-    ) {
-      return false
-    }
-
     const yearFrom = parseYear(filters.yearFrom)
     if (yearFrom !== null) {
       if (!album.releaseYear || album.releaseYear < yearFrom) return false
@@ -87,3 +84,4 @@ export function filterAlbums(
     return true
   })
 }
+

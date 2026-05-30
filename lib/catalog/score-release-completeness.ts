@@ -17,7 +17,6 @@ export function scoreDiscogsVersionSummary(version: DiscogsVersionSummary) {
     score += isVagueCatalogCountry(version.country) ? 1 : 4
   }
   if (version.label?.trim()) score += 3
-  if (version.format?.trim()) score += 2
   if (version.released?.trim()) score += 2
   if (version.catno?.trim()) score += 1
   if (version.thumb?.trim()) score += 1

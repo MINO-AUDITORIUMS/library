@@ -1,5 +1,4 @@
-import { albumFormatOptions } from "@/lib/catalog/format-labels"
-import type { AlbumFormat, AlbumSummary } from "@/lib/catalog/types"
+import type { AlbumSummary } from "@/lib/catalog/types"
 
 export const LIBRARY_FILTER_ALL = "all"
 
@@ -9,7 +8,6 @@ export type LibraryFilters = {
   subgenre: string
   tag: string
   country: string
-  format: string
   yearFrom: string
   yearTo: string
   minMinoRating: string
@@ -21,7 +19,6 @@ export type LibraryFilterOptions = {
   tags: string[]
   countries: string[]
   years: number[]
-  formats: AlbumFormat[]
 }
 
 export const defaultLibraryFilters: LibraryFilters = {
@@ -30,7 +27,6 @@ export const defaultLibraryFilters: LibraryFilters = {
   subgenre: LIBRARY_FILTER_ALL,
   tag: LIBRARY_FILTER_ALL,
   country: LIBRARY_FILTER_ALL,
-  format: LIBRARY_FILTER_ALL,
   yearFrom: LIBRARY_FILTER_ALL,
   yearTo: LIBRARY_FILTER_ALL,
   minMinoRating: LIBRARY_FILTER_ALL,
@@ -60,7 +56,6 @@ export function parseLibraryFiltersFromSearchParams(
     subgenre: readParam(params, "subgenre"),
     tag: readParam(params, "tag"),
     country: readParam(params, "country"),
-    format: readParam(params, "format"),
     yearFrom: readParam(params, "yearFrom"),
     yearTo: readParam(params, "yearTo"),
     minMinoRating: readParam(params, "minRating"),
@@ -79,8 +74,6 @@ export function serializeLibraryFiltersToSearchParams(
   if (filters.tag !== LIBRARY_FILTER_ALL) params.set("tag", filters.tag)
   if (filters.country !== LIBRARY_FILTER_ALL)
     params.set("country", filters.country)
-  if (filters.format !== LIBRARY_FILTER_ALL)
-    params.set("format", filters.format)
   if (filters.yearFrom !== LIBRARY_FILTER_ALL)
     params.set("yearFrom", filters.yearFrom)
   if (filters.yearTo !== LIBRARY_FILTER_ALL) params.set("yearTo", filters.yearTo)
@@ -99,10 +92,6 @@ export function deriveLibraryFilterOptions(
       ? albums.filter((album) => album.genreName === selectedGenre)
       : albums
 
-  const formats = albumFormatOptions.filter((format) =>
-    albums.some((album) => album.format === format)
-  )
-
   const years = [
     ...new Set(
       albums
@@ -117,7 +106,6 @@ export function deriveLibraryFilterOptions(
     tags: uniqueSorted(albums.flatMap((album) => album.tags)),
     countries: uniqueSorted(albums.map((album) => album.country)),
     years,
-    formats,
   }
 }
 
@@ -128,7 +116,6 @@ export function countActiveLibraryFilters(filters: LibraryFilters) {
   if (filters.subgenre !== LIBRARY_FILTER_ALL) count += 1
   if (filters.tag !== LIBRARY_FILTER_ALL) count += 1
   if (filters.country !== LIBRARY_FILTER_ALL) count += 1
-  if (filters.format !== LIBRARY_FILTER_ALL) count += 1
   if (filters.yearFrom !== LIBRARY_FILTER_ALL) count += 1
   if (filters.yearTo !== LIBRARY_FILTER_ALL) count += 1
   if (filters.minMinoRating !== LIBRARY_FILTER_ALL) count += 1

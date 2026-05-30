@@ -4,7 +4,6 @@ import { AlbumCover } from "@/components/catalog/album-cover"
 import { MinoRatingStars } from "@/components/catalog/mino-rating-stars"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { albumFormatLabels } from "@/lib/catalog/format-labels"
 import type { AlbumSummary } from "@/lib/catalog/types"
 import { albumDetailRoute } from "@/lib/routes"
 import { cn } from "@/lib/utils"
@@ -13,8 +12,6 @@ export type AlbumCardProps = {
   album: AlbumSummary
   className?: string
 }
-
-const formatLabels = albumFormatLabels
 
 export function AlbumCard({ album, className }: AlbumCardProps) {
   return (
@@ -40,7 +37,9 @@ export function AlbumCard({ album, className }: AlbumCardProps) {
           </div>
           <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
             <span>{album.releaseYear > 0 ? album.releaseYear : "—"}</span>
-            <span>{formatLabels[album.format]}</span>
+            {album.label !== "—" ? (
+              <span className="truncate">{album.label}</span>
+            ) : null}
           </div>
           <div className="min-h-5">
             <MinoRatingStars rating={album.minoRating} />

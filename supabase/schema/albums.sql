@@ -7,7 +7,6 @@ create table if not exists public.albums (
   description text,
   total_duration_seconds integer,
   track_count integer,
-  format text,
   label text,
   record_company text,
   producers text[] not null default '{}',
@@ -40,10 +39,6 @@ create table if not exists public.albums (
   ),
   constraint albums_rating_range check (
     rating is null or (rating >= 1 and rating <= 5)
-  ),
-  constraint albums_format_allowed check (
-    format is null
-    or format in ('vinyl', 'cd', 'cassette', 'digital', 'other')
   )
 );
 

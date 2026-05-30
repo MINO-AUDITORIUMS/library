@@ -27,7 +27,6 @@ import type { UpdateAlbumInput } from "@/lib/catalog/update-album-input"
 import { slugify } from "@/lib/catalog/slug"
 import type {
   AlbumDetail,
-  AlbumFormat,
   AlbumSummary,
   AlbumTrack,
 } from "@/lib/catalog/types"
@@ -41,7 +40,6 @@ type AlbumRow = {
   description: string | null
   total_duration_seconds: number | null
   track_count: number | null
-  format: AlbumFormat | null
   label: string | null
   record_company: string | null
   producers: string[]
@@ -76,7 +74,6 @@ const albumListSelect = `
   title,
   artist,
   release_year,
-  format,
   label,
   origin_country_code,
   cover_storage_path,
@@ -96,7 +93,6 @@ const albumDetailSelect = `
   description,
   total_duration_seconds,
   track_count,
-  format,
   label,
   record_company,
   producers,
@@ -169,7 +165,6 @@ export function mapAlbumSummary(row: AlbumRow): AlbumSummary {
     artist: row.artist,
     releaseYear: row.release_year ?? 0,
     label: row.label ?? "—",
-    format: row.format ?? "other",
     minoRating: minoRatingFromRows(row.album_user_ratings),
     tags: mapTags(row),
     genre,
@@ -371,7 +366,6 @@ export async function createAlbum(
       release_date: releaseDate,
       description: input.description.trim() || null,
       track_count: trackCount,
-      format: input.format,
       label: input.label || null,
       record_company: input.recordCompany || null,
       producers: parseProducers(input.producers),
@@ -527,7 +521,6 @@ export async function updateAlbum(
       release_date: releaseDate,
       description: description.length > 0 ? description : null,
       track_count: trackCount,
-      format: input.format,
       label: input.label || null,
       record_company: input.recordCompany || null,
       producers: parseProducers(input.producers),
