@@ -301,6 +301,28 @@ async function resolveOriginCountryCode(
   return inserted?.code ?? null
 }
 
+export async function searchAlbumSummaries(
+  supabase: SupabaseClient,
+  query: string,
+  limit = 8
+) {
+  const trimmed = query.trim()
+  if (trimmed.length < 2) return []
+
+  const escaped = trimmed.replace(/"/g, '""').replace(/[%_\\]/g, "\\$&")
+  const pattern = `%${escaped}%`
+
+  const { data, error } = await supabase
+    .from("albums")
+    .select(albumListSelect)
+    .or(`title.ilike."${pattern}",artist.ilike."${pattern}"`)
+    .order("title", { ascending: true })
+    .limit(limit)
+
+  if (error) throw error
+  return (data as unknown as AlbumRow[]).map(mapAlbumSummary)
+}
+
 export async function listAlbumSummariesByArtistId(
   supabase: SupabaseClient,
   artistId: string

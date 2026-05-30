@@ -79,6 +79,43 @@ function readAlbumCount(value: { count: number }[] | null | undefined) {
   return value?.[0]?.count ?? 0
 }
 
+export async function searchArtistSummaries(
+  supabase: SupabaseClient,
+  query: string,
+  limit = 5
+) {
+  const trimmed = query.trim()
+  if (trimmed.length < 2) return []
+
+  const pattern = `%${trimmed.replace(/[%_\\]/g, "\\$&")}%`
+  const { data, error } = await supabase
+    .from("artists")
+    .select(`
+      id,
+      name,
+      slug,
+      image_url,
+      country,
+      created_at,
+      albums(count)
+    `)
+    .ilike("name", pattern)
+    .order("name", { ascending: true })
+    .limit(limit)
+
+  if (error) throw error
+
+  return (data ?? []).map((row) =>
+    mapArtistSummary(
+      row as Pick<
+        ArtistRow,
+        "id" | "name" | "slug" | "image_url" | "country" | "created_at"
+      >,
+      readAlbumCount((row as { albums?: { count: number }[] }).albums)
+    )
+  )
+}
+
 export async function listArtistSummaries(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("artists")
