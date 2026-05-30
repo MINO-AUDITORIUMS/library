@@ -41,6 +41,7 @@ FILES=(
   supabase/schema/subgenres.sql
   supabase/schema/tags.sql
   supabase/schema/albums.sql
+  supabase/schema/album_drop_format.sql
   supabase/schema/album_tracks.sql
   supabase/schema/album_track_credits.sql
   supabase/schema/album_video_clips.sql
@@ -54,6 +55,7 @@ FILES=(
   supabase/schema/album_search.sql
   supabase/storage/album_attachments.sql
   supabase/storage/album_covers.sql
+  supabase/storage/mino_assets.sql
   supabase/seed/lookups.sql
 )
 
