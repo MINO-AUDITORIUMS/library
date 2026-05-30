@@ -338,6 +338,29 @@ export async function listAlbumSummariesByArtistId(
   return (data as unknown as AlbumRow[]).map(mapAlbumSummary)
 }
 
+export async function countAlbums(supabase: SupabaseClient) {
+  const { count, error } = await supabase
+    .from("albums")
+    .select("id", { count: "exact", head: true })
+
+  if (error) throw error
+  return count ?? 0
+}
+
+export async function listRecentAlbumSummaries(
+  supabase: SupabaseClient,
+  limit = 6
+) {
+  const { data, error } = await supabase
+    .from("albums")
+    .select(albumListSelect)
+    .order("created_at", { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+  return (data as unknown as AlbumRow[]).map(mapAlbumSummary)
+}
+
 export async function listAlbumSummaries(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("albums")

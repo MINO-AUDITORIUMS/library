@@ -117,6 +117,15 @@ export async function searchArtistSummaries(
   )
 }
 
+export async function countArtists(supabase: SupabaseClient) {
+  const { count, error } = await supabase
+    .from("artists")
+    .select("id", { count: "exact", head: true })
+
+  if (error) throw error
+  return count ?? 0
+}
+
 export async function listArtistSummaries(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("artists")
