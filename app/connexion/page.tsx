@@ -24,7 +24,7 @@ import {
   getEmailDomain,
   isAllowedEmail,
 } from "@/lib/auth/allowed-domains"
-import { routes } from "@/lib/routes"
+import { buildAuthCallbackUrl } from "@/lib/auth/build-auth-callback-url"
 import { createClient } from "@/lib/supabase/client"
 
 function formatAuthError(raw: string) {
@@ -95,7 +95,7 @@ export default function ConnexionPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}${routes.authCallback}`,
+        redirectTo: buildAuthCallbackUrl(),
       },
     })
 
@@ -125,7 +125,7 @@ export default function ConnexionPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}${routes.authCallback}`,
+        emailRedirectTo: buildAuthCallbackUrl(),
       },
     })
     setSubmitting(null)
