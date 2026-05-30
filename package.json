@@ -13,7 +13,8 @@
     "db:schema": "bash supabase/apply_schema.sh --linked",
     "db:schema:reset": "bash supabase/apply_schema.sh --linked --reset --yes",
     "db:sync-tracks": "pnpm dlx tsx scripts/sync-album-tracks.ts",
-    "assets:upload-mino": "pnpm dlx tsx scripts/upload-mino-assets.ts"
+    "assets:upload-mino": "pnpm dlx tsx scripts/upload-mino-assets.ts",
+    "db:link-artists": "pnpm dlx tsx scripts/link-album-artists.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

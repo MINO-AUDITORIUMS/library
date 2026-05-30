@@ -70,4 +70,6 @@ export type CatalogReleaseImport = {
   trackCount: string
   coverUrl: string | null
   certification: string
+  discogsArtistId: number | null
+  musicbrainzArtistId: string | null
 }

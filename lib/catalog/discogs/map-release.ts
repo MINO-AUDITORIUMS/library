@@ -9,7 +9,7 @@ type RawRelease = {
   notes?: string
   genres?: string[]
   styles?: string[]
-  artists?: { name: string; role?: string }[]
+  artists?: { id?: number; name?: string; role?: string }[]
   labels?: { name: string; catno?: string }[]
   tracklist?: { position: string; title: string; duration?: string }[]
   images?: { type: string; uri: string; resource_url: string }[]
@@ -17,9 +17,17 @@ type RawRelease = {
   identifiers?: { type?: string; value?: string }[]
 }
 
-function primaryArtist(release: RawRelease) {
-  const main = release.artists?.find((a) => !a.role || a.role === "Main")
-  return main?.name ?? release.artists?.[0]?.name ?? ""
+function primaryDiscogsArtist(release: RawRelease) {
+  const main =
+    release.artists?.find(
+      (artist) => !artist.role || artist.role.toLowerCase() === "main"
+    ) ?? release.artists?.[0]
+
+  return {
+    discogsArtistId:
+      typeof main?.id === "number" && main.id > 0 ? main.id : null,
+    name: main?.name?.trim() ?? "",
+  }
 }
 
 function mapProducers(release: RawRelease) {
@@ -46,14 +54,16 @@ function readBarcode(release: RawRelease) {
 export function mapDiscogsRelease(data: unknown): CatalogReleaseImport {
   const release = data as RawRelease
   const title = release.title ?? ""
-  const artist = primaryArtist(release)
+  const artist = primaryDiscogsArtist(release)
 
   return {
     discogsReleaseId: release.id,
     musicbrainzReleaseId: null,
     barcode: readBarcode(release),
     title: title.replace(/\s*\(\d+\)\s*$/, "").trim() || title,
-    artist,
+    artist: artist.name,
+    discogsArtistId: artist.discogsArtistId,
+    musicbrainzArtistId: null,
     releaseYear: release.year ? String(release.year) : "",
     releaseDate: release.released ?? "",
     genre: release.genres?.[0] ?? "",

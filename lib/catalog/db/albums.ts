@@ -25,6 +25,7 @@ import { minoRatingFromRows } from "@/lib/catalog/db/album-user-ratings"
 import { syncAlbumTags } from "@/lib/catalog/db/tags"
 import type { UpdateAlbumInput } from "@/lib/catalog/update-album-input"
 import { slugify } from "@/lib/catalog/slug"
+import { resolveOrCreateArtist } from "@/lib/catalog/db/artists"
 import type {
   AlbumDetail,
   AlbumSummary,
@@ -35,6 +36,7 @@ type AlbumRow = {
   id: string
   title: string
   artist: string
+  artist_id: string | null
   release_year: number | null
   release_date: string | null
   description: string | null
@@ -88,6 +90,7 @@ const albumDetailSelect = `
   id,
   title,
   artist,
+  artist_id,
   release_year,
   release_date,
   description,
@@ -190,6 +193,7 @@ export function mapAlbumDetail(row: AlbumRow): AlbumDetail {
     ...summary,
     discogsReleaseId: discogsIdFromExternalIds(row.external_ids),
     musicbrainzReleaseId: musicbrainzIdFromExternalIds(row.external_ids),
+    artistId: row.artist_id,
     canSyncTracks: hasTrackImportSources(row.external_ids),
     releaseDate: row.release_date,
     subgenre: subgenreName || "—",
@@ -297,6 +301,21 @@ async function resolveOriginCountryCode(
   return inserted?.code ?? null
 }
 
+export async function listAlbumSummariesByArtistId(
+  supabase: SupabaseClient,
+  artistId: string
+) {
+  const { data, error } = await supabase
+    .from("albums")
+    .select(albumListSelect)
+    .eq("artist_id", artistId)
+    .order("release_year", { ascending: false, nullsFirst: false })
+    .order("title", { ascending: true })
+
+  if (error) throw error
+  return (data as unknown as AlbumRow[]).map(mapAlbumSummary)
+}
+
 export async function listAlbumSummaries(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("albums")
@@ -351,6 +370,12 @@ export async function createAlbum(
     input.country
   )
 
+  const artistId = await resolveOrCreateArtist(supabase, {
+    name: input.artist,
+    discogsArtistId: input.discogsArtistId,
+    musicbrainzArtistId: input.musicbrainzArtistId,
+  })
+
   const externalIds: Record<string, unknown> = {}
   if (input.discogsReleaseId) externalIds.discogs = input.discogsReleaseId
   if (input.musicbrainzReleaseId) {
@@ -362,6 +387,7 @@ export async function createAlbum(
     .insert({
       title: input.title,
       artist: input.artist,
+      artist_id: artistId,
       release_year: releaseYear,
       release_date: releaseDate,
       description: input.description.trim() || null,

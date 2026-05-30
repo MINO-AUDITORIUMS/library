@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 import { AlbumCover } from "@/components/catalog/album-cover"
 import { AlbumRatingsPanel } from "@/components/catalog/album-ratings-panel"
 import { Badge } from "@/components/ui/badge"
@@ -5,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import type { AlbumRatingsSnapshot } from "@/lib/catalog/db/album-user-ratings"
 import type { DiscogsCommunityStats } from "@/lib/catalog/discogs/types"
 import type { AlbumDetail } from "@/lib/catalog/types"
+import { artistDetailRoute } from "@/lib/routes"
 
 export type AlbumDetailHeroProps = {
   album: AlbumDetail
@@ -35,9 +38,18 @@ export function AlbumDetailHero({
                 <h1 className="truncate text-xl font-semibold tracking-tight">
                   {album.title}
                 </h1>
-                <p className="truncate text-sm text-muted-foreground">
-                  {album.artist}
-                </p>
+                {album.artistId ? (
+                  <Link
+                    href={artistDetailRoute(album.artistId)}
+                    className="block truncate text-sm text-muted-foreground transition-colors hover:text-primary"
+                  >
+                    {album.artist}
+                  </Link>
+                ) : (
+                  <p className="truncate text-sm text-muted-foreground">
+                    {album.artist}
+                  </p>
+                )}
               </div>
 
               <div className="min-h-0 space-y-2 overflow-hidden">

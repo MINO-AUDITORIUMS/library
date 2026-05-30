@@ -19,7 +19,11 @@ type Crumb = {
   href?: string
 }
 
-function buildCrumbs(pathname: string, albumTitle: string | null): Crumb[] {
+function buildCrumbs(
+  pathname: string,
+  albumTitle: string | null,
+  artistTitle: string | null
+): Crumb[] {
   if (pathname === routes.app) {
     return [{ label: "Accueil" }]
   }
@@ -36,6 +40,22 @@ function buildCrumbs(pathname: string, albumTitle: string | null): Crumb[] {
       { label: "Accueil", href: routes.app },
       { label: "Bibliothèque", href: routes.bibliotheque },
       { label: "Nouvel album" },
+    ]
+  }
+
+  if (pathname === routes.artistes) {
+    return [
+      { label: "Accueil", href: routes.app },
+      { label: "Artistes" },
+    ]
+  }
+
+  const artistMatch = pathname.match(/^\/artistes\/([^/]+)$/)
+  if (artistMatch) {
+    return [
+      { label: "Accueil", href: routes.app },
+      { label: "Artistes", href: routes.artistes },
+      { label: artistTitle ?? "Artiste" },
     ]
   }
 
@@ -67,6 +87,7 @@ function buildCrumbs(pathname: string, albumTitle: string | null): Crumb[] {
 export function AppBreadcrumb() {
   const pathname = usePathname()
   const [albumTitle, setAlbumTitle] = useState<string | null>(null)
+  const [artistTitle, setArtistTitle] = useState<string | null>(null)
 
   const albumId = useMemo(() => {
     const editMatch = pathname.match(/^\/bibliotheque\/([^/]+)\/modifier$/)
@@ -75,6 +96,11 @@ export function AppBreadcrumb() {
     const match = pathname.match(/^\/bibliotheque\/([^/]+)$/)
     if (!match || match[1] === "nouveau") return null
     return match[1]
+  }, [pathname])
+
+  const artistId = useMemo(() => {
+    const match = pathname.match(/^\/artistes\/([^/]+)$/)
+    return match?.[1] ?? null
   }, [pathname])
 
   useEffect(() => {
@@ -103,9 +129,35 @@ export function AppBreadcrumb() {
     }
   }, [albumId])
 
+  useEffect(() => {
+    if (!artistId) {
+      setArtistTitle(null)
+      return
+    }
+
+    let cancelled = false
+
+    async function loadTitle() {
+      try {
+        const response = await fetch(`/api/artists/${artistId}?titleOnly=1`)
+        const data = (await response.json()) as { title?: string }
+        if (!cancelled && response.ok && data.title) {
+          setArtistTitle(data.title)
+        }
+      } catch {
+        if (!cancelled) setArtistTitle(null)
+      }
+    }
+
+    loadTitle()
+    return () => {
+      cancelled = true
+    }
+  }, [artistId])
+
   const crumbs = useMemo(
-    () => buildCrumbs(pathname, albumTitle),
-    [pathname, albumTitle]
+    () => buildCrumbs(pathname, albumTitle, artistTitle),
+    [pathname, albumTitle, artistTitle]
   )
 
   return (

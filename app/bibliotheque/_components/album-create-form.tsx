@@ -7,6 +7,7 @@ import { ArrowLeftIcon, Loader2Icon, SearchIcon, SparklesIcon } from "lucide-rea
 import { toast } from "sonner"
 
 import { AlbumTagsField } from "@/components/catalog/album-tags-field"
+import { ArtistImportPanel } from "@/app/bibliotheque/_components/artist-import-panel"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import type { CatalogSearchHit } from "@/lib/catalog/discogs/types"
+import type { ArtistImportPreview } from "@/lib/catalog/build-artist-preview"
 import { albumDetailRoute, routes } from "@/lib/routes"
 
 function normalizeReleaseDate(value: string) {
@@ -51,6 +53,8 @@ type FormState = {
   trackCount: string
   discogsReleaseId: number | null
   musicbrainzReleaseId: string | null
+  discogsArtistId: number | null
+  musicbrainzArtistId: string | null
   coverImageUrl: string | null
   certification: string
   tags: string[]
@@ -72,6 +76,8 @@ const emptyForm: FormState = {
   trackCount: "",
   discogsReleaseId: null,
   musicbrainzReleaseId: null,
+  discogsArtistId: null,
+  musicbrainzArtistId: null,
   coverImageUrl: null,
   certification: "",
   tags: [],
@@ -120,6 +126,9 @@ export function AlbumCreateForm() {
   const [searching, setSearching] = useState(false)
   const [results, setResults] = useState<CatalogSearchHit[]>([])
   const [form, setForm] = useState<FormState>(emptyForm)
+  const [artistPreview, setArtistPreview] = useState<ArtistImportPreview | null>(
+    null
+  )
   const [saving, setSaving] = useState(false)
   const [importingKey, setImportingKey] = useState<string | null>(null)
 
@@ -137,6 +146,7 @@ export function AlbumCreateForm() {
 
     setSearching(true)
     setResults([])
+    setArtistPreview(null)
 
     try {
       const response = await fetch(
@@ -189,9 +199,12 @@ export function AlbumCreateForm() {
           trackCount: string
           discogsReleaseId: number | null
           musicbrainzReleaseId: string | null
+          discogsArtistId: number | null
+          musicbrainzArtistId: string | null
           coverUrl: string | null
           certification: string
         }
+        artist?: ArtistImportPreview | null
         sources?: {
           discogs: boolean
           musicbrainz: boolean
@@ -221,9 +234,12 @@ export function AlbumCreateForm() {
         trackCount: release.trackCount,
         discogsReleaseId: release.discogsReleaseId,
         musicbrainzReleaseId: release.musicbrainzReleaseId,
+        discogsArtistId: release.discogsArtistId,
+        musicbrainzArtistId: release.musicbrainzArtistId,
         coverImageUrl: release.coverUrl,
         certification: release.certification,
       })
+      setArtistPreview(data.artist ?? null)
       setResults([])
 
       const sources = data.sources
@@ -364,6 +380,8 @@ export function AlbumCreateForm() {
           ) : null}
         </CardContent>
       </Card>
+
+      {artistPreview ? <ArtistImportPanel preview={artistPreview} /> : null}
 
       <form onSubmit={onSubmit} className="space-y-6">
         <FormSection title="Identification">

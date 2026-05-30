@@ -47,3 +47,4 @@ pnpm db:schema
 | `pnpm db:schema:reset` | Reset + réapplication du schéma |
 | `pnpm db:sync-tracks -- --all` | Resynchroniser les tracklists (crédits inclus) en batch |
 | `pnpm assets:upload-mino` | Upload logos MINO vers le bucket Supabase `mino-assets` |
+| `pnpm db:link-artists` | Relie les albums existants aux fiches artistes via Discogs |

@@ -56,7 +56,11 @@ export type MusicBrainzRelease = {
   status?: string
   disambiguation?: string
   annotation?: string
-  "artist-credit"?: { artist: { name: string }; joinphrase?: string }[]
+  "artist-credit"?: {
+    name?: string
+    artist: { name: string; id?: string }
+    joinphrase?: string
+  }[]
   "label-info"?: {
     "catalog-number"?: string
     label?: { name?: string }
@@ -95,4 +99,6 @@ export type MusicBrainzPartialImport = {
   trackCount: string
   coverUrl: string | null
   barcode: string | null
+  discogsArtistId: number | null
+  musicbrainzArtistId: string | null
 }

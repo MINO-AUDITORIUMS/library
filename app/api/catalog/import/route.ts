@@ -6,8 +6,10 @@ import {
   buildMergedCatalogImportFromDiscogsReleaseId,
   buildMergedCatalogImportFromMusicBrainzReleaseGroupId,
 } from "@/lib/catalog/build-merged-catalog-import"
+import { buildArtistImportPreview } from "@/lib/catalog/build-artist-preview"
 import { DiscogsApiError } from "@/lib/catalog/discogs/client"
 import { MusicBrainzApiError } from "@/lib/catalog/musicbrainz/client"
+import { createClient } from "@/lib/supabase/server"
 
 export async function GET(request: Request) {
   try {
@@ -22,26 +24,24 @@ export async function GET(request: Request) {
     const musicbrainzReleaseGroupId =
       searchParams.get("musicbrainzReleaseGroup")?.trim() ?? ""
 
-    if (
-      Number.isFinite(discogsMasterId) &&
-      discogsMasterId > 0
-    ) {
+    const supabase = await createClient()
+
+    if (Number.isFinite(discogsMasterId) && discogsMasterId > 0) {
       const payload = await buildMergedCatalogImportFromDiscogsMasterId(
         discogsMasterId,
         musicbrainzReleaseGroupId || null
       )
-      return NextResponse.json(payload)
+      const artist = await buildArtistImportPreview(supabase, payload.release)
+      return NextResponse.json({ ...payload, artist })
     }
 
-    if (
-      Number.isFinite(discogsReleaseId) &&
-      discogsReleaseId > 0
-    ) {
+    if (Number.isFinite(discogsReleaseId) && discogsReleaseId > 0) {
       const payload = await buildMergedCatalogImportFromDiscogsReleaseId(
         discogsReleaseId,
         musicbrainzReleaseGroupId || null
       )
-      return NextResponse.json(payload)
+      const artist = await buildArtistImportPreview(supabase, payload.release)
+      return NextResponse.json({ ...payload, artist })
     }
 
     if (musicbrainzReleaseGroupId) {
@@ -49,7 +49,8 @@ export async function GET(request: Request) {
         await buildMergedCatalogImportFromMusicBrainzReleaseGroupId(
           musicbrainzReleaseGroupId
         )
-      return NextResponse.json(payload)
+      const artist = await buildArtistImportPreview(supabase, payload.release)
+      return NextResponse.json({ ...payload, artist })
     }
 
     return NextResponse.json(

@@ -40,8 +40,10 @@ FILES=(
   supabase/schema/genres.sql
   supabase/schema/subgenres.sql
   supabase/schema/tags.sql
+  supabase/schema/artists.sql
   supabase/schema/albums.sql
   supabase/schema/album_drop_format.sql
+  supabase/schema/album_artist_fk.sql
   supabase/schema/album_tracks.sql
   supabase/schema/album_track_credits.sql
   supabase/schema/album_video_clips.sql

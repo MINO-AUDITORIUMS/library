@@ -1,5 +1,15 @@
 import type { MinoRatingSummary } from "@/lib/catalog/ratings"
 
+export type ArtistSummary = {
+  id: string
+  name: string
+  slug: string
+  imageUrl: string | null
+  country: string
+  coverHue: number
+  albumCount: number
+}
+
 export type CatalogTag = {
   id: string
   name: string
@@ -39,6 +49,7 @@ export type AlbumComment = {
 }
 
 export type AlbumDetail = AlbumSummary & {
+  artistId: string | null
   discogsReleaseId: number | null
   musicbrainzReleaseId: string | null
   canSyncTracks: boolean
@@ -53,5 +64,20 @@ export type AlbumDetail = AlbumSummary & {
   personalNotes: string
   tracks: AlbumTrack[]
   officialClipsCount: number
+  addedAt: string
+}
+
+export type ArtistDetail = {
+  id: string
+  name: string
+  slug: string
+  bio: string
+  imageUrl: string | null
+  country: string
+  coverHue: number
+  discogsArtistId: number | null
+  musicbrainzArtistId: string | null
+  albums: AlbumSummary[]
+  albumCount: number
   addedAt: string
 }

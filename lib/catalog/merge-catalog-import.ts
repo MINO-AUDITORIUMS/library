@@ -17,6 +17,24 @@ function pickMusicBrainzFirst(musicbrainz: string, discogs: string) {
   return pickPrimary(musicbrainz, discogs)
 }
 
+function pickDiscogsFirstId(
+  discogs: number | null,
+  musicbrainz: number | null
+) {
+  if (discogs && discogs > 0) return discogs
+  if (musicbrainz && musicbrainz > 0) return musicbrainz
+  return null
+}
+
+function pickMusicBrainzFirstId(
+  musicbrainz: string | null,
+  discogs: string | null
+) {
+  if (musicbrainz?.trim()) return musicbrainz.trim()
+  if (discogs?.trim()) return discogs.trim()
+  return null
+}
+
 function pickTrackCount(discogs: string, musicbrainz: string) {
   const discogsCount = Number.parseInt(discogs, 10)
   const mbCount = Number.parseInt(musicbrainz, 10)
@@ -76,6 +94,11 @@ export function mergeCatalogImports(
     recordCompany: pickDiscogsFirst(discogs.recordCompany, musicbrainz.recordCompany),
     producers: pickMusicBrainzFirst(musicbrainz.producers, discogs.producers),
     country: pickMergedCountry(discogs.country, musicbrainz.country),
+    discogsArtistId: pickDiscogsFirstId(discogs.discogsArtistId, musicbrainz.discogsArtistId),
+    musicbrainzArtistId: pickMusicBrainzFirstId(
+      musicbrainz.musicbrainzArtistId,
+      discogs.musicbrainzArtistId
+    ),
     description: mergeDescription(discogs.description, musicbrainz.description),
     trackCount: pickTrackCount(discogs.trackCount, musicbrainz.trackCount),
     coverUrl: pickCoverUrl(discogs.coverUrl, musicbrainz.coverUrl),

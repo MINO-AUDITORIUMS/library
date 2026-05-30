@@ -174,6 +174,7 @@ const details: Record<string, Omit<AlbumDetail, keyof AlbumSummary>> = {
   "1": {
     discogsReleaseId: null,
     musicbrainzReleaseId: null,
+    artistId: null,
     canSyncTracks: false,
     releaseDate: "1959-08-17",
     subgenre: "Modal jazz",
@@ -203,6 +204,7 @@ function defaultDetail(
   return {
     discogsReleaseId: null,
     musicbrainzReleaseId: null,
+    artistId: null,
     canSyncTracks: false,
     releaseDate: `${summary.releaseYear}-01-01`,
     subgenre: summary.subgenreName || summary.genre,

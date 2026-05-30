@@ -86,6 +86,8 @@ function musicBrainzOnlyImport(
     recordCompany: musicbrainzImport.recordCompany,
     producers: musicbrainzImport.producers,
     country: musicbrainzImport.country,
+    discogsArtistId: musicbrainzImport.discogsArtistId,
+    musicbrainzArtistId: musicbrainzImport.musicbrainzArtistId,
     description: musicbrainzImport.description,
     trackCount: musicbrainzImport.trackCount,
     coverUrl: musicbrainzImport.coverUrl,

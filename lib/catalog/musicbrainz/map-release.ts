@@ -63,6 +63,17 @@ export function coverArtArchiveUrl(releaseId: string) {
   return `https://coverartarchive.org/release/${releaseId}/front`
 }
 
+function primaryMusicBrainzArtist(release: MusicBrainzRelease) {
+  const credit = release["artist-credit"]?.[0]
+  const artistId = credit?.artist?.id?.trim() ?? ""
+  const name = joinArtistCredit(release["artist-credit"])
+
+  return {
+    musicbrainzArtistId: artistId.length > 0 ? artistId : null,
+    name,
+  }
+}
+
 export function mapMusicBrainzRelease(
   release: MusicBrainzRelease
 ): MusicBrainzPartialImport {
@@ -71,11 +82,14 @@ export function mapMusicBrainzRelease(
   const labelName = labelInfo?.label?.name?.trim() ?? ""
   const descriptionParts = [release.annotation?.trim(), release.disambiguation?.trim()]
     .filter((part) => part && part.length > 0)
+  const artist = primaryMusicBrainzArtist(release)
 
   return {
     musicbrainzReleaseId: release.id,
     title: release.title.trim(),
-    artist: joinArtistCredit(release["artist-credit"]),
+    artist: artist.name,
+    discogsArtistId: null,
+    musicbrainzArtistId: artist.musicbrainzArtistId,
     releaseYear: parseReleaseYear(release.date),
     releaseDate: normalizeReleaseDate(release.date),
     genre: tags[0] ?? "",

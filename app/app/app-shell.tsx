@@ -1,6 +1,6 @@
 "use client"
 
-import { Disc3Icon, HomeIcon } from "lucide-react"
+import { Disc3Icon, HomeIcon, Mic2Icon } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -30,9 +30,34 @@ export type AppShellProps = {
 }
 
 const navItems = [
-  { href: routes.app, label: "Accueil", icon: HomeIcon },
-  { href: routes.bibliotheque, label: "Bibliothèque", icon: Disc3Icon },
+  { href: routes.app, label: "Accueil", icon: HomeIcon, match: "exact" as const },
+  {
+    href: routes.bibliotheque,
+    label: "Bibliothèque",
+    icon: Disc3Icon,
+    match: "bibliotheque" as const,
+  },
+  {
+    href: routes.artistes,
+    label: "Artistes",
+    icon: Mic2Icon,
+    match: "artistes" as const,
+  },
 ] as const
+
+function isNavActive(
+  pathname: string,
+  item: (typeof navItems)[number]
+) {
+  switch (item.match) {
+    case "exact":
+      return pathname === item.href
+    case "bibliotheque":
+      return pathname.startsWith("/bibliotheque")
+    case "artistes":
+      return pathname.startsWith("/artistes")
+  }
+}
 
 export function AppShell({ email, children }: AppShellProps) {
   const pathname = usePathname()
@@ -53,11 +78,7 @@ export function AppShell({ email, children }: AppShellProps) {
                 {navItems.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
-                      isActive={
-                        pathname === item.href ||
-                        (item.href === routes.bibliotheque &&
-                          pathname.startsWith("/bibliotheque"))
-                      }
+                      isActive={isNavActive(pathname, item)}
                       asChild
                     >
                       <Link href={item.href}>

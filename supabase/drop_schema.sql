@@ -8,6 +8,7 @@ drop table if exists public.album_tags cascade;
 drop table if exists public.album_video_clips cascade;
 drop table if exists public.album_tracks cascade;
 drop table if exists public.albums cascade;
+drop table if exists public.artists cascade;
 drop table if exists public.tags cascade;
 drop table if exists public.subgenres cascade;
 drop table if exists public.genres cascade;
