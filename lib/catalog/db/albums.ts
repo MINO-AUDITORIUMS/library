@@ -3,7 +3,12 @@ import type { SupabaseClient, User } from "@supabase/supabase-js"
 import { ensureProfile } from "@/lib/auth/ensure-profile"
 
 import { countryDisplayName, resolveCountryCode } from "@/lib/catalog/country-code"
-import { coverHueFromId, discogsIdFromExternalIds } from "@/lib/catalog/cover-hue"
+import { coverHueFromId } from "@/lib/catalog/cover-hue"
+import {
+  discogsIdFromExternalIds,
+  hasTrackImportSources,
+  musicbrainzIdFromExternalIds,
+} from "@/lib/catalog/external-ids"
 import {
   getAlbumCoverPublicUrl,
   removeAlbumCover,
@@ -15,9 +20,7 @@ import {
   parseProducers,
   parseReleaseDate,
 } from "@/lib/catalog/create-album-input"
-import { fetchDiscogsTracks } from "@/lib/catalog/discogs/fetch-tracks"
-import { fetchMusicBrainzTracks } from "@/lib/catalog/musicbrainz/fetch-tracks"
-import { mergeImportTracks } from "@/lib/catalog/track-credits"
+import { resolveImportTracks } from "@/lib/catalog/resolve-import-tracks"
 import { minoRatingFromRows } from "@/lib/catalog/db/album-user-ratings"
 import { syncAlbumTags } from "@/lib/catalog/db/tags"
 import type { UpdateAlbumInput } from "@/lib/catalog/update-album-input"
@@ -191,6 +194,8 @@ export function mapAlbumDetail(row: AlbumRow): AlbumDetail {
   return {
     ...summary,
     discogsReleaseId: discogsIdFromExternalIds(row.external_ids),
+    musicbrainzReleaseId: musicbrainzIdFromExternalIds(row.external_ids),
+    canSyncTracks: hasTrackImportSources(row.external_ids),
     releaseDate: row.release_date,
     subgenre: subgenreName || "—",
     recordCompany: row.record_company ?? "—",
@@ -258,32 +263,6 @@ async function ensureSubgenre(
 
   if (error) return null
   return data.id
-}
-
-async function resolveImportTracks(input: CreateAlbumInput) {
-  let discogsTracks: Awaited<ReturnType<typeof fetchDiscogsTracks>> = []
-  let mbTracks: Awaited<ReturnType<typeof fetchMusicBrainzTracks>> = []
-
-  if (input.discogsReleaseId) {
-    try {
-      discogsTracks = await fetchDiscogsTracks(input.discogsReleaseId)
-    } catch {
-      discogsTracks = []
-    }
-  }
-
-  if (input.musicbrainzReleaseId) {
-    try {
-      mbTracks = await fetchMusicBrainzTracks(input.musicbrainzReleaseId)
-    } catch {
-      mbTracks = []
-    }
-  }
-
-  if (discogsTracks.length === 0) return mbTracks
-  if (mbTracks.length === 0) return discogsTracks
-
-  return mergeImportTracks(discogsTracks, mbTracks)
 }
 
 async function resolveOriginCountryCode(
@@ -453,7 +432,10 @@ export async function createAlbum(
 
   if (input.discogsReleaseId || input.musicbrainzReleaseId) {
     try {
-      const tracks = await resolveImportTracks(input)
+      const tracks = await resolveImportTracks({
+        discogsReleaseId: input.discogsReleaseId,
+        musicbrainzReleaseId: input.musicbrainzReleaseId,
+      })
       if (tracks.length > 0) {
         await supabase.from("album_tracks").insert(
           tracks.map((track) => ({

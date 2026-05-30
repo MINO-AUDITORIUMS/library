@@ -49,7 +49,11 @@ export function AlbumDetailView({
             Bibliothèque
           </Link>
         </Button>
-        <AlbumDetailActions albumId={album.id} albumTitle={album.title} />
+        <AlbumDetailActions
+          albumId={album.id}
+          albumTitle={album.title}
+          canSyncTracks={album.canSyncTracks}
+        />
       </div>
 
       <AlbumDetailHero

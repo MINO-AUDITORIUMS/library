@@ -45,3 +45,4 @@ pnpm db:schema
 | `pnpm typecheck` | Vérification TypeScript |
 | `pnpm db:schema` | Appliquer le schéma Supabase |
 | `pnpm db:schema:reset` | Reset + réapplication du schéma |
+| `pnpm db:sync-tracks -- --all` | Resynchroniser les tracklists (crédits inclus) en batch |

@@ -152,6 +152,17 @@ Sur `/bibliotheque/[id]`, si `external_ids.discogs` est présent :
 - Appel `fetchDiscogsCommunityStats` → note communauté, collection, wantlist
 - Affichage via `DiscogsCommunityRating` (enrichissement lecture seule, pas à l'import)
 
+### Resynchronisation tracklist
+
+```
+POST /api/albums/{id}/sync-tracks
+```
+
+Re-fetch Discogs + MusicBrainz, remplace `album_tracks` (titres, durées, writers, producers) et met à jour `track_count` / `total_duration_seconds`. Nécessite `external_ids.discogs` ou `external_ids.musicbrainz`.
+
+- Bouton **Resynchroniser** sur la fiche album
+- Batch : `pnpm db:sync-tracks -- --all` (requiert `SUPABASE_SERVICE_ROLE_KEY`)
+
 ---
 
 ## Règles de fusion Discogs + MusicBrainz

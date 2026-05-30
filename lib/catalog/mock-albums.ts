@@ -185,6 +185,8 @@ const summaries = rawSummaries.map(enrichSummary)
 const details: Record<string, Omit<AlbumDetail, keyof AlbumSummary>> = {
   "1": {
     discogsReleaseId: null,
+    musicbrainzReleaseId: null,
+    canSyncTracks: false,
     releaseDate: "1959-08-17",
     subgenre: "Modal jazz",
     recordCompany: "Sony Music",
@@ -212,6 +214,8 @@ function defaultDetail(
 ): Omit<AlbumDetail, keyof AlbumSummary> {
   return {
     discogsReleaseId: null,
+    musicbrainzReleaseId: null,
+    canSyncTracks: false,
     releaseDate: `${summary.releaseYear}-01-01`,
     subgenre: summary.subgenreName || summary.genre,
     recordCompany: summary.label,

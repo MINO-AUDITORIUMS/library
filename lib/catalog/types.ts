@@ -43,6 +43,8 @@ export type AlbumComment = {
 
 export type AlbumDetail = AlbumSummary & {
   discogsReleaseId: number | null
+  musicbrainzReleaseId: string | null
+  canSyncTracks: boolean
   releaseDate: string | null
   subgenre: string
   recordCompany: string
