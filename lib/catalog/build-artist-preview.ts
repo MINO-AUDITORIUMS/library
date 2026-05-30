@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 
+import { normalizeArtistDisplayName } from "@/lib/catalog/normalize-artist-name"
+
 import type { CatalogReleaseImport } from "@/lib/catalog/discogs/types"
 import { fetchDiscogsArtistProfile } from "@/lib/catalog/discogs/fetch-artist"
 import { fetchMusicBrainzArtistProfile } from "@/lib/catalog/musicbrainz/fetch-artist"
@@ -84,7 +86,7 @@ export async function buildArtistImportPreview(
   return {
     discogsArtistId,
     musicbrainzArtistId,
-    name: name || release.artist.trim(),
+    name: normalizeArtistDisplayName(name || release.artist.trim()),
     bio,
     imageUrl,
     country,

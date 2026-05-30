@@ -8,6 +8,7 @@ import {
 import { fetchDiscogsArtistProfile } from "@/lib/catalog/discogs/fetch-artist"
 import { fetchMusicBrainzArtistProfile } from "@/lib/catalog/musicbrainz/fetch-artist"
 import { coverHueFromId } from "@/lib/catalog/cover-hue"
+import { normalizeArtistDisplayName } from "@/lib/catalog/normalize-artist-name"
 import { slugify } from "@/lib/catalog/slug"
 import type { AlbumSummary, ArtistDetail, ArtistSummary } from "@/lib/catalog/types"
 
@@ -66,7 +67,7 @@ export function mapArtistSummary(
 ): ArtistSummary {
   return {
     id: row.id,
-    name: row.name,
+    name: normalizeArtistDisplayName(row.name),
     slug: row.slug,
     imageUrl: row.image_url,
     country: row.country?.trim() ?? "",
@@ -149,7 +150,7 @@ export function mapArtistDetail(
 ): ArtistDetail {
   return {
     id: row.id,
-    name: row.name,
+    name: normalizeArtistDisplayName(row.name),
     slug: row.slug,
     bio: row.bio?.trim() ?? "",
     imageUrl: row.image_url,
@@ -247,7 +248,7 @@ async function fetchArtistProfile(input: ResolveArtistInput) {
     }
   }
 
-  return { name: name || input.name.trim(), bio, imageUrl, country }
+  return { name: normalizeArtistDisplayName(name || input.name.trim()), bio, imageUrl, country }
 }
 
 async function mergeArtistExternalIds(
@@ -355,5 +356,5 @@ export async function getArtistTitleById(
     .maybeSingle()
 
   if (error || !data) return null
-  return data.name as string
+  return normalizeArtistDisplayName(data.name as string)
 }

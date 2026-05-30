@@ -16,9 +16,6 @@ export function ArtistDetailView({ artist }: ArtistDetailViewProps) {
           <h2 className="text-lg font-semibold tracking-tight">
             Albums dans la bibliothèque
           </h2>
-          <p className="text-sm text-muted-foreground">
-            Albums MINO associés à cet artiste.
-          </p>
         </div>
 
         {artist.albums.length === 0 ? (

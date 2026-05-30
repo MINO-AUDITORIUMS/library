@@ -1,4 +1,5 @@
 import { discogsFetch } from "@/lib/catalog/discogs/client"
+import { normalizeArtistDisplayName } from "@/lib/catalog/normalize-artist-name"
 
 export type DiscogsArtistProfile = {
   discogsArtistId: number
@@ -38,7 +39,7 @@ export async function fetchDiscogsArtistProfile(artistId: number) {
     path: `/artists/${artistId}`,
   })
 
-  const name = data.name?.trim() ?? ""
+  const name = normalizeArtistDisplayName(data.name?.trim() ?? "")
   if (!name) return null
 
   const bio = stripDiscogsMarkup(data.profile?.trim() ?? "")
@@ -66,6 +67,6 @@ export function primaryDiscogsArtistFromRelease(data: unknown) {
 
   return {
     discogsArtistId: main.id,
-    name: main.name?.trim() ?? "",
+    name: normalizeArtistDisplayName(main.name?.trim() ?? ""),
   }
 }
