@@ -7,6 +7,7 @@ import { Loader2, Mail } from "lucide-react"
 import { toast } from "sonner"
 
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button"
+import { ThemeToggle } from "@/components/app/theme-toggle"
 import { MinoLogo } from "@/components/mino-logo"
 import { Button } from "@/components/ui/button"
 import {
@@ -140,6 +141,9 @@ export default function ConnexionPage() {
 
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background p-6">
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-primary/15 via-background to-background" />
       <div className="pointer-events-none absolute -top-32 -right-32 size-96 rounded-full bg-primary/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-32 -left-32 size-96 rounded-full bg-primary/5 blur-3xl" />

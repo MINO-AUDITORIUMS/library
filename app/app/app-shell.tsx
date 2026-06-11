@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation"
 import { UserFooter } from "@/app/app/user-footer"
 import { AppBreadcrumb } from "@/components/app/app-breadcrumb"
 import { GlobalSearchCommand } from "@/components/app/global-search-command"
+import { ThemeToggle } from "@/components/app/theme-toggle"
 import { MinoLogo } from "@/components/mino-logo"
 import {
   Sidebar,
@@ -102,7 +103,8 @@ export function AppShell({ email, children }: AppShellProps) {
         <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4 md:px-6">
           <SidebarTrigger className="md:hidden" />
           <AppBreadcrumb />
-          <div className="ml-auto shrink-0">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <ThemeToggle />
             <GlobalSearchCommand />
           </div>
         </header>
