@@ -35,7 +35,7 @@ export function TrackVideoDialog({
           Vidéo
         </Button>
       </DialogTrigger>
-      <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-2xl">
+      <DialogContent className="w-full max-w-[calc(100%-2rem)] gap-0 overflow-hidden p-0 sm:max-w-4xl lg:max-w-5xl">
         <DialogHeader className="border-b p-4">
           <DialogTitle>{trackTitle}</DialogTitle>
         </DialogHeader>
