@@ -1,5 +1,6 @@
 import type { CatalogReleaseImport } from "@/lib/catalog/discogs/types"
 import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
+import { normalizeProducersString, uniqueCreditNames } from "@/lib/catalog/track-credits"
 
 type RawRelease = {
   id: number
@@ -69,9 +70,9 @@ export function mapDiscogsRelease(data: unknown): CatalogReleaseImport {
     releaseDate: release.released ?? "",
     genre: release.genres?.[0] ?? "",
     subgenre: release.styles?.[0] ?? "",
-    label: release.labels?.[0]?.name ?? "",
-    recordCompany: release.labels?.[0]?.name ?? "",
-    producers: mapProducers(release),
+    label: stripCatalogDisambiguation(release.labels?.[0]?.name ?? ""),
+    recordCompany: stripCatalogDisambiguation(release.labels?.[0]?.name ?? ""),
+    producers: normalizeProducersString(mapProducers(release)),
     country: release.country ?? "",
     description: release.notes?.trim() ?? "",
     trackCount: release.tracklist?.length ? String(release.tracklist.length) : "",

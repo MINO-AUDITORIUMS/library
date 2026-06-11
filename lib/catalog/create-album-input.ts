@@ -1,5 +1,6 @@
 import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
 import { parseTagNames } from "@/lib/catalog/parse-tag-names"
+import { normalizeProducersString, uniqueCreditNames } from "@/lib/catalog/track-credits"
 
 export type CreateAlbumInput = {
   title: string
@@ -71,10 +72,16 @@ export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
     releaseDate: typeof data.releaseDate === "string" ? data.releaseDate : "",
     genre: typeof data.genre === "string" ? data.genre.trim() : "",
     subgenre: typeof data.subgenre === "string" ? data.subgenre.trim() : "",
-    label: typeof data.label === "string" ? data.label.trim() : "",
-    recordCompany:
-      typeof data.recordCompany === "string" ? data.recordCompany.trim() : "",
-    producers: typeof data.producers === "string" ? data.producers : "",
+    label: stripCatalogDisambiguation(
+      typeof data.label === "string" ? data.label : ""
+    ),
+    recordCompany: stripCatalogDisambiguation(
+      typeof data.recordCompany === "string" ? data.recordCompany : ""
+    ),
+    producers:
+      typeof data.producers === "string"
+        ? normalizeProducersString(data.producers)
+        : "",
     country: typeof data.country === "string" ? data.country.trim() : "",
     description: typeof data.description === "string" ? data.description : "",
     personalNotes:
@@ -92,10 +99,9 @@ export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
 }
 
 export function parseProducers(value: string) {
-  return value
-    .split(",")
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0)
+  return uniqueCreditNames(
+    value.split(",").map((part) => stripCatalogDisambiguation(part))
+  )
 }
 
 export function parseOptionalInt(value: string) {

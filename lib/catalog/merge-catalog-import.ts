@@ -1,5 +1,6 @@
 import { pickMergedCountry } from "@/lib/catalog/country-code"
 import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
+import { normalizeProducersString } from "@/lib/catalog/track-credits"
 import type { CatalogReleaseImport } from "@/lib/catalog/discogs/types"
 import { parseCertificationFromText } from "@/lib/catalog/parse-certification"
 import type { MusicBrainzPartialImport } from "@/lib/catalog/musicbrainz/types"
@@ -76,6 +77,9 @@ function withNormalizedNames(
     ...release,
     title: stripCatalogDisambiguation(release.title),
     artist: stripCatalogDisambiguation(release.artist),
+    label: stripCatalogDisambiguation(release.label),
+    recordCompany: stripCatalogDisambiguation(release.recordCompany),
+    producers: normalizeProducersString(release.producers),
   }
 }
 

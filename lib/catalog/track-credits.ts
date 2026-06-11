@@ -16,6 +16,12 @@ export function uniqueCreditNames(names: string[]) {
   return result
 }
 
+export function normalizeProducersString(value: string) {
+  return uniqueCreditNames(
+    value.split(",").map((part) => stripCatalogDisambiguation(part))
+  ).join(", ")
+}
+
 export function isWriterCreditRole(role: string) {
   const normalized = role.trim().toLowerCase()
   return (

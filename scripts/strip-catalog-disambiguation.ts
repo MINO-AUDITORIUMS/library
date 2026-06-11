@@ -27,9 +27,6 @@ function loadEnvFile(filePath: string) {
   }
 }
 
-function needsStrip(value: string) {
-  return /\s+\(\d+\)$/.test(value.trim())
-}
 
 async function main() {
   loadEnvFile(resolve(process.cwd(), ".env.local"))
@@ -51,7 +48,7 @@ async function main() {
 
   const { data: albums, error: albumsError } = await supabase
     .from("albums")
-    .select("id, title, artist")
+    .select("id, title, artist, label, record_company, producers")
 
   if (albumsError) throw albumsError
 
@@ -60,12 +57,34 @@ async function main() {
   for (const album of albums ?? []) {
     const title = stripCatalogDisambiguation(album.title as string)
     const artist = stripCatalogDisambiguation(album.artist as string)
+    const label = stripCatalogDisambiguation((album.label as string | null) ?? "")
+    const recordCompany = stripCatalogDisambiguation(
+      (album.record_company as string | null) ?? ""
+    )
+    const producers = uniqueCreditNames((album.producers as string[]) ?? [])
 
-    if (title === album.title && artist === album.artist) continue
+    if (
+      title === album.title &&
+      artist === album.artist &&
+      label === ((album.label as string | null) ?? "") &&
+      recordCompany === ((album.record_company as string | null) ?? "") &&
+      producers.length === ((album.producers as string[]) ?? []).length &&
+      producers.every(
+        (name, index) => name === ((album.producers as string[]) ?? [])[index]
+      )
+    ) {
+      continue
+    }
 
     const { error } = await supabase
       .from("albums")
-      .update({ title, artist })
+      .update({
+        title,
+        artist,
+        label: label || null,
+        record_company: recordCompany || null,
+        producers,
+      })
       .eq("id", album.id)
 
     if (error) throw error
@@ -124,14 +143,6 @@ async function main() {
     if (error) throw error
     tracksUpdated += 1
   }
-
-  const albumCandidates = (albums ?? []).filter(
-    (row) =>
-      needsStrip(row.title as string) || needsStrip(row.artist as string)
-  ).length
-  const artistCandidates = (artists ?? []).filter((row) =>
-    needsStrip(row.name as string)
-  ).length
 
   console.log(
     `Terminé : ${albumsUpdated} album(s), ${artistsUpdated} artiste(s) et ${tracksUpdated} piste(s) mis à jour.`

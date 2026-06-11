@@ -1,5 +1,6 @@
 import { countryDisplayName } from "@/lib/catalog/country-code"
 import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
+import { normalizeProducersString } from "@/lib/catalog/track-credits"
 import type {
   MusicBrainzPartialImport,
   MusicBrainzRelease,
@@ -95,9 +96,9 @@ export function mapMusicBrainzRelease(
     releaseDate: normalizeReleaseDate(release.date),
     genre: tags[0] ?? "",
     subgenre: tags[1] ?? "",
-    label: labelName,
-    recordCompany: labelName,
-    producers: mapProducers(release.relations),
+    label: stripCatalogDisambiguation(labelName),
+    recordCompany: stripCatalogDisambiguation(labelName),
+    producers: normalizeProducersString(mapProducers(release.relations)),
     country: countryDisplayName(release.country ?? ""),
     description: descriptionParts.join("\n\n"),
     trackCount: trackCountFromRelease(release),

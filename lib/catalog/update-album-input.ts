@@ -1,5 +1,6 @@
 import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
 import { parseTagNames } from "@/lib/catalog/parse-tag-names"
+import { normalizeProducersString } from "@/lib/catalog/track-credits"
 
 export type UpdateAlbumInput = {
   title: string
@@ -37,10 +38,16 @@ export function parseUpdateAlbumInput(body: unknown): UpdateAlbumInput | null {
     releaseDate: typeof data.releaseDate === "string" ? data.releaseDate : "",
     genre: typeof data.genre === "string" ? data.genre.trim() : "",
     subgenre: typeof data.subgenre === "string" ? data.subgenre.trim() : "",
-    label: typeof data.label === "string" ? data.label.trim() : "",
-    recordCompany:
-      typeof data.recordCompany === "string" ? data.recordCompany.trim() : "",
-    producers: typeof data.producers === "string" ? data.producers : "",
+    label: stripCatalogDisambiguation(
+      typeof data.label === "string" ? data.label : ""
+    ),
+    recordCompany: stripCatalogDisambiguation(
+      typeof data.recordCompany === "string" ? data.recordCompany : ""
+    ),
+    producers:
+      typeof data.producers === "string"
+        ? normalizeProducersString(data.producers)
+        : "",
     country: typeof data.country === "string" ? data.country.trim() : "",
     description: typeof data.description === "string" ? data.description : "",
     personalNotes:
