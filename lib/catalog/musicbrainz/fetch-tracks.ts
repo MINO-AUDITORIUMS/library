@@ -1,4 +1,5 @@
 import { musicBrainzFetch } from "@/lib/catalog/musicbrainz/client"
+import { resolveRecordingYouTubeVideo } from "@/lib/catalog/musicbrainz/recording-youtube"
 import type {
   MusicBrainzRecording,
   MusicBrainzRelease,
@@ -84,7 +85,7 @@ export async function fetchMusicBrainzTracks(releaseId: string) {
   const data = await musicBrainzFetch<MusicBrainzRelease>({
     path: `/release/${releaseId}`,
     searchParams: {
-      inc: "recordings+media+recording-level-rels+work-level-rels",
+      inc: "recordings+media+recording-level-rels+work-level-rels+url-rels",
     },
   })
 
@@ -95,6 +96,8 @@ export async function fetchMusicBrainzTracks(releaseId: string) {
     writers: string[]
     producers: string[]
     workIds: string[]
+    recordingId: string | null
+    recordingRelations: MusicBrainzRecording["relations"]
   }[] = []
   const pendingWorkIds = new Set<string>()
   let position = 0
@@ -125,6 +128,8 @@ export async function fetchMusicBrainzTracks(releaseId: string) {
         writers: credits.writers,
         producers: credits.producers,
         workIds,
+        recordingId: track.recording?.id?.trim() ?? null,
+        recordingRelations: track.recording?.relations ?? [],
       })
     }
   }
@@ -134,10 +139,37 @@ export async function fetchMusicBrainzTracks(releaseId: string) {
       ? await fetchWorkWriters([...pendingWorkIds])
       : new Map<string, string[]>()
 
+  const youtubeByRecordingId = new Map<string, string>()
+  const uniqueRecordingIds = [
+    ...new Set(
+      draft
+        .map((track) => track.recordingId)
+        .filter((recordingId): recordingId is string => Boolean(recordingId))
+    ),
+  ]
+
+  for (const recordingId of uniqueRecordingIds) {
+    const inlineRelations =
+      draft.find((track) => track.recordingId === recordingId)
+        ?.recordingRelations ?? []
+
+    const youtubeVideoId = await resolveRecordingYouTubeVideo(
+      recordingId,
+      inlineRelations
+    )
+
+    if (youtubeVideoId) {
+      youtubeByRecordingId.set(recordingId, youtubeVideoId)
+    }
+  }
+
   return draft.map((track) => {
     const extraWriters = track.workIds.flatMap(
       (workId) => writersByWorkId.get(workId) ?? []
     )
+    const youtubeVideoId = track.recordingId
+      ? (youtubeByRecordingId.get(track.recordingId) ?? null)
+      : null
 
     return {
       position: track.position,
@@ -145,6 +177,10 @@ export async function fetchMusicBrainzTracks(releaseId: string) {
       duration_seconds: track.duration_seconds,
       writers: uniqueCreditNames([...track.writers, ...extraWriters]),
       producers: track.producers,
+      musicbrainz_recording_id: track.recordingId,
+      youtube_video_id: youtubeVideoId,
+      video_source: youtubeVideoId ? ("musicbrainz" as const) : null,
+      video_confirmed: Boolean(youtubeVideoId),
     }
   })
 }

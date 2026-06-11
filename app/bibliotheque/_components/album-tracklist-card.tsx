@@ -1,3 +1,4 @@
+import { TrackVideoDialog } from "@/components/catalog/track-video-dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { formatTrackDuration } from "@/lib/catalog/format"
@@ -22,7 +23,15 @@ function AlbumTrackRow({ track }: AlbumTrackRowProps) {
           {track.position}
         </span>
         <div className="min-w-0 space-y-1">
-          <p className="truncate">{track.title}</p>
+          <div className="flex min-w-0 items-center gap-2">
+            <p className="truncate">{track.title}</p>
+            {track.youtubeVideoId ? (
+              <TrackVideoDialog
+                videoId={track.youtubeVideoId}
+                trackTitle={track.title}
+              />
+            ) : null}
+          </div>
           {hasCredits ? (
             <div className="space-y-0.5 text-xs text-muted-foreground">
               {track.writers.length > 0 ? (

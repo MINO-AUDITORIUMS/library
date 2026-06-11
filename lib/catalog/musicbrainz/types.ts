@@ -36,8 +36,11 @@ export type MusicBrainzWork = {
 
 export type MusicBrainzRecordingRelation = {
   type?: string
+  attributes?: string[]
   artist?: MusicBrainzRelationArtist
   work?: MusicBrainzWork
+  url?: { resource?: string }
+  recording?: { id?: string; title?: string }
 }
 
 export type MusicBrainzRecording = {

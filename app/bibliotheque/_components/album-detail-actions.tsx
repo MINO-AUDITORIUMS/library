@@ -19,6 +19,7 @@ type SyncTracksResponse = {
   trackCount?: number
   tracksWithWriters?: number
   tracksWithProducers?: number
+  tracksWithVideos?: number
   error?: string
 }
 
@@ -48,8 +49,13 @@ export function AlbumDetailActions({
 
       const writers = data.tracksWithWriters ?? 0
       const producers = data.tracksWithProducers ?? 0
+      const videos = data.tracksWithVideos ?? 0
+      const videoLabel =
+        videos > 0
+          ? `, ${videos} vidéo${videos > 1 ? "s" : ""} YouTube`
+          : ""
       toast.success(
-        `Tracklist mise à jour (${data.trackCount ?? 0} pistes, ${writers} avec écriture, ${producers} avec production).`
+        `Tracklist mise à jour (${data.trackCount ?? 0} pistes, ${writers} avec écriture, ${producers} avec production${videoLabel}).`
       )
       router.refresh()
     } catch {

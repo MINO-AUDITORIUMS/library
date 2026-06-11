@@ -12,7 +12,7 @@ create table if not exists public.albums (
   producers text[] not null default '{}',
   origin_country_code char(2) references public.countries (code) on delete set null,
   certification text,
-  official_clips_count integer not null default 0,
+  official_videos_count integer not null default 0,
   rating smallint,
   personal_notes text,
   cover_storage_path text,
@@ -34,8 +34,8 @@ create table if not exists public.albums (
   constraint albums_track_count_positive check (
     track_count is null or track_count > 0
   ),
-  constraint albums_official_clips_count_non_negative check (
-    official_clips_count >= 0
+  constraint albums_official_videos_count_non_negative check (
+    official_videos_count >= 0
   ),
   constraint albums_rating_range check (
     rating is null or (rating >= 1 and rating <= 5)

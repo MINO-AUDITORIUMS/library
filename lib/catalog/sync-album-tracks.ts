@@ -4,13 +4,13 @@ import {
   discogsIdFromExternalIds,
   musicbrainzIdFromExternalIds,
 } from "@/lib/catalog/external-ids"
+import {
+  persistAlbumTracks,
+  type PersistAlbumTracksResult,
+} from "@/lib/catalog/persist-album-tracks"
 import { resolveImportTracks } from "@/lib/catalog/resolve-import-tracks"
 
-export type SyncAlbumTracksResult = {
-  trackCount: number
-  tracksWithWriters: number
-  tracksWithProducers: number
-}
+export type SyncAlbumTracksResult = PersistAlbumTracksResult
 
 export class SyncAlbumTracksError extends Error {
   code: "not_found" | "no_sources" | "no_tracks"
@@ -60,45 +60,5 @@ export async function syncAlbumTracks(
     )
   }
 
-  const { error: deleteError } = await supabase
-    .from("album_tracks")
-    .delete()
-    .eq("album_id", albumId)
-
-  if (deleteError) throw deleteError
-
-  const { error: insertError } = await supabase.from("album_tracks").insert(
-    tracks.map((track) => ({
-      album_id: albumId,
-      position: track.position,
-      title: track.title,
-      duration_seconds: track.duration_seconds,
-      writers: track.writers,
-      producers: track.producers,
-    }))
-  )
-
-  if (insertError) throw insertError
-
-  const totalDuration = tracks.reduce(
-    (sum, track) => sum + (track.duration_seconds ?? 0),
-    0
-  )
-
-  const { error: updateError } = await supabase
-    .from("albums")
-    .update({
-      track_count: tracks.length,
-      total_duration_seconds: totalDuration > 0 ? totalDuration : null,
-    })
-    .eq("id", albumId)
-
-  if (updateError) throw updateError
-
-  return {
-    trackCount: tracks.length,
-    tracksWithWriters: tracks.filter((track) => track.writers.length > 0).length,
-    tracksWithProducers: tracks.filter((track) => track.producers.length > 0)
-      .length,
-  }
+  return persistAlbumTracks(supabase, albumId, tracks)
 }

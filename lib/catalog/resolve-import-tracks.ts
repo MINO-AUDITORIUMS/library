@@ -1,5 +1,6 @@
-import { fetchDiscogsTracks } from "@/lib/catalog/discogs/fetch-tracks"
+import { fetchDiscogsReleaseData } from "@/lib/catalog/discogs/fetch-release"
 import { fetchMusicBrainzTracks } from "@/lib/catalog/musicbrainz/fetch-tracks"
+import { matchDiscogsVideosToTracks } from "@/lib/catalog/match-track-videos"
 import { mergeImportTracks } from "@/lib/catalog/track-credits"
 
 export type TrackImportSources = {
@@ -8,14 +9,20 @@ export type TrackImportSources = {
 }
 
 export async function resolveImportTracks(sources: TrackImportSources) {
-  let discogsTracks: Awaited<ReturnType<typeof fetchDiscogsTracks>> = []
+  let discogsTracks: Awaited<ReturnType<typeof fetchDiscogsReleaseData>>["tracks"] =
+    []
+  let discogsVideos: Awaited<ReturnType<typeof fetchDiscogsReleaseData>>["videos"] =
+    []
   let mbTracks: Awaited<ReturnType<typeof fetchMusicBrainzTracks>> = []
 
   if (sources.discogsReleaseId) {
     try {
-      discogsTracks = await fetchDiscogsTracks(sources.discogsReleaseId)
+      const releaseData = await fetchDiscogsReleaseData(sources.discogsReleaseId)
+      discogsTracks = releaseData.tracks
+      discogsVideos = releaseData.videos
     } catch {
       discogsTracks = []
+      discogsVideos = []
     }
   }
 
@@ -27,8 +34,16 @@ export async function resolveImportTracks(sources: TrackImportSources) {
     }
   }
 
-  if (discogsTracks.length === 0) return mbTracks
-  if (mbTracks.length === 0) return discogsTracks
+  let tracks =
+    discogsTracks.length === 0
+      ? mbTracks
+      : mbTracks.length === 0
+        ? discogsTracks
+        : mergeImportTracks(discogsTracks, mbTracks)
 
-  return mergeImportTracks(discogsTracks, mbTracks)
+  if (discogsVideos.length > 0 && tracks.length > 0) {
+    tracks = matchDiscogsVideosToTracks(tracks, discogsVideos)
+  }
+
+  return tracks
 }

@@ -20,6 +20,7 @@ import {
   parseProducers,
   parseReleaseDate,
 } from "@/lib/catalog/create-album-input"
+import { persistAlbumTracks } from "@/lib/catalog/persist-album-tracks"
 import { resolveImportTracks } from "@/lib/catalog/resolve-import-tracks"
 import { minoRatingFromRows } from "@/lib/catalog/db/album-user-ratings"
 import { syncAlbumTags } from "@/lib/catalog/db/tags"
@@ -47,7 +48,7 @@ type AlbumRow = {
   producers: string[]
   origin_country_code: string | null
   certification: string | null
-  official_clips_count: number
+  official_videos_count: number
   rating: number | null
   personal_notes: string | null
   cover_storage_path: string | null
@@ -67,6 +68,8 @@ type AlbumRow = {
         duration_seconds: number | null
         writers: string[]
         producers: string[]
+        youtube_video_id: string | null
+        video_confirmed: boolean
       }[]
     | null
 }
@@ -101,7 +104,7 @@ const albumDetailSelect = `
   producers,
   origin_country_code,
   certification,
-  official_clips_count,
+  official_videos_count,
   personal_notes,
   cover_storage_path,
   external_ids,
@@ -110,7 +113,7 @@ const albumDetailSelect = `
   album_genres(genres(name)),
   album_subgenres(subgenres(name)),
   album_tags(tags(name)),
-  album_tracks(position, title, duration_seconds, writers, producers)
+  album_tracks(position, title, duration_seconds, writers, producers, youtube_video_id, video_confirmed)
 `
 
 function readName(value: { name: string } | { name: string }[] | null | undefined) {
@@ -149,6 +152,10 @@ function mapTracks(
       durationSeconds: track.duration_seconds,
       writers: track.writers ?? [],
       producers: track.producers ?? [],
+      youtubeVideoId:
+        track.video_confirmed && track.youtube_video_id
+          ? track.youtube_video_id
+          : null,
     }))
 }
 
@@ -205,7 +212,7 @@ export function mapAlbumDetail(row: AlbumRow): AlbumDetail {
     description: row.description?.trim() || "—",
     personalNotes: row.personal_notes?.trim() ?? "",
     tracks,
-    officialClipsCount: row.official_clips_count,
+    officialVideosCount: row.official_videos_count,
     addedAt: row.created_at.slice(0, 10),
   }
 }
@@ -502,30 +509,7 @@ export async function createAlbum(
         musicbrainzReleaseId: input.musicbrainzReleaseId,
       })
       if (tracks.length > 0) {
-        await supabase.from("album_tracks").insert(
-          tracks.map((track) => ({
-            album_id: albumId,
-            position: track.position,
-            title: track.title,
-            duration_seconds: track.duration_seconds,
-            writers: track.writers,
-            producers: track.producers,
-          }))
-        )
-
-        const totalDuration = tracks.reduce(
-          (sum, track) => sum + (track.duration_seconds ?? 0),
-          0
-        )
-
-        await supabase
-          .from("albums")
-          .update({
-            track_count: tracks.length,
-            total_duration_seconds:
-              totalDuration > 0 ? totalDuration : null,
-          })
-          .eq("id", albumId)
+        await persistAlbumTracks(supabase, albumId, tracks)
       }
     } catch {
       // Discogs tracklist is optional; album row is already created.

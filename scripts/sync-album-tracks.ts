@@ -149,7 +149,7 @@ async function main() {
       const result = await syncAlbumTracks(supabase, album.id)
       synced += 1
       console.log(
-        `ok (${result.trackCount} pistes, ${result.tracksWithWriters} writers, ${result.tracksWithProducers} producers)`
+        `ok (${result.trackCount} pistes, ${result.tracksWithWriters} writers, ${result.tracksWithProducers} producers, ${result.tracksWithVideos} vidéos)`
       )
     } catch (error) {
       failed += 1

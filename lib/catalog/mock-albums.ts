@@ -187,13 +187,13 @@ const details: Record<string, Omit<AlbumDetail, keyof AlbumSummary>> = {
       "Album studio de jazz modal enregistré en deux sessions à New York.",
     personalNotes: "Référence absolue pour la salle d'écoute.",
     tracks: [
-      { position: 1, title: "So What", durationSeconds: 562, writers: [], producers: [] },
-      { position: 2, title: "Freddie Freeloader", durationSeconds: 578, writers: [], producers: [] },
-      { position: 3, title: "Blue in Green", durationSeconds: 337, writers: [], producers: [] },
-      { position: 4, title: "All Blues", durationSeconds: 691, writers: [], producers: [] },
-      { position: 5, title: "Flamenco Sketches", durationSeconds: 566, writers: [], producers: [] },
+      { position: 1, title: "So What", durationSeconds: 562, writers: [], producers: [], youtubeVideoId: null },
+      { position: 2, title: "Freddie Freeloader", durationSeconds: 578, writers: [], producers: [], youtubeVideoId: null },
+      { position: 3, title: "Blue in Green", durationSeconds: 337, writers: [], producers: [], youtubeVideoId: null },
+      { position: 4, title: "All Blues", durationSeconds: 691, writers: [], producers: [], youtubeVideoId: null },
+      { position: 5, title: "Flamenco Sketches", durationSeconds: 566, writers: [], producers: [], youtubeVideoId: null },
     ],
-    officialClipsCount: 0,
+    officialVideosCount: 0,
     addedAt: "2026-03-10",
   },
 }
@@ -221,8 +221,9 @@ function defaultDetail(
       durationSeconds: 180 + i * 30,
       writers: [],
       producers: [],
+      youtubeVideoId: null,
     })),
-    officialClipsCount: 2,
+    officialVideosCount: 2,
     addedAt: "2026-04-01",
   }
 }

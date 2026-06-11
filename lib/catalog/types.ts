@@ -21,6 +21,7 @@ export type AlbumTrack = {
   durationSeconds: number | null
   writers: string[]
   producers: string[]
+  youtubeVideoId: string | null
 }
 
 export type AlbumSummary = {
@@ -63,7 +64,7 @@ export type AlbumDetail = AlbumSummary & {
   description: string
   personalNotes: string
   tracks: AlbumTrack[]
-  officialClipsCount: number
+  officialVideosCount: number
   addedAt: string
 }
 
