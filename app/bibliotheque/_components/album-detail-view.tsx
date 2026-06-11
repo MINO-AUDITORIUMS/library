@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlbumDetailActions } from "@/app/bibliotheque/_components/album-detail-actions"
 import { AlbumDetailHero } from "@/app/bibliotheque/_components/album-detail-hero"
 import { AlbumDetailSplit } from "@/app/bibliotheque/_components/album-detail-split"
-import { formatDuration } from "@/lib/catalog/format"
+import { formatDisplayDate, formatDuration } from "@/lib/catalog/format"
 import type { AlbumRatingsSnapshot } from "@/lib/catalog/db/album-user-ratings"
 import type { DiscogsCommunityStats } from "@/lib/catalog/discogs/types"
 import type { AlbumComment, AlbumDetail } from "@/lib/catalog/types"
@@ -87,7 +87,10 @@ export function AlbumDetailView({
             label="Certification"
             value={album.certification ?? "—"}
           />
-          <MetaItem label="Ajouté le" value={album.addedAt} />
+          <MetaItem
+            label="Ajouté le"
+            value={formatDisplayDate(album.addedAt)}
+          />
         </CardContent>
       </Card>
 
