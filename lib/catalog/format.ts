@@ -1,12 +1,17 @@
-export function formatDuration(totalSeconds: number) {
-  const m = Math.floor(totalSeconds / 60)
-  const s = totalSeconds % 60
-  return `${m}:${s.toString().padStart(2, "0")}`
+export function formatAlbumDuration(totalSeconds: number) {
+  if (totalSeconds <= 0) return "—"
+
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  return `${hours}:${minutes.toString().padStart(2, "0")}`
 }
 
 export function formatTrackDuration(seconds: number | null) {
   if (seconds == null) return "—"
-  return formatDuration(seconds)
+
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
 }
 
 function parseDisplayDate(value: string) {

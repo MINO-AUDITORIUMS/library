@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlbumDetailActions } from "@/app/bibliotheque/_components/album-detail-actions"
 import { AlbumDetailHero } from "@/app/bibliotheque/_components/album-detail-hero"
 import { AlbumDetailSplit } from "@/app/bibliotheque/_components/album-detail-split"
-import { formatDisplayDate, formatDuration } from "@/lib/catalog/format"
+import { formatAlbumDuration, formatDisplayDate } from "@/lib/catalog/format"
 import type { AlbumRatingsSnapshot } from "@/lib/catalog/db/album-user-ratings"
 import type { DiscogsCommunityStats } from "@/lib/catalog/discogs/types"
 import type { AlbumComment, AlbumDetail } from "@/lib/catalog/types"
@@ -77,7 +77,7 @@ export function AlbumDetailView({
           <MetaItem label="Pays" value={album.country.trim() || "—"} />
           <MetaItem
             label="Durée"
-            value={formatDuration(album.totalDurationSeconds)}
+            value={formatAlbumDuration(album.totalDurationSeconds)}
           />
           <MetaItem
             label="Producteurs"
