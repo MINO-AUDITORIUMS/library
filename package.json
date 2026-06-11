@@ -14,7 +14,8 @@
     "db:schema:reset": "bash supabase/apply_schema.sh --linked --reset --yes",
     "db:sync-tracks": "pnpm dlx tsx scripts/sync-album-tracks.ts",
     "assets:upload-mino": "pnpm dlx tsx scripts/upload-mino-assets.ts",
-    "db:link-artists": "pnpm dlx tsx scripts/link-album-artists.ts"
+    "db:link-artists": "pnpm dlx tsx scripts/link-album-artists.ts",
+    "db:strip-disambiguation": "pnpm dlx tsx scripts/strip-catalog-disambiguation.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

@@ -1,4 +1,5 @@
 import type { CatalogReleaseImport } from "@/lib/catalog/discogs/types"
+import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
 
 type RawRelease = {
   id: number
@@ -60,8 +61,8 @@ export function mapDiscogsRelease(data: unknown): CatalogReleaseImport {
     discogsReleaseId: release.id,
     musicbrainzReleaseId: null,
     barcode: readBarcode(release),
-    title: title.replace(/\s*\(\d+\)\s*$/, "").trim() || title,
-    artist: artist.name,
+    title: stripCatalogDisambiguation(title) || title.trim(),
+    artist: stripCatalogDisambiguation(artist.name),
     discogsArtistId: artist.discogsArtistId,
     musicbrainzArtistId: null,
     releaseYear: release.year ? String(release.year) : "",

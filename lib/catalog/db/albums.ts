@@ -25,6 +25,7 @@ import { resolveImportTracks } from "@/lib/catalog/resolve-import-tracks"
 import { minoRatingFromRows } from "@/lib/catalog/db/album-user-ratings"
 import { syncAlbumTags } from "@/lib/catalog/db/tags"
 import type { UpdateAlbumInput } from "@/lib/catalog/update-album-input"
+import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
 import { slugify } from "@/lib/catalog/slug"
 import { resolveOrCreateArtist } from "@/lib/catalog/db/artists"
 import type {
@@ -171,8 +172,8 @@ export function mapAlbumSummary(row: AlbumRow): AlbumSummary {
 
   return {
     id: row.id,
-    title: row.title,
-    artist: row.artist,
+    title: stripCatalogDisambiguation(row.title),
+    artist: stripCatalogDisambiguation(row.artist),
     releaseYear: row.release_year ?? 0,
     label: row.label ?? "—",
     minoRating: minoRatingFromRows(row.album_user_ratings),

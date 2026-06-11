@@ -1,3 +1,4 @@
+import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
 import { parseTagNames } from "@/lib/catalog/parse-tag-names"
 
 export type CreateAlbumInput = {
@@ -27,8 +28,12 @@ export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
   if (!body || typeof body !== "object") return null
   const data = body as Record<string, unknown>
 
-  const title = typeof data.title === "string" ? data.title.trim() : ""
-  const artist = typeof data.artist === "string" ? data.artist.trim() : ""
+  const title = stripCatalogDisambiguation(
+    typeof data.title === "string" ? data.title : ""
+  )
+  const artist = stripCatalogDisambiguation(
+    typeof data.artist === "string" ? data.artist : ""
+  )
   if (!title || !artist) return null
 
   const discogsRaw = data.discogsReleaseId

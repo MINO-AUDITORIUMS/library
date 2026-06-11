@@ -1,4 +1,5 @@
 import { countryDisplayName } from "@/lib/catalog/country-code"
+import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
 import type {
   MusicBrainzPartialImport,
   MusicBrainzRelease,
@@ -86,8 +87,8 @@ export function mapMusicBrainzRelease(
 
   return {
     musicbrainzReleaseId: release.id,
-    title: release.title.trim(),
-    artist: artist.name,
+    title: stripCatalogDisambiguation(release.title),
+    artist: stripCatalogDisambiguation(artist.name),
     discogsArtistId: null,
     musicbrainzArtistId: artist.musicbrainzArtistId,
     releaseYear: parseReleaseYear(release.date),

@@ -3,6 +3,7 @@ import type {
   DiscogsSearchResponse,
   DiscogsSearchType,
 } from "@/lib/catalog/discogs/types"
+import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
 
 type RawSearchResult = {
   id: number
@@ -36,8 +37,8 @@ function parseDiscogsMasterTitle(title: string) {
     return { artist: "", albumTitle: title.trim() }
   }
   return {
-    artist: title.slice(0, separator).trim(),
-    albumTitle: title.slice(separator + 3).trim(),
+    artist: stripCatalogDisambiguation(title.slice(0, separator)),
+    albumTitle: stripCatalogDisambiguation(title.slice(separator + 3)),
   }
 }
 

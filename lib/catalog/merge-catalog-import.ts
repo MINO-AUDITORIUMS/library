@@ -1,4 +1,5 @@
 import { pickMergedCountry } from "@/lib/catalog/country-code"
+import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
 import type { CatalogReleaseImport } from "@/lib/catalog/discogs/types"
 import { parseCertificationFromText } from "@/lib/catalog/parse-certification"
 import type { MusicBrainzPartialImport } from "@/lib/catalog/musicbrainz/types"
@@ -68,19 +69,29 @@ export type CatalogImportSources = {
   musicbrainz: boolean
 }
 
+function withNormalizedNames(
+  release: CatalogReleaseImport
+): CatalogReleaseImport {
+  return {
+    ...release,
+    title: stripCatalogDisambiguation(release.title),
+    artist: stripCatalogDisambiguation(release.artist),
+  }
+}
+
 export function mergeCatalogImports(
   discogs: CatalogReleaseImport,
   musicbrainz: MusicBrainzPartialImport | null
 ): CatalogReleaseImport {
   if (!musicbrainz) {
-    return {
+    return withNormalizedNames({
       ...discogs,
       country: pickMergedCountry(discogs.country, ""),
       certification: parseCertificationFromText(discogs.description),
-    }
+    })
   }
 
-  return {
+  return withNormalizedNames({
     discogsReleaseId: discogs.discogsReleaseId,
     musicbrainzReleaseId: musicbrainz.musicbrainzReleaseId,
     barcode: discogs.barcode ?? musicbrainz.barcode,
@@ -105,7 +116,7 @@ export function mergeCatalogImports(
     certification: parseCertificationFromText(
       [discogs.description, musicbrainz.description].join("\n")
     ),
-  }
+  })
 }
 
 export function catalogImportSources(

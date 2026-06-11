@@ -1,5 +1,9 @@
-const DISCOGS_NAME_DISAMBIGUATION = /\s+\(\d+\)$/
+const CATALOG_DISAMBIGUATION_SUFFIX = /\s+\(\d+\)$/
+
+export function stripCatalogDisambiguation(value: string) {
+  return value.replace(CATALOG_DISAMBIGUATION_SUFFIX, "").trim()
+}
 
 export function normalizeArtistDisplayName(name: string) {
-  return name.replace(DISCOGS_NAME_DISAMBIGUATION, "").trim()
+  return stripCatalogDisambiguation(name)
 }
