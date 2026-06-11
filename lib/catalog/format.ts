@@ -25,7 +25,9 @@ export function formatDisplayDate(value: string) {
   if (Number.isNaN(date.getTime())) return value
 
   return new Intl.DateTimeFormat("fr-FR", {
-    dateStyle: "long",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
   }).format(date)
 }
 
