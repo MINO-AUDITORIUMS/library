@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { getAuthenticatedUser } from "@/lib/auth/require-authenticated-user"
-import { searchAlbumSummaries } from "@/lib/catalog/db/albums"
-import { searchArtistSummaries } from "@/lib/catalog/db/artists"
+import { runGlobalSearch } from "@/lib/catalog/db/global-search"
 import { createClient } from "@/lib/supabase/server"
 
 export async function GET(request: Request) {
@@ -24,12 +23,8 @@ export async function GET(request: Request) {
   const supabase = await createClient()
 
   try {
-    const [artists, albums] = await Promise.all([
-      searchArtistSummaries(supabase, query),
-      searchAlbumSummaries(supabase, query),
-    ])
-
-    return NextResponse.json({ artists, albums })
+    const results = await runGlobalSearch(supabase, query)
+    return NextResponse.json(results)
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Impossible de lancer la recherche."

@@ -147,7 +147,7 @@ export function GlobalSearchCommand() {
         className="max-w-xl"
       >
         <CommandInput
-          placeholder="Rechercher un artiste ou un album…"
+          placeholder="Rechercher un artiste, un album ou un label…"
           value={query}
           onValueChange={setQuery}
         />
@@ -213,6 +213,9 @@ export function GlobalSearchCommand() {
                         <p className="truncate text-xs text-muted-foreground">
                           {album.artist}
                           {album.releaseYear > 0 ? ` · ${album.releaseYear}` : ""}
+                          {album.label && album.label !== "—"
+                            ? ` · ${album.label}`
+                            : ""}
                         </p>
                       </div>
                       <Disc3Icon className="size-3.5 text-muted-foreground" />

@@ -322,7 +322,9 @@ export async function searchAlbumSummaries(
   const { data, error } = await supabase
     .from("albums")
     .select(albumListSelect)
-    .or(`title.ilike."${pattern}",artist.ilike."${pattern}"`)
+    .or(
+      `title.ilike."${pattern}",artist.ilike."${pattern}",label.ilike."${pattern}",record_company.ilike."${pattern}"`
+    )
     .order("title", { ascending: true })
     .limit(limit)
 

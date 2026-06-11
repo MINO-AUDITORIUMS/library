@@ -80,6 +80,66 @@ function readAlbumCount(value: { count: number }[] | null | undefined) {
   return value?.[0]?.count ?? 0
 }
 
+function escapeIlikePattern(query: string) {
+  return `%${query.replace(/[%_\\]/g, "\\$&")}%`
+}
+
+export async function searchArtistsByLabel(
+  supabase: SupabaseClient,
+  query: string,
+  limit = 5
+) {
+  const trimmed = query.trim()
+  if (trimmed.length < 2) return []
+
+  const pattern = escapeIlikePattern(trimmed)
+  const { data: albumRows, error: albumError } = await supabase
+    .from("albums")
+    .select("artist_id")
+    .or(`label.ilike."${pattern}",record_company.ilike."${pattern}"`)
+    .not("artist_id", "is", null)
+    .limit(100)
+
+  if (albumError) throw albumError
+
+  const artistIds = [
+    ...new Set(
+      (albumRows ?? [])
+        .map((row) => row.artist_id as string | null)
+        .filter((artistId): artistId is string => Boolean(artistId))
+    ),
+  ]
+
+  if (artistIds.length === 0) return []
+
+  const { data, error } = await supabase
+    .from("artists")
+    .select(`
+      id,
+      name,
+      slug,
+      image_url,
+      country,
+      created_at,
+      albums(count)
+    `)
+    .in("id", artistIds)
+    .order("name", { ascending: true })
+    .limit(limit)
+
+  if (error) throw error
+
+  return (data ?? []).map((row) =>
+    mapArtistSummary(
+      row as Pick<
+        ArtistRow,
+        "id" | "name" | "slug" | "image_url" | "country" | "created_at"
+      >,
+      readAlbumCount((row as { albums?: { count: number }[] }).albums)
+    )
+  )
+}
+
 export async function searchArtistSummaries(
   supabase: SupabaseClient,
   query: string,
@@ -88,7 +148,7 @@ export async function searchArtistSummaries(
   const trimmed = query.trim()
   if (trimmed.length < 2) return []
 
-  const pattern = `%${trimmed.replace(/[%_\\]/g, "\\$&")}%`
+  const pattern = escapeIlikePattern(trimmed)
   const { data, error } = await supabase
     .from("artists")
     .select(`
