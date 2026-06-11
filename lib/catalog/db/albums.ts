@@ -27,6 +27,7 @@ import { syncAlbumTags } from "@/lib/catalog/db/tags"
 import type { UpdateAlbumInput } from "@/lib/catalog/update-album-input"
 import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
 import { slugify } from "@/lib/catalog/slug"
+import { uniqueCreditNames } from "@/lib/catalog/track-credits"
 import { resolveOrCreateArtist } from "@/lib/catalog/db/artists"
 import type {
   AlbumDetail,
@@ -151,8 +152,8 @@ function mapTracks(
       position: track.position,
       title: track.title,
       durationSeconds: track.duration_seconds,
-      writers: track.writers ?? [],
-      producers: track.producers ?? [],
+      writers: uniqueCreditNames(track.writers ?? []),
+      producers: uniqueCreditNames(track.producers ?? []),
       youtubeVideoId:
         track.video_confirmed && track.youtube_video_id
           ? track.youtube_video_id

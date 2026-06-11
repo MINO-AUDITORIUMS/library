@@ -4,6 +4,7 @@ import { resolve } from "node:path"
 import { createClient } from "@supabase/supabase-js"
 
 import { stripCatalogDisambiguation } from "../lib/catalog/normalize-artist-name"
+import { uniqueCreditNames } from "../lib/catalog/track-credits"
 
 function loadEnvFile(filePath: string) {
   let content: string
@@ -92,6 +93,38 @@ async function main() {
     artistsUpdated += 1
   }
 
+  const { data: tracks, error: tracksError } = await supabase
+    .from("album_tracks")
+    .select("id, writers, producers")
+
+  if (tracksError) throw tracksError
+
+  let tracksUpdated = 0
+
+  for (const track of tracks ?? []) {
+    const writers = uniqueCreditNames((track.writers as string[]) ?? [])
+    const producers = uniqueCreditNames((track.producers as string[]) ?? [])
+    const previousWriters = (track.writers as string[]) ?? []
+    const previousProducers = (track.producers as string[]) ?? []
+
+    if (
+      writers.length === previousWriters.length &&
+      producers.length === previousProducers.length &&
+      writers.every((name, index) => name === previousWriters[index]) &&
+      producers.every((name, index) => name === previousProducers[index])
+    ) {
+      continue
+    }
+
+    const { error } = await supabase
+      .from("album_tracks")
+      .update({ writers, producers })
+      .eq("id", track.id)
+
+    if (error) throw error
+    tracksUpdated += 1
+  }
+
   const albumCandidates = (albums ?? []).filter(
     (row) =>
       needsStrip(row.title as string) || needsStrip(row.artist as string)
@@ -101,7 +134,7 @@ async function main() {
   ).length
 
   console.log(
-    `Terminé : ${albumsUpdated} album(s) et ${artistsUpdated} artiste(s) mis à jour (${albumCandidates} album(s) et ${artistCandidates} artiste(s) concernés avant traitement).`
+    `Terminé : ${albumsUpdated} album(s), ${artistsUpdated} artiste(s) et ${tracksUpdated} piste(s) mis à jour.`
   )
 }
 

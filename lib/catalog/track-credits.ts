@@ -1,9 +1,11 @@
+import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
+
 export function uniqueCreditNames(names: string[]) {
   const seen = new Set<string>()
   const result: string[] = []
 
   for (const name of names) {
-    const trimmed = name.trim()
+    const trimmed = stripCatalogDisambiguation(name)
     if (!trimmed) continue
     const key = trimmed.toLowerCase()
     if (seen.has(key)) continue
