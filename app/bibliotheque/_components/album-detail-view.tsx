@@ -96,6 +96,7 @@ export function AlbumDetailView({
 
       <AlbumDetailSplit
         albumId={album.id}
+        albumTitle={album.title}
         tracks={album.tracks}
         comments={comments}
         currentUserId={currentUserId}

@@ -131,8 +131,7 @@ export function AlbumCommentsSection({
         >
           {comments.length === 0 ? (
             <p className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-              Aucun commentaire pour l&apos;instant. Sois le premier à laisser
-              une note sur cet album.
+              Aucun commentaire pour l&apos;instant.
             </p>
           ) : (
             comments.map((comment) => {
@@ -198,7 +197,6 @@ export function AlbumCommentsSection({
           <Textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="Ex. : pressing impeccable, à écouter en fin de séance…"
             rows={4}
             disabled={submitting}
           />

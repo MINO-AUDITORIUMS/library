@@ -1,3 +1,4 @@
+import { AlbumTracklistEditButton } from "@/app/bibliotheque/_components/album-tracklist-edit-button"
 import { TrackVideoDialog } from "@/components/catalog/track-video-dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -5,6 +6,8 @@ import { formatTrackDuration } from "@/lib/catalog/format"
 import type { AlbumTrack } from "@/lib/catalog/types"
 
 export type AlbumTracklistCardProps = {
+  albumId: string
+  albumTitle: string
   tracks: AlbumTrack[]
 }
 
@@ -55,11 +58,16 @@ function AlbumTrackRow({ track }: AlbumTrackRowProps) {
   )
 }
 
-export function AlbumTracklistCard({ tracks }: AlbumTracklistCardProps) {
+export function AlbumTracklistCard({
+  albumId,
+  albumTitle,
+  tracks,
+}: AlbumTracklistCardProps) {
   return (
     <Card className="flex flex-col">
-      <CardHeader className="shrink-0">
+      <CardHeader className="flex shrink-0 flex-row items-center justify-between gap-2 space-y-0">
         <CardTitle>Tracklist</CardTitle>
+        <AlbumTracklistEditButton albumId={albumId} albumTitle={albumTitle} />
       </CardHeader>
       <CardContent className="space-y-0 p-0">
         {tracks.length === 0 ? (

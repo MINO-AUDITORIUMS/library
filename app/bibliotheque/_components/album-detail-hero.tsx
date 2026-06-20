@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { AlbumCover } from "@/components/catalog/album-cover"
+import { AlbumCoverEditable } from "@/app/bibliotheque/_components/album-cover-editable"
 import { AlbumRatingsPanel } from "@/components/catalog/album-ratings-panel"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -25,12 +25,12 @@ export function AlbumDetailHero({
       <Card className="h-full py-0">
         <CardContent className="py-5">
           <div className="flex gap-4">
-            <AlbumCover
+            <AlbumCoverEditable
+              albumId={album.id}
               title={album.title}
-              hue={album.coverHue}
-              imageUrl={album.coverImageUrl}
-              size="lg"
-              className="aspect-square size-40 w-40 max-w-none shrink-0"
+              coverHue={album.coverHue}
+              coverImageUrl={album.coverImageUrl}
+              className="size-40"
             />
 
             <div className="flex h-40 min-w-0 flex-1 flex-col justify-between overflow-hidden">

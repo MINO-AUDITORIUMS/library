@@ -8,6 +8,7 @@ import type { AlbumComment, AlbumTrack } from "@/lib/catalog/types"
 
 export type AlbumDetailSplitProps = {
   albumId: string
+  albumTitle: string
   tracks: AlbumTrack[]
   comments: AlbumComment[]
   currentUserId: string
@@ -16,6 +17,7 @@ export type AlbumDetailSplitProps = {
 
 export function AlbumDetailSplit({
   albumId,
+  albumTitle,
   tracks,
   comments,
   currentUserId,
@@ -47,7 +49,11 @@ export function AlbumDetailSplit({
   return (
     <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
       <div ref={tracklistRef}>
-        <AlbumTracklistCard tracks={tracks} />
+        <AlbumTracklistCard
+          albumId={albumId}
+          albumTitle={albumTitle}
+          tracks={tracks}
+        />
       </div>
 
       <AlbumCommentsSection
