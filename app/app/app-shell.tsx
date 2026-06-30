@@ -1,6 +1,6 @@
 "use client"
 
-import { Disc3Icon, HomeIcon, Mic2Icon } from "lucide-react"
+import { CalendarDaysIcon, Disc3Icon, HomeIcon, Mic2Icon } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -45,6 +45,12 @@ const navItems = [
     icon: Mic2Icon,
     match: "artistes" as const,
   },
+  {
+    href: routes.programmation,
+    label: "Programmation",
+    icon: CalendarDaysIcon,
+    match: "programmation" as const,
+  },
 ] as const
 
 function isNavActive(
@@ -58,6 +64,8 @@ function isNavActive(
       return pathname.startsWith("/bibliotheque")
     case "artistes":
       return pathname.startsWith("/artistes")
+    case "programmation":
+      return pathname.startsWith("/programmation")
   }
 }
 
@@ -108,7 +116,7 @@ export function AppShell({ email, children }: AppShellProps) {
             <GlobalSearchCommand />
           </div>
         </header>
-        <div className="flex-1 p-4 md:p-6">{children}</div>
+        <div className="flex flex-1 flex-col p-4 md:p-6">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   )

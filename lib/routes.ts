@@ -5,6 +5,7 @@ export const routes = {
   bibliotheque: "/bibliotheque",
   bibliothequeNew: "/bibliotheque/nouveau",
   artistes: "/artistes",
+  programmation: "/programmation",
   authCallback: "/auth/callback",
 } as const
 

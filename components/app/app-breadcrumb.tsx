@@ -50,6 +50,13 @@ function buildCrumbs(
     ]
   }
 
+  if (pathname === routes.programmation) {
+    return [
+      { label: "Accueil", href: routes.app },
+      { label: "Programmation" },
+    ]
+  }
+
   const artistMatch = pathname.match(/^\/artistes\/([^/]+)$/)
   if (artistMatch) {
     return [

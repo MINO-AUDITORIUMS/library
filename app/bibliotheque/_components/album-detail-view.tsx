@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ArrowLeftIcon } from "lucide-react"
 
+import { AddToProgrammationButton } from "@/components/catalog/add-to-programmation-button"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlbumDetailActions } from "@/app/bibliotheque/_components/album-detail-actions"
@@ -49,11 +50,14 @@ export function AlbumDetailView({
             Bibliothèque
           </Link>
         </Button>
-        <AlbumDetailActions
+        <div className="flex flex-wrap items-center gap-2">
+          <AddToProgrammationButton album={album} />
+          <AlbumDetailActions
           albumId={album.id}
           albumTitle={album.title}
           canSyncTracks={album.canSyncTracks}
-        />
+          />
+        </div>
       </div>
 
       <AlbumDetailHero

@@ -57,6 +57,7 @@ FILES=(
   supabase/schema/album_user_ratings.sql
   supabase/schema/album_attachments.sql
   supabase/schema/album_search.sql
+  supabase/schema/seances.sql
   supabase/storage/album_attachments.sql
   supabase/storage/album_covers.sql
   supabase/storage/mino_assets.sql
