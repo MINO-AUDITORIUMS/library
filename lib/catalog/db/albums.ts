@@ -22,6 +22,8 @@ import {
 } from "@/lib/catalog/create-album-input"
 import { persistAlbumTracks } from "@/lib/catalog/persist-album-tracks"
 import { resolveImportTracks } from "@/lib/catalog/resolve-import-tracks"
+import { DuplicateAlbumError } from "@/lib/catalog/duplicate-album-error"
+import { findExistingAlbumId } from "@/lib/catalog/db/find-existing-album"
 import { minoRatingFromRows } from "@/lib/catalog/db/album-user-ratings"
 import { syncAlbumTags } from "@/lib/catalog/db/tags"
 import type { UpdateAlbumInput } from "@/lib/catalog/update-album-input"
@@ -439,6 +441,15 @@ export async function createAlbum(
   if (input.discogsReleaseId) externalIds.discogs = input.discogsReleaseId
   if (input.musicbrainzReleaseId) {
     externalIds.musicbrainz = input.musicbrainzReleaseId
+  }
+
+  const existingAlbumId = await findExistingAlbumId(supabase, {
+    spotifyAlbumId: input.spotifyAlbumId,
+    discogsReleaseId: input.discogsReleaseId,
+    musicbrainzReleaseId: input.musicbrainzReleaseId,
+  })
+  if (existingAlbumId) {
+    throw new DuplicateAlbumError(existingAlbumId)
   }
 
   const { data: album, error } = await supabase

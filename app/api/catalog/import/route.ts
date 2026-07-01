@@ -8,10 +8,24 @@ import {
   buildMergedCatalogImportFromSpotifyAlbumId,
 } from "@/lib/catalog/build-merged-catalog-import"
 import { buildArtistImportPreview } from "@/lib/catalog/build-artist-preview"
+import { findExistingAlbumId } from "@/lib/catalog/db/find-existing-album"
 import { DiscogsApiError } from "@/lib/catalog/discogs/client"
 import { MusicBrainzApiError } from "@/lib/catalog/musicbrainz/client"
 import { SpotifyApiError } from "@/lib/catalog/spotify/client"
 import { createClient } from "@/lib/supabase/server"
+
+async function enrichImportPayload(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  payload: Awaited<ReturnType<typeof buildMergedCatalogImportFromSpotifyAlbumId>>
+) {
+  const artist = await buildArtistImportPreview(supabase, payload.release)
+  const existingAlbumId = await findExistingAlbumId(supabase, {
+    spotifyAlbumId: payload.release.spotifyAlbumId,
+    discogsReleaseId: payload.release.discogsReleaseId,
+    musicbrainzReleaseId: payload.release.musicbrainzReleaseId,
+  })
+  return { ...payload, artist, existingAlbumId }
+}
 
 export async function GET(request: Request) {
   try {
@@ -34,8 +48,7 @@ export async function GET(request: Request) {
         spotifyAlbumId,
         musicbrainzReleaseGroupId || null
       )
-      const artist = await buildArtistImportPreview(supabase, payload.release)
-      return NextResponse.json({ ...payload, artist })
+      return NextResponse.json(await enrichImportPayload(supabase, payload))
     }
 
     if (Number.isFinite(discogsMasterId) && discogsMasterId > 0) {
@@ -43,8 +56,7 @@ export async function GET(request: Request) {
         discogsMasterId,
         musicbrainzReleaseGroupId || null
       )
-      const artist = await buildArtistImportPreview(supabase, payload.release)
-      return NextResponse.json({ ...payload, artist })
+      return NextResponse.json(await enrichImportPayload(supabase, payload))
     }
 
     if (Number.isFinite(discogsReleaseId) && discogsReleaseId > 0) {
@@ -52,8 +64,7 @@ export async function GET(request: Request) {
         discogsReleaseId,
         musicbrainzReleaseGroupId || null
       )
-      const artist = await buildArtistImportPreview(supabase, payload.release)
-      return NextResponse.json({ ...payload, artist })
+      return NextResponse.json(await enrichImportPayload(supabase, payload))
     }
 
     if (musicbrainzReleaseGroupId) {
@@ -61,8 +72,7 @@ export async function GET(request: Request) {
         await buildMergedCatalogImportFromMusicBrainzReleaseGroupId(
           musicbrainzReleaseGroupId
         )
-      const artist = await buildArtistImportPreview(supabase, payload.release)
-      return NextResponse.json({ ...payload, artist })
+      return NextResponse.json(await enrichImportPayload(supabase, payload))
     }
 
     return NextResponse.json(

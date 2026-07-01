@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { getAuthenticatedUser } from "@/lib/auth/require-authenticated-user"
 import { parseCreateAlbumInput } from "@/lib/catalog/create-album-input"
 import { createAlbum } from "@/lib/catalog/db/albums"
+import { DuplicateAlbumError } from "@/lib/catalog/duplicate-album-error"
 import { formatSupabaseError } from "@/lib/supabase/errors"
 import { createClient } from "@/lib/supabase/server"
 
@@ -33,6 +34,12 @@ export async function POST(request: Request) {
     const albumId = await createAlbum(supabase, session.user, input)
     return NextResponse.json({ id: albumId }, { status: 201 })
   } catch (error) {
+    if (error instanceof DuplicateAlbumError) {
+      return NextResponse.json(
+        { error: error.message, existingId: error.existingId },
+        { status: 409 }
+      )
+    }
     const message = formatSupabaseError(error)
     const status =
       typeof error === "object" &&

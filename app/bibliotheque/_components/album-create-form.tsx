@@ -208,11 +208,23 @@ export function AlbumCreateForm() {
           musicbrainz: boolean
         }
         variantCount?: number | null
+        existingAlbumId?: string | null
         error?: string
       }
 
       if (!response.ok || !data.release) {
         toast.error(data.error ?? "Import impossible.")
+        return
+      }
+
+      if (data.existingAlbumId) {
+        setResults([])
+        toast.warning("Cet album est déjà en bibliothèque.", {
+          action: {
+            label: "Voir la fiche",
+            onClick: () => router.push(albumDetailRoute(data.existingAlbumId)),
+          },
+        })
         return
       }
 
@@ -277,7 +289,21 @@ export function AlbumCreateForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       })
-      const data = (await response.json()) as { id?: string; error?: string }
+      const data = (await response.json()) as {
+        id?: string
+        existingId?: string
+        error?: string
+      }
+
+      if (response.status === 409 && data.existingId) {
+        toast.error(data.error ?? "Cet album est déjà en bibliothèque.", {
+          action: {
+            label: "Voir la fiche",
+            onClick: () => router.push(albumDetailRoute(data.existingId!)),
+          },
+        })
+        return
+      }
 
       if (!response.ok || !data.id) {
         toast.error(data.error ?? "Impossible d'enregistrer l'album.")
