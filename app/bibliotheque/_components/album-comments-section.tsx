@@ -112,7 +112,7 @@ export function AlbumCommentsSection({
       <CardHeader className="shrink-0 border-b border-border/60 px-4 py-4">
         <CardTitle className="flex items-center gap-2 text-base">
           <MessageSquareIcon className="size-4" />
-          Notes & feedback
+          Notes
         </CardTitle>
       </CardHeader>
 
@@ -131,7 +131,7 @@ export function AlbumCommentsSection({
         >
           {comments.length === 0 ? (
             <p className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
-              Aucun commentaire pour l&apos;instant.
+              Aucune note pour l&apos;instant.
             </p>
           ) : (
             comments.map((comment) => {
