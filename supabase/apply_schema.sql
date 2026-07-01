@@ -17,3 +17,4 @@
 \ir schema/album_comments.sql
 \ir schema/album_attachments.sql
 \ir schema/album_search.sql
+\ir schema/album_drop_description.sql

@@ -1,7 +1,7 @@
 import { discogsFetch } from "@/lib/catalog/discogs/client"
 import { mapDiscogsRelease } from "@/lib/catalog/discogs/map-release"
 import { pickBestDiscogsReleaseIdForMaster } from "@/lib/catalog/discogs/pick-best-release"
-import type { CatalogReleaseImport } from "@/lib/catalog/discogs/types"
+import type { DiscogsPartialImport } from "@/lib/catalog/discogs/types"
 import { isSpotifyOnlyCatalogImport } from "@/lib/catalog/import-flags"
 import { findDiscogsReleaseImport } from "@/lib/catalog/link-discogs-release"
 import {
@@ -19,7 +19,7 @@ import type { MusicBrainzPartialImport } from "@/lib/catalog/musicbrainz/types"
 import { fetchSpotifyAlbum } from "@/lib/catalog/spotify/fetch-album"
 
 async function enrichWithMusicBrainz(
-  discogsImport: CatalogReleaseImport,
+  discogsImport: DiscogsPartialImport,
   musicbrainzReleaseGroupId?: string | null
 ): Promise<MusicBrainzPartialImport | null> {
   if (musicbrainzReleaseGroupId) {
@@ -100,34 +100,6 @@ async function findDiscogsReleaseIdByBarcode(barcode: string) {
 
   const hit = data.results?.find((item) => item.type === "release" && item.id)
   return hit?.id ?? null
-}
-
-function musicBrainzOnlyImport(
-  musicbrainzImport: MusicBrainzPartialImport
-): CatalogReleaseImport {
-  return {
-    spotifyAlbumId: null,
-    spotifyArtistId: null,
-    discogsReleaseId: null,
-    musicbrainzReleaseId: musicbrainzImport.musicbrainzReleaseId,
-    barcode: musicbrainzImport.barcode,
-    title: musicbrainzImport.title,
-    artist: musicbrainzImport.artist,
-    releaseYear: musicbrainzImport.releaseYear,
-    releaseDate: musicbrainzImport.releaseDate,
-    genre: musicbrainzImport.genre,
-    subgenre: musicbrainzImport.subgenre,
-    label: musicbrainzImport.label,
-    recordCompany: musicbrainzImport.recordCompany,
-    producers: musicbrainzImport.producers,
-    country: musicbrainzImport.country,
-    discogsArtistId: musicbrainzImport.discogsArtistId,
-    musicbrainzArtistId: musicbrainzImport.musicbrainzArtistId,
-    description: musicbrainzImport.description,
-    trackCount: musicbrainzImport.trackCount,
-    coverUrl: musicbrainzImport.coverUrl,
-    certification: "",
-  }
 }
 
 export async function buildMergedCatalogImportFromSpotifyAlbumId(
@@ -236,10 +208,11 @@ export async function buildMergedCatalogImportFromMusicBrainzReleaseGroupId(
 
   if (!discogsReleaseId) {
     return {
-      release: mergeCatalogImports(
-        musicBrainzOnlyImport(musicbrainzImport),
-        musicbrainzImport
-      ),
+      release: mergeCatalogImportsFromSources({
+        spotify: null,
+        discogs: null,
+        musicbrainz: musicbrainzImport,
+      }),
       sources: catalogImportSources({
         discogs: false,
         musicbrainz: musicbrainzImport,

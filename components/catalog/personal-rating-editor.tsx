@@ -14,12 +14,14 @@ export type PersonalRatingEditorProps = {
   albumId: string
   initialRating: number | null
   className?: string
+  compact?: boolean
 }
 
 export function PersonalRatingEditor({
   albumId,
   initialRating,
   className,
+  compact = false,
 }: PersonalRatingEditorProps) {
   const router = useRouter()
   const [rating, setRating] = useState(initialRating)
@@ -60,26 +62,27 @@ export function PersonalRatingEditor({
   }
 
   return (
-    <RatingSummaryCard title="Ta note" className={className}>
-      <div className="space-y-3">
-        <div className="flex flex-wrap gap-2">
+    <RatingSummaryCard title="Ta note" className={className} compact={compact}>
+      <div className={compact ? "space-y-2" : "space-y-3"}>
+        <div className="flex flex-wrap gap-1.5">
           {[1, 2, 3, 4, 5].map((star) => (
             <Button
               key={star}
               type="button"
               variant={rating === star ? "default" : "outline"}
-              size="sm"
+              size={compact ? "icon-xs" : "sm"}
+              className={compact ? "min-w-7" : undefined}
               disabled={saving}
               onClick={() => onSelect(star)}
             >
-              {star} ★
+              {compact ? star : `${star} ★`}
             </Button>
           ))}
         </div>
 
         <div className="flex items-center gap-2">
-          {saving ? <Loader2Icon className="size-4 animate-spin" /> : null}
-          <StarRating value={rating} size="md" />
+          {saving ? <Loader2Icon className="size-3.5 animate-spin" /> : null}
+          <StarRating value={rating} size={compact ? "sm" : "md"} />
         </div>
       </div>
     </RatingSummaryCard>

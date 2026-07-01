@@ -1,5 +1,5 @@
 import { pickMergedCountry } from "@/lib/catalog/country-code"
-import type { CatalogReleaseImport } from "@/lib/catalog/discogs/types"
+import type { CatalogReleaseImport, DiscogsPartialImport } from "@/lib/catalog/discogs/types"
 import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
 import type { MusicBrainzPartialImport } from "@/lib/catalog/musicbrainz/types"
 import { parseCertificationFromText } from "@/lib/catalog/parse-certification"
@@ -75,14 +75,14 @@ function withNormalizedNames(
 
 export function mergeCatalogImportsFromSources(input: {
   spotify: SpotifyPartialImport | null
-  discogs: CatalogReleaseImport | null
+  discogs: DiscogsPartialImport | null
   musicbrainz: MusicBrainzPartialImport | null
 }): CatalogReleaseImport {
   const spotify = input.spotify
   const discogs = input.discogs
   const musicbrainz = input.musicbrainz
 
-  const description = mergeDescription(
+  const certificationText = mergeDescription(
     spotify?.description ?? "",
     discogs?.description ?? "",
     musicbrainz?.description ?? ""
@@ -142,7 +142,6 @@ export function mergeCatalogImportsFromSources(input: {
       musicbrainz?.musicbrainzArtistId ?? null,
       discogs?.musicbrainzArtistId ?? null
     ),
-    description,
     trackCount: pickTrackCount(
       spotify?.trackCount ?? "",
       discogs?.trackCount ?? "",
@@ -153,12 +152,12 @@ export function mergeCatalogImportsFromSources(input: {
       discogs?.coverUrl,
       musicbrainz?.coverUrl
     ),
-    certification: parseCertificationFromText(description),
+    certification: parseCertificationFromText(certificationText),
   })
 }
 
 export function mergeCatalogImports(
-  discogs: CatalogReleaseImport,
+  discogs: DiscogsPartialImport,
   musicbrainz: MusicBrainzPartialImport | null
 ): CatalogReleaseImport {
   return mergeCatalogImportsFromSources({

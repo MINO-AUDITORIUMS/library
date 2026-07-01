@@ -1,4 +1,4 @@
-import type { CatalogReleaseImport } from "@/lib/catalog/discogs/types"
+import type { DiscogsPartialImport } from "@/lib/catalog/discogs/types"
 import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
 import { normalizeProducersString, uniqueCreditNames } from "@/lib/catalog/track-credits"
 
@@ -53,7 +53,7 @@ function readBarcode(release: RawRelease) {
   return match?.value?.trim() || null
 }
 
-export function mapDiscogsRelease(data: unknown): CatalogReleaseImport {
+export function mapDiscogsRelease(data: unknown): DiscogsPartialImport {
   const release = data as RawRelease
   const title = release.title ?? ""
   const artist = primaryDiscogsArtist(release)

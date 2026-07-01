@@ -1,7 +1,7 @@
 import { discogsFetch } from "@/lib/catalog/discogs/client"
 import { mapDiscogsRelease } from "@/lib/catalog/discogs/map-release"
 import { pickBestDiscogsReleaseIdForMaster } from "@/lib/catalog/discogs/pick-best-release"
-import type { CatalogReleaseImport } from "@/lib/catalog/discogs/types"
+import type { DiscogsPartialImport } from "@/lib/catalog/discogs/types"
 import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
 
 function normalizeToken(value: string) {
@@ -58,7 +58,7 @@ export async function findDiscogsReleaseImport(
   title: string,
   artist: string,
   barcode?: string | null
-): Promise<CatalogReleaseImport | null> {
+): Promise<DiscogsPartialImport | null> {
   if (barcode?.trim()) {
     const barcodeHit = await discogsFetch<{
       results?: { type?: string; id?: number }[]

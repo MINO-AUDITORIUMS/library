@@ -42,7 +42,6 @@ type FormState = {
   recordCompany: string
   producers: string
   country: string
-  description: string
   personalNotes: string
   trackCount: string
   spotifyAlbumId: string | null
@@ -67,7 +66,6 @@ const emptyForm: FormState = {
   recordCompany: "",
   producers: "",
   country: "",
-  description: "",
   personalNotes: "",
   trackCount: "",
   spotifyAlbumId: null,
@@ -193,7 +191,6 @@ export function AlbumCreateForm() {
           recordCompany: string
           producers: string
           country: string
-          description: string
           trackCount: string
           spotifyAlbumId: string | null
           discogsReleaseId: number | null
@@ -231,7 +228,6 @@ export function AlbumCreateForm() {
         recordCompany: release.recordCompany,
         producers: release.producers,
         country: release.country,
-        description: release.description,
         trackCount: release.trackCount,
         spotifyAlbumId: release.spotifyAlbumId,
         discogsReleaseId: release.discogsReleaseId,
@@ -501,17 +497,6 @@ export function AlbumCreateForm() {
               />
             </Field>
           </div>
-        </FormSection>
-
-        <FormSection title="Contenu">
-          <Field id="description" label="Description">
-            <Textarea
-              id="description"
-              value={form.description}
-              onChange={(e) => patchForm({ description: e.target.value })}
-              rows={4}
-            />
-          </Field>
         </FormSection>
 
         <FormSection title="Remarques">

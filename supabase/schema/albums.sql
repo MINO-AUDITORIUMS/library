@@ -4,7 +4,6 @@ create table if not exists public.albums (
   artist text not null,
   release_year smallint,
   release_date date,
-  description text,
   total_duration_seconds integer,
   track_count integer,
   label text,

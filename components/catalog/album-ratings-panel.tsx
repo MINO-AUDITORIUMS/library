@@ -1,7 +1,5 @@
-import { DiscogsCommunityRating } from "@/components/catalog/discogs-community-rating"
 import { MinoTeamRating } from "@/components/catalog/mino-team-rating"
 import { PersonalRatingEditor } from "@/components/catalog/personal-rating-editor"
-import type { DiscogsCommunityStats } from "@/lib/catalog/discogs/types"
 import type { MinoRatingSummary } from "@/lib/catalog/ratings"
 import { cn } from "@/lib/utils"
 
@@ -9,22 +7,21 @@ export type AlbumRatingsPanelProps = {
   albumId: string
   myRating: number | null
   minoRating: MinoRatingSummary
-  discogsCommunity: DiscogsCommunityStats | null
   className?: string
+  compact?: boolean
 }
 
 export function AlbumRatingsPanel({
   albumId,
   myRating,
   minoRating,
-  discogsCommunity,
   className,
+  compact = false,
 }: AlbumRatingsPanelProps) {
   return (
     <div
       className={cn(
-        "grid h-full auto-rows-fr gap-3 sm:grid-cols-2 lg:grid-cols-3",
-        !discogsCommunity && "lg:grid-cols-2",
+        "grid h-full auto-rows-fr gap-3 sm:grid-cols-2",
         className
       )}
     >
@@ -32,11 +29,9 @@ export function AlbumRatingsPanel({
         key={`${albumId}-${myRating ?? "none"}`}
         albumId={albumId}
         initialRating={myRating}
+        compact={compact}
       />
-      <MinoTeamRating rating={minoRating} />
-      {discogsCommunity ? (
-        <DiscogsCommunityRating stats={discogsCommunity} />
-      ) : null}
+      <MinoTeamRating rating={minoRating} compact={compact} />
     </div>
   )
 }

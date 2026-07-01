@@ -35,7 +35,6 @@ function albumToFormState(album: AlbumDetail): AlbumCatalogFormState {
     recordCompany: displayToInput(album.recordCompany),
     producers,
     country: displayToInput(album.country),
-    description: displayToInput(album.description),
     personalNotes: album.personalNotes,
     trackCount: album.trackCount > 0 ? String(album.trackCount) : "",
     tags: [...album.tags],

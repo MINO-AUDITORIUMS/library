@@ -46,13 +46,6 @@ export type LegacyDiscogsSearchHit = {
   thumbUrl: string | null
 }
 
-export type DiscogsCommunityStats = {
-  averageRating: number
-  ratingCount: number
-  inCollection: number
-  inWantlist: number
-}
-
 export type CatalogReleaseImport = {
   spotifyAlbumId: string | null
   spotifyArtistId: string | null
@@ -69,10 +62,13 @@ export type CatalogReleaseImport = {
   recordCompany: string
   producers: string
   country: string
-  description: string
   trackCount: string
   coverUrl: string | null
   certification: string
   discogsArtistId: number | null
   musicbrainzArtistId: string | null
+}
+
+export type DiscogsPartialImport = CatalogReleaseImport & {
+  description: string
 }

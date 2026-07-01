@@ -16,7 +16,6 @@ export type AlbumCatalogFormState = {
   recordCompany: string
   producers: string
   country: string
-  description: string
   personalNotes: string
   trackCount: string
   tags: string[]
@@ -181,17 +180,6 @@ export function AlbumCatalogFormFields({
             />
           </Field>
         </div>
-      </FormSection>
-
-      <FormSection title="Contenu">
-        <Field id="description" label="Description">
-          <Textarea
-            id="description"
-            value={form.description}
-            onChange={(e) => onPatch({ description: e.target.value })}
-            rows={4}
-          />
-        </Field>
       </FormSection>
 
       <FormSection title="Remarques">

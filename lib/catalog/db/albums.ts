@@ -42,7 +42,6 @@ type AlbumRow = {
   artist_id: string | null
   release_year: number | null
   release_date: string | null
-  description: string | null
   total_duration_seconds: number | null
   track_count: number | null
   label: string | null
@@ -99,7 +98,6 @@ const albumDetailSelect = `
   artist_id,
   release_year,
   release_date,
-  description,
   total_duration_seconds,
   track_count,
   label,
@@ -216,7 +214,6 @@ export function mapAlbumDetail(row: AlbumRow): AlbumDetail {
     certification: row.certification,
     trackCount: row.track_count ?? tracks.length,
     totalDurationSeconds: totalDuration,
-    description: row.description?.trim() || "—",
     personalNotes: row.personal_notes?.trim() ?? "",
     tracks,
     officialVideosCount: row.official_videos_count,
@@ -452,7 +449,6 @@ export async function createAlbum(
       artist_id: artistId,
       release_year: releaseYear,
       release_date: releaseDate,
-      description: input.description.trim() || null,
       track_count: trackCount,
       label: input.label || null,
       record_company: input.recordCompany || null,
@@ -595,7 +591,6 @@ export async function updateAlbum(
     input.country
   )
 
-  const description = input.description.trim()
   const personalNotes = input.personalNotes.trim()
 
   const { error } = await supabase
@@ -605,7 +600,6 @@ export async function updateAlbum(
       artist: input.artist,
       release_year: releaseYear,
       release_date: releaseDate,
-      description: description.length > 0 ? description : null,
       track_count: trackCount,
       label: input.label || null,
       record_company: input.recordCompany || null,

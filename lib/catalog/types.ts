@@ -62,7 +62,6 @@ export type AlbumDetail = AlbumSummary & {
   certification: string | null
   trackCount: number
   totalDurationSeconds: number
-  description: string
   personalNotes: string
   tracks: AlbumTrack[]
   officialVideosCount: number

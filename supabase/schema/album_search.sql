@@ -1,7 +1,6 @@
 create or replace function public.build_album_search_vector(
   p_title text,
   p_artist text,
-  p_description text,
   p_personal_notes text,
   p_label text,
   p_record_company text,
@@ -15,7 +14,6 @@ as $$
   select
     setweight(to_tsvector('french', coalesce(p_title, '')), 'A')
     || setweight(to_tsvector('french', coalesce(p_artist, '')), 'A')
-    || setweight(to_tsvector('french', coalesce(p_description, '')), 'B')
     || setweight(to_tsvector('french', coalesce(p_personal_notes, '')), 'C')
     || setweight(to_tsvector('french', coalesce(p_label, '')), 'C')
     || setweight(to_tsvector('french', coalesce(p_record_company, '')), 'C')
@@ -49,7 +47,6 @@ begin
   set search_vector = public.build_album_search_vector(
     album_row.title,
     album_row.artist,
-    album_row.description,
     album_row.personal_notes,
     album_row.label,
     album_row.record_company,
@@ -75,7 +72,6 @@ begin
   new.search_vector := public.build_album_search_vector(
     new.title,
     new.artist,
-    new.description,
     new.personal_notes,
     new.label,
     new.record_company,
@@ -89,7 +85,7 @@ $$;
 drop trigger if exists albums_refresh_search_vector on public.albums;
 
 create trigger albums_refresh_search_vector
-  before insert or update of title, artist, description, personal_notes, label, record_company, producers
+  before insert or update of title, artist, personal_notes, label, record_company, producers
   on public.albums
   for each row
   execute function public.albums_refresh_search_vector();

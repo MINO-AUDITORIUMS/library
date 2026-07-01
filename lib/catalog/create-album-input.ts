@@ -13,7 +13,6 @@ export type CreateAlbumInput = {
   recordCompany: string
   producers: string
   country: string
-  description: string
   personalNotes: string
   trackCount: string
   spotifyAlbumId: string | null
@@ -97,7 +96,6 @@ export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
         ? normalizeProducersString(data.producers)
         : "",
     country: typeof data.country === "string" ? data.country.trim() : "",
-    description: typeof data.description === "string" ? data.description : "",
     personalNotes:
       typeof data.personalNotes === "string" ? data.personalNotes : "",
     trackCount: typeof data.trackCount === "string" ? data.trackCount : "",

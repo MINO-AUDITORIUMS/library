@@ -13,7 +13,6 @@ export type UpdateAlbumInput = {
   recordCompany: string
   producers: string
   country: string
-  description: string
   personalNotes: string
   trackCount: string
   tags: string[]
@@ -49,7 +48,6 @@ export function parseUpdateAlbumInput(body: unknown): UpdateAlbumInput | null {
         ? normalizeProducersString(data.producers)
         : "",
     country: typeof data.country === "string" ? data.country.trim() : "",
-    description: typeof data.description === "string" ? data.description : "",
     personalNotes:
       typeof data.personalNotes === "string" ? data.personalNotes : "",
     trackCount: typeof data.trackCount === "string" ? data.trackCount : "",
