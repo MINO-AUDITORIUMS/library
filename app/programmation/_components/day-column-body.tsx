@@ -9,8 +9,11 @@ import { DayGridLines } from "@/app/programmation/_components/day-grid-lines"
 import { Button } from "@/components/ui/button"
 import {
   GRID_HEIGHT_PX,
+  GRID_START_MINUTES,
+  PIXELS_PER_MINUTE,
 } from "@/lib/programmation/constants"
 import { toDateKey } from "@/lib/programmation/dates"
+import { formatMinutesAsTime } from "@/lib/programmation/duration"
 import { sessionsForDay } from "@/lib/programmation/session-stats"
 import type {
   PlanningDisplayMode,
@@ -79,6 +82,12 @@ export function DayColumnBody({
             aria-hidden="true"
           >
             <div className="h-0.5 bg-primary shadow-[0_0_0_1px_hsl(var(--background))]" />
+            <div className="absolute -top-3 left-2 rounded-md bg-background px-1.5 py-0.5 text-[10px] font-medium text-foreground shadow-sm ring-1 ring-border/70">
+              {formatMinutesAsTime(
+                GRID_START_MINUTES +
+                  Math.round(dragIndicatorTop / PIXELS_PER_MINUTE)
+              )}
+            </div>
           </div>
         ) : null}
         {daySessions.map((session) => (
