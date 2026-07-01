@@ -205,7 +205,9 @@ export function mapAlbumDetail(row: AlbumRow): AlbumDetail {
     discogsReleaseId: discogsIdFromExternalIds(row.external_ids),
     musicbrainzReleaseId: musicbrainzIdFromExternalIds(row.external_ids),
     artistId: row.artist_id,
-    canSyncTracks: hasTrackImportSources(row.external_ids),
+    canSyncTracks:
+      hasTrackImportSources(row.external_ids) ||
+      Boolean(row.title?.trim() && row.artist?.trim()),
     releaseDate: row.release_date,
     subgenre: subgenreName || "—",
     recordCompany: stripCatalogDisambiguation(row.record_company ?? "") || "—",
@@ -510,9 +512,9 @@ export async function createAlbum(
     }
   }
 
-  if (input.spotifyAlbumId || input.discogsReleaseId || input.musicbrainzReleaseId) {
+  if (input.title.trim() && input.artist.trim()) {
     try {
-      const tracks = await resolveImportTracks({
+      const { tracks, sources } = await resolveImportTracks({
         spotifyAlbumId: input.spotifyAlbumId,
         discogsReleaseId: input.discogsReleaseId,
         musicbrainzReleaseId: input.musicbrainzReleaseId,
@@ -521,9 +523,27 @@ export async function createAlbum(
       })
       if (tracks.length > 0) {
         await persistAlbumTracks(supabase, albumId, tracks)
+
+        const nextExternalIds = { ...externalIds }
+        if (sources.spotifyAlbumId) {
+          nextExternalIds.spotify = sources.spotifyAlbumId
+        }
+        if (sources.discogsReleaseId) {
+          nextExternalIds.discogs = sources.discogsReleaseId
+        }
+        if (sources.musicbrainzReleaseId) {
+          nextExternalIds.musicbrainz = sources.musicbrainzReleaseId
+        }
+
+        if (JSON.stringify(nextExternalIds) !== JSON.stringify(externalIds)) {
+          await supabase
+            .from("albums")
+            .update({ external_ids: nextExternalIds })
+            .eq("id", albumId)
+        }
       }
     } catch {
-      // Discogs tracklist is optional; album row is already created.
+      // Track import is optional; album row is already created.
     }
   }
 

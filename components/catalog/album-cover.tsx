@@ -26,6 +26,7 @@ export function AlbumCover({
   if (imageUrl) {
     return (
       <img
+        key={imageUrl}
         src={imageUrl}
         alt={`Pochette de ${title}`}
         className={cn(

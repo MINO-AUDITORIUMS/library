@@ -5,6 +5,8 @@ import { findMusicBrainzRelease } from "@/lib/catalog/musicbrainz/find-release"
 import { fetchMusicBrainzTracks } from "@/lib/catalog/musicbrainz/fetch-tracks"
 import { matchDiscogsVideosToTracks } from "@/lib/catalog/match-track-videos"
 import { fetchSpotifyTracks } from "@/lib/catalog/spotify/fetch-tracks"
+import { findSpotifyAlbumId } from "@/lib/catalog/spotify/link-album"
+import type { ImportedTrack } from "@/lib/catalog/track-credits"
 import { mergeImportTracks } from "@/lib/catalog/track-credits"
 
 export type TrackImportSources = {
@@ -14,6 +16,17 @@ export type TrackImportSources = {
   albumTitle?: string
   albumArtist?: string
   barcode?: string | null
+}
+
+export type ResolvedTrackImportSources = {
+  spotifyAlbumId: string | null
+  discogsReleaseId: number | null
+  musicbrainzReleaseId: string | null
+}
+
+export type ResolveImportTracksResult = {
+  tracks: ImportedTrack[]
+  sources: ResolvedTrackImportSources
 }
 
 async function resolveDiscogsReleaseId(sources: TrackImportSources) {
@@ -44,27 +57,34 @@ async function resolveMusicBrainzReleaseId(sources: TrackImportSources) {
   return musicbrainz?.musicbrainzReleaseId ?? null
 }
 
-export async function resolveImportTracks(sources: TrackImportSources) {
+async function resolveSpotifyAlbumId(sources: TrackImportSources) {
+  if (sources.spotifyAlbumId) return sources.spotifyAlbumId
+  if (!sources.albumTitle?.trim() || !sources.albumArtist?.trim()) return null
+
+  return findSpotifyAlbumId(sources.albumTitle, sources.albumArtist).catch(
+    () => null
+  )
+}
+
+export async function resolveImportTracks(
+  sources: TrackImportSources
+): Promise<ResolveImportTracksResult> {
   const spotifyOnly = isSpotifyOnlyCatalogImport()
-  let spotifyTracks: Awaited<ReturnType<typeof fetchSpotifyTracks>> = []
+  let spotifyTracks: ImportedTrack[] = []
   let discogsTracks: Awaited<ReturnType<typeof fetchDiscogsReleaseData>>["tracks"] =
     []
   let discogsVideos: Awaited<ReturnType<typeof fetchDiscogsReleaseData>>["videos"] =
     []
   let mbTracks: Awaited<ReturnType<typeof fetchMusicBrainzTracks>> = []
 
-  if (sources.spotifyAlbumId) {
-    try {
-      spotifyTracks = await fetchSpotifyTracks(sources.spotifyAlbumId)
-    } catch {
-      spotifyTracks = []
-    }
-  }
-
+  let spotifyAlbumId = sources.spotifyAlbumId ?? null
   let discogsReleaseId = sources.discogsReleaseId ?? null
   let musicbrainzReleaseId = sources.musicbrainzReleaseId ?? null
 
   if (!spotifyOnly) {
+    if (!spotifyAlbumId) {
+      spotifyAlbumId = await resolveSpotifyAlbumId(sources)
+    }
     if (!discogsReleaseId) {
       discogsReleaseId = await resolveDiscogsReleaseId(sources)
     }
@@ -73,6 +93,14 @@ export async function resolveImportTracks(sources: TrackImportSources) {
         ...sources,
         discogsReleaseId,
       })
+    }
+  }
+
+  if (spotifyAlbumId) {
+    try {
+      spotifyTracks = await fetchSpotifyTracks(spotifyAlbumId)
+    } catch {
+      spotifyTracks = []
     }
   }
 
@@ -113,5 +141,12 @@ export async function resolveImportTracks(sources: TrackImportSources) {
     tracks = matchDiscogsVideosToTracks(tracks, discogsVideos)
   }
 
-  return tracks
+  return {
+    tracks,
+    sources: {
+      spotifyAlbumId,
+      discogsReleaseId,
+      musicbrainzReleaseId,
+    },
+  }
 }

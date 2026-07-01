@@ -20,6 +20,10 @@ function extensionFromContentType(contentType: string) {
   return "jpg"
 }
 
+function buildAlbumCoverStoragePath(albumId: string, extension: string) {
+  return `${albumId}/cover-${Date.now()}.${extension}`
+}
+
 export function getAlbumCoverPublicUrl(storagePath: string | null | undefined) {
   if (!storagePath?.trim()) return null
   const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "")
@@ -53,7 +57,7 @@ export async function uploadAlbumCoverFromUrl(
   if (!contentType.startsWith("image/")) return null
 
   const extension = extensionFromContentType(contentType)
-  const storagePath = `${albumId}/cover.${extension}`
+  const storagePath = buildAlbumCoverStoragePath(albumId, extension)
   const bytes = await response.arrayBuffer()
 
   const { error } = await supabase.storage
@@ -77,7 +81,7 @@ export async function uploadAlbumCoverBytes(
   if (!contentType.startsWith("image/")) return null
 
   const extension = extensionFromContentType(contentType)
-  const storagePath = `${albumId}/cover-${Date.now()}.${extension}`
+  const storagePath = buildAlbumCoverStoragePath(albumId, extension)
 
   const { error } = await supabase.storage
     .from(ALBUM_COVERS_BUCKET)
