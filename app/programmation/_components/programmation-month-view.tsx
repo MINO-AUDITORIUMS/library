@@ -3,6 +3,7 @@
 import { PlusIcon } from "lucide-react"
 
 import { ScheduleScrollShell } from "@/app/programmation/_components/schedule-scroll-shell"
+import { SessionContextMenu } from "@/app/programmation/_components/session-context-menu"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -20,6 +21,7 @@ export type ProgrammationMonthViewProps = {
   sessions: ProgrammationSession[]
   onEmptySlot: (dateKey: string, startTime: string) => void
   onSelectSession: (sessionId: string) => void
+  onDeleteSession: (sessionId: string) => void
 }
 
 const weekdayLabels = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
@@ -29,6 +31,7 @@ export function ProgrammationMonthView({
   sessions,
   onEmptySlot,
   onSelectSession,
+  onDeleteSession,
 }: ProgrammationMonthViewProps) {
   const days = monthCalendarDays(anchorDate)
   const monthIndex = anchorDate.getMonth()
@@ -74,22 +77,29 @@ export function ProgrammationMonthView({
 
               <div className="space-y-1">
                 {daySessions.slice(0, 3).map((session) => (
-                  <button
+                  <SessionContextMenu
                     key={session.id}
-                    type="button"
-                    onClick={() => onSelectSession(session.id)}
-                    className="flex w-full items-center gap-1 rounded-md px-1.5 py-1 text-left text-[11px] hover:bg-muted/50"
+                    onOpenDetails={() => onSelectSession(session.id)}
+                    onDelete={() => onDeleteSession(session.id)}
                   >
-                    <span
-                      className="size-2 shrink-0 rounded-full"
-                      style={{
-                        backgroundColor: `hsl(${session.album.coverHue} 55% 45%)`,
-                      }}
-                    />
-                    <span className="truncate">
-                      {session.startTime} {session.album.title}
-                    </span>
-                  </button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => onSelectSession(session.id)}
+                      className="h-auto w-full justify-start gap-1 rounded-md px-1.5 py-1 text-left text-[11px] hover:bg-muted/50"
+                    >
+                      <span
+                        className="size-2 shrink-0 rounded-full"
+                        style={{
+                          backgroundColor: `hsl(${session.album.coverHue} 55% 45%)`,
+                        }}
+                      />
+                      <span className="truncate">
+                        {session.startTime} {session.album.title}
+                      </span>
+                    </Button>
+                  </SessionContextMenu>
                 ))}
                 {daySessions.length > 3 ? (
                   <Badge variant="muted" className="text-[10px]">

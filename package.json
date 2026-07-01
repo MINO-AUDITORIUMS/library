@@ -18,6 +18,7 @@
     "db:strip-disambiguation": "pnpm dlx tsx scripts/strip-catalog-disambiguation.ts"
   },
   "dependencies": {
+    "@radix-ui/react-context-menu": "^2.3.2",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.2",
     "class-variance-authority": "^0.7.1",

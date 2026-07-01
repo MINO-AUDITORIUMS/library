@@ -21,6 +21,7 @@ export type DayColumnBodyProps = {
   onEmptySlot: (dateKey: string, startTime: string) => void
   onSelectSession: (sessionId: string) => void
   onDragSessionStart: (sessionId: string) => void
+  onDeleteSession: (sessionId: string) => void
   onDropSession: (dateKey: string, offsetY: number) => void
 }
 
@@ -31,6 +32,7 @@ export function DayColumnBody({
   onEmptySlot,
   onSelectSession,
   onDragSessionStart,
+  onDeleteSession,
   onDropSession,
 }: DayColumnBodyProps) {
   const dateKey = toDateKey(date)
@@ -42,8 +44,9 @@ export function DayColumnBody({
     onDropSession(dateKey, event.clientY - rect.top)
   }
 
-  function handleClick(event: React.MouseEvent<HTMLDivElement>) {
+  function handlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
     if (displayMode !== "visual") return
+    if (event.button !== 0) return
     const rect = event.currentTarget.getBoundingClientRect()
     const offsetY = event.clientY - rect.top
     const minutes = 9 * 60 + Math.round(offsetY / 2)
@@ -62,7 +65,7 @@ export function DayColumnBody({
         style={{ height: GRID_HEIGHT_PX }}
         onDragOver={(event) => event.preventDefault()}
         onDrop={handleDrop}
-        onClick={handleClick}
+        onPointerDown={handlePointerDown}
       >
         <DayGridLines />
         {daySessions.map((session) => (
@@ -71,6 +74,7 @@ export function DayColumnBody({
             session={session}
             onSelect={onSelectSession}
             onDragStart={onDragSessionStart}
+            onDelete={onDeleteSession}
           />
         ))}
       </div>
@@ -85,6 +89,7 @@ export function DayColumnBody({
           session={session}
           onSelect={onSelectSession}
           onDragStart={onDragSessionStart}
+          onDelete={onDeleteSession}
         />
       ))}
       <Button

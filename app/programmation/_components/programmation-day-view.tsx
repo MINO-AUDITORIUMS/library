@@ -17,6 +17,7 @@ export type ProgrammationDayViewProps = {
   onEmptySlot: (dateKey: string, startTime: string) => void
   onSelectSession: (sessionId: string) => void
   onDragSessionStart: (sessionId: string) => void
+  onDeleteSession: (sessionId: string) => void
   onDropSession: (dateKey: string, offsetY: number) => void
 }
 
@@ -27,6 +28,7 @@ export function ProgrammationDayView({
   onEmptySlot,
   onSelectSession,
   onDragSessionStart,
+  onDeleteSession,
   onDropSession,
 }: ProgrammationDayViewProps) {
   return (
@@ -56,6 +58,7 @@ export function ProgrammationDayView({
               onEmptySlot={onEmptySlot}
               onSelectSession={onSelectSession}
               onDragSessionStart={onDragSessionStart}
+              onDeleteSession={onDeleteSession}
               onDropSession={onDropSession}
             />
           </div>
@@ -68,6 +71,7 @@ export function ProgrammationDayView({
           onEmptySlot={onEmptySlot}
           onSelectSession={onSelectSession}
           onDragSessionStart={onDragSessionStart}
+          onDeleteSession={onDeleteSession}
           onDropSession={onDropSession}
         />
       )}

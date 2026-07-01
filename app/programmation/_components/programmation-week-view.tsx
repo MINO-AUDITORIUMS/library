@@ -18,6 +18,7 @@ export type ProgrammationWeekViewProps = {
   onEmptySlot: (dateKey: string, startTime: string) => void
   onSelectSession: (sessionId: string) => void
   onDragSessionStart: (sessionId: string) => void
+  onDeleteSession: (sessionId: string) => void
   onDropSession: (dateKey: string, offsetY: number) => void
 }
 
@@ -28,6 +29,7 @@ export function ProgrammationWeekView({
   onEmptySlot,
   onSelectSession,
   onDragSessionStart,
+  onDeleteSession,
   onDropSession,
 }: ProgrammationWeekViewProps) {
   const days = weekDays(anchorDate)
@@ -64,6 +66,7 @@ export function ProgrammationWeekView({
                 onEmptySlot={onEmptySlot}
                 onSelectSession={onSelectSession}
                 onDragSessionStart={onDragSessionStart}
+                onDeleteSession={onDeleteSession}
                 onDropSession={onDropSession}
               />
             ))}
@@ -80,6 +83,7 @@ export function ProgrammationWeekView({
               onEmptySlot={onEmptySlot}
               onSelectSession={onSelectSession}
               onDragSessionStart={onDragSessionStart}
+              onDeleteSession={onDeleteSession}
               onDropSession={onDropSession}
             />
           ))}

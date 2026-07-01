@@ -160,6 +160,7 @@ export function ProgrammationPageClient({
             setDetailOpen(true)
           }}
           onDragSessionStart={setDraggingSessionId}
+          onDeleteSession={handleDelete}
           onDropSession={handleDrop}
         />
       ) : null}
@@ -175,6 +176,7 @@ export function ProgrammationPageClient({
             setDetailOpen(true)
           }}
           onDragSessionStart={setDraggingSessionId}
+          onDeleteSession={handleDelete}
           onDropSession={handleDrop}
         />
       ) : null}
@@ -188,6 +190,7 @@ export function ProgrammationPageClient({
             setSelectedSessionId(sessionId)
             setDetailOpen(true)
           }}
+          onDeleteSession={handleDelete}
         />
       ) : null}
       </div>
