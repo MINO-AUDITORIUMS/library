@@ -218,11 +218,12 @@ export function AlbumCreateForm() {
       }
 
       if (data.existingAlbumId) {
+        const existingAlbumId = data.existingAlbumId
         setResults([])
         toast.warning("Cet album est déjà en bibliothèque.", {
           action: {
             label: "Voir la fiche",
-            onClick: () => router.push(albumDetailRoute(data.existingAlbumId)),
+            onClick: () => router.push(albumDetailRoute(existingAlbumId)),
           },
         })
         return
