@@ -9,10 +9,12 @@ export type SpotifyArtistRef = {
   name: string
 }
 
+export type SpotifyAlbumType = "album" | "single" | "compilation"
+
 export type SpotifyAlbumSearchItem = {
   id: string
   name: string
-  album_type: string
+  album_type: SpotifyAlbumType | string
   artists: SpotifyArtistRef[]
   images: SpotifyImage[]
   release_date: string
@@ -29,7 +31,7 @@ export type SpotifyAlbumSearchResponse = {
 export type SpotifyAlbum = {
   id: string
   name: string
-  album_type: string
+  album_type: SpotifyAlbumType | string
   artists: SpotifyArtistRef[]
   images: SpotifyImage[]
   release_date: string
