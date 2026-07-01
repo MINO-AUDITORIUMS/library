@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 
 import { ProgrammationMonthView } from "@/app/programmation/_components/programmation-month-view"
@@ -12,7 +12,14 @@ import {
   defaultSessionDraft,
   useProgrammation,
 } from "@/hooks/use-programmation"
+import {
+  GRID_END_MINUTES,
+  GRID_START_MINUTES,
+  PIXELS_PER_MINUTE,
+  TIME_SNAP_MINUTES,
+} from "@/lib/programmation/constants"
 import { consumePendingAlbum } from "@/lib/programmation/pending-album"
+import { parseTimeToMinutes, snapMinutes } from "@/lib/programmation/duration"
 import type {
   ProgrammationSession,
   SessionDraft,
@@ -29,17 +36,35 @@ export function ProgrammationPageClient({
   const [draggingSession, setDraggingSession] = useState<{
     id: string
     grabOffsetY: number
+    pointerId: number
   } | null>(null)
+  const [dragIndicator, setDragIndicator] = useState<{
+    dateKey: string
+    top: number
+  } | null>(null)
+  const dragIndicatorRef = useRef<{ dateKey: string; top: number } | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [draft, setDraft] = useState<SessionDraft>(defaultSessionDraft())
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const suppressSelectRef = useRef<{ id: string; until: number } | null>(null)
 
   const selectedSession = useMemo(
     () => controller.sessions.find((session) => session.id === selectedSessionId) ?? null,
     [controller.sessions, selectedSessionId]
   )
+
+  const openDetails = useCallback((sessionId: string) => {
+    const suppress = suppressSelectRef.current
+    if (suppress && suppress.id === sessionId && Date.now() < suppress.until) {
+      suppressSelectRef.current = null
+      return
+    }
+
+    setSelectedSessionId(sessionId)
+    setDetailOpen(true)
+  }, [])
 
   const openCreateForm = useCallback((dateKey: string, startTime: string) => {
     setDraft(defaultSessionDraft(dateKey, startTime))
@@ -80,23 +105,90 @@ export function ProgrammationPageClient({
     }
   }
 
-  async function handleDrop(dateKey: string, offsetY: number) {
-    if (!draggingSession) return
+  useEffect(() => {
+    dragIndicatorRef.current = dragIndicator
+  }, [dragIndicator])
 
-    try {
-      await controller.moveSessionFromPointer(
-        draggingSession.id,
-        dateKey,
-        offsetY - draggingSession.grabOffsetY
-      )
-      setDraggingSession(null)
-      toast.success("Séance déplacée.")
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Impossible de déplacer la séance."
-      toast.error(message)
+  useEffect(() => {
+    if (!draggingSession) return
+    const active = draggingSession
+
+    function findDropZone(clientX: number, clientY: number) {
+      const element = document.elementFromPoint(clientX, clientY)
+      const zone = element?.closest?.("[data-datekey]") as HTMLElement | null
+      if (!zone) return null
+      const dateKey = zone.getAttribute("data-datekey")
+      if (!dateKey) return null
+      return { zone, dateKey }
     }
-  }
+
+    function onPointerMove(event: PointerEvent) {
+      if (event.pointerId !== active.pointerId) return
+      const hit = findDropZone(event.clientX, event.clientY)
+      if (!hit) {
+        setDragIndicator(null)
+        return
+      }
+
+      const rect = hit.zone.getBoundingClientRect()
+      const rawOffsetY = event.clientY - rect.top - active.grabOffsetY
+      const rawMinutes =
+        GRID_START_MINUTES + Math.round(rawOffsetY / PIXELS_PER_MINUTE)
+      const clamped = Math.min(
+        Math.max(rawMinutes, GRID_START_MINUTES),
+        GRID_END_MINUTES - TIME_SNAP_MINUTES
+      )
+      const snapped = snapMinutes(clamped, TIME_SNAP_MINUTES)
+      const top = (snapped - GRID_START_MINUTES) * PIXELS_PER_MINUTE
+      setDragIndicator({ dateKey: hit.dateKey, top })
+    }
+
+    async function onPointerUp(event: PointerEvent) {
+      if (event.pointerId !== active.pointerId) return
+      window.removeEventListener("pointermove", onPointerMove)
+      window.removeEventListener("pointerup", onPointerUp)
+      const indicator = dragIndicatorRef.current
+      suppressSelectRef.current = { id: active.id, until: Date.now() + 1200 }
+      setDraggingSession(null)
+      setDragIndicator(null)
+
+      if (!indicator) return
+      const currentSession = controller.sessions.find(
+        (session) => session.id === active.id
+      )
+      if (currentSession) {
+        const currentTop =
+          (parseTimeToMinutes(currentSession.startTime) - GRID_START_MINUTES) *
+          PIXELS_PER_MINUTE
+        const sameSlot =
+          currentSession.date === indicator.dateKey &&
+          Math.abs(currentTop - indicator.top) < 0.5
+        if (sameSlot) return
+      }
+
+      try {
+        await controller.moveSessionFromPointer(
+          active.id,
+          indicator.dateKey,
+          indicator.top
+        )
+        toast.success("Séance déplacée.")
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Impossible de déplacer la séance."
+        toast.error(message)
+      }
+    }
+
+    window.addEventListener("pointermove", onPointerMove)
+    window.addEventListener("pointerup", onPointerUp, { once: true })
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove)
+      window.removeEventListener("pointerup", onPointerUp)
+    }
+  }, [controller, draggingSession])
 
   async function handleUpdate(
     ...args: Parameters<typeof controller.updateSession>
@@ -161,18 +253,13 @@ export function ProgrammationPageClient({
           sessions={controller.sessions}
           displayMode={controller.displayMode}
           onEmptySlot={openCreateForm}
-          onSelectSession={(sessionId) => {
-            setSelectedSessionId(sessionId)
-            setDetailOpen(true)
-          }}
-          onDragSessionStart={(sessionId, grabOffsetY) =>
-            setDraggingSession({ id: sessionId, grabOffsetY })
+          onSelectSession={openDetails}
+          onDragSessionStart={(sessionId, grabOffsetY, pointerId) =>
+            setDraggingSession({ id: sessionId, grabOffsetY, pointerId })
           }
-          onDragSessionEnd={() => setDraggingSession(null)}
           dragging={draggingSession != null}
-          draggingGrabOffsetY={draggingSession?.grabOffsetY ?? 0}
+          dragIndicator={dragIndicator}
           onDeleteSession={handleDelete}
-          onDropSession={handleDrop}
         />
       ) : null}
 
@@ -181,10 +268,7 @@ export function ProgrammationPageClient({
           anchorDate={controller.anchorDate}
           sessions={controller.sessions}
           onEmptySlot={openCreateForm}
-          onSelectSession={(sessionId) => {
-            setSelectedSessionId(sessionId)
-            setDetailOpen(true)
-          }}
+          onSelectSession={openDetails}
           onDeleteSession={handleDelete}
         />
       ) : null}

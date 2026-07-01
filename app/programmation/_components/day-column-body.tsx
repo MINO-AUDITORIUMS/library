@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { PlusIcon } from "lucide-react"
 
 import { CurrentTimeIndicator } from "@/app/programmation/_components/current-time-indicator"
@@ -9,14 +8,9 @@ import { SessionTextRow } from "@/app/programmation/_components/session-text-row
 import { DayGridLines } from "@/app/programmation/_components/day-grid-lines"
 import { Button } from "@/components/ui/button"
 import {
-  GRID_END_MINUTES,
   GRID_HEIGHT_PX,
-  GRID_START_MINUTES,
-  PIXELS_PER_MINUTE,
-  TIME_SNAP_MINUTES,
 } from "@/lib/programmation/constants"
 import { toDateKey } from "@/lib/programmation/dates"
-import { snapMinutes } from "@/lib/programmation/duration"
 import { sessionsForDay } from "@/lib/programmation/session-stats"
 import type {
   PlanningDisplayMode,
@@ -29,12 +23,14 @@ export type DayColumnBodyProps = {
   displayMode: PlanningDisplayMode
   onEmptySlot: (dateKey: string, startTime: string) => void
   onSelectSession: (sessionId: string) => void
-  onDragSessionStart: (sessionId: string, grabOffsetY: number) => void
-  onDragSessionEnd: () => void
-  draggingGrabOffsetY: number
+  onDragSessionStart: (
+    sessionId: string,
+    grabOffsetY: number,
+    pointerId: number
+  ) => void
   dragging: boolean
+  dragIndicatorTop: number | null
   onDeleteSession: (sessionId: string) => void
-  onDropSession: (dateKey: string, offsetY: number) => void
 }
 
 export function DayColumnBody({
@@ -44,44 +40,15 @@ export function DayColumnBody({
   onEmptySlot,
   onSelectSession,
   onDragSessionStart,
-  onDragSessionEnd,
-  draggingGrabOffsetY,
   dragging,
+  dragIndicatorTop,
   onDeleteSession,
-  onDropSession,
 }: DayColumnBodyProps) {
   const dateKey = toDateKey(date)
   const daySessions = sessionsForDay(sessions, dateKey)
-  const [dragIndicatorTop, setDragIndicatorTop] = useState<number | null>(null)
-
-  function handleDrop(event: React.DragEvent<HTMLDivElement>) {
-    event.preventDefault()
-    const rect = event.currentTarget.getBoundingClientRect()
-    onDropSession(dateKey, event.clientY - rect.top)
-    setDragIndicatorTop(null)
-  }
-
-  function handleDragLeave() {
-    setDragIndicatorTop(null)
-  }
-
-  function handleDragOver(event: React.DragEvent<HTMLDivElement>) {
-    event.preventDefault()
-    event.dataTransfer.dropEffect = "move"
-    if (!dragging) return
-    const rect = event.currentTarget.getBoundingClientRect()
-    const rawOffset = event.clientY - rect.top - draggingGrabOffsetY
-    const rawMinutes =
-      GRID_START_MINUTES + Math.round(rawOffset / PIXELS_PER_MINUTE)
-    const clamped = Math.min(
-      Math.max(rawMinutes, GRID_START_MINUTES),
-      GRID_END_MINUTES - TIME_SNAP_MINUTES
-    )
-    const snapped = snapMinutes(clamped, TIME_SNAP_MINUTES)
-    setDragIndicatorTop((snapped - GRID_START_MINUTES) * PIXELS_PER_MINUTE)
-  }
 
   function handlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
+    if (dragging) return
     if (displayMode !== "visual") return
     if (event.button !== 0) return
     const rect = event.currentTarget.getBoundingClientRect()
@@ -100,10 +67,8 @@ export function DayColumnBody({
       <div
         className="relative rounded-xl border bg-muted/10"
         style={{ height: GRID_HEIGHT_PX }}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
         onPointerDown={handlePointerDown}
+        data-datekey={dateKey}
       >
         <DayGridLines />
         <CurrentTimeIndicator date={date} />
@@ -122,7 +87,6 @@ export function DayColumnBody({
             session={session}
             onSelect={onSelectSession}
             onDragStart={onDragSessionStart}
-            onDragEnd={onDragSessionEnd}
             onDelete={onDeleteSession}
           />
         ))}
@@ -138,7 +102,6 @@ export function DayColumnBody({
           session={session}
           onSelect={onSelectSession}
           onDragStart={onDragSessionStart}
-          onDragEnd={onDragSessionEnd}
           onDelete={onDeleteSession}
         />
       ))}

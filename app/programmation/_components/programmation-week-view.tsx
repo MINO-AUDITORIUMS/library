@@ -5,7 +5,7 @@ import { DayColumnHeader } from "@/app/programmation/_components/day-column-head
 import { ScheduleScrollShell } from "@/app/programmation/_components/schedule-scroll-shell"
 import { TimeGutter } from "@/app/programmation/_components/time-gutter"
 import { TIME_GUTTER_WIDTH_PX } from "@/lib/programmation/constants"
-import { weekDays } from "@/lib/programmation/dates"
+import { toDateKey, weekDays } from "@/lib/programmation/dates"
 import type {
   PlanningDisplayMode,
   ProgrammationSession,
@@ -17,12 +17,14 @@ export type ProgrammationWeekViewProps = {
   displayMode: PlanningDisplayMode
   onEmptySlot: (dateKey: string, startTime: string) => void
   onSelectSession: (sessionId: string) => void
-  onDragSessionStart: (sessionId: string, grabOffsetY: number) => void
-  onDragSessionEnd: () => void
+  onDragSessionStart: (
+    sessionId: string,
+    grabOffsetY: number,
+    pointerId: number
+  ) => void
   dragging: boolean
-  draggingGrabOffsetY: number
+  dragIndicator: { dateKey: string; top: number } | null
   onDeleteSession: (sessionId: string) => void
-  onDropSession: (dateKey: string, offsetY: number) => void
 }
 
 export function ProgrammationWeekView({
@@ -32,11 +34,9 @@ export function ProgrammationWeekView({
   onEmptySlot,
   onSelectSession,
   onDragSessionStart,
-  onDragSessionEnd,
   dragging,
-  draggingGrabOffsetY,
+  dragIndicator,
   onDeleteSession,
-  onDropSession,
 }: ProgrammationWeekViewProps) {
   const days = weekDays(anchorDate)
   const minWidth = TIME_GUTTER_WIDTH_PX + 7 * 128 + 6 * 12 + 24
@@ -72,11 +72,13 @@ export function ProgrammationWeekView({
                 onEmptySlot={onEmptySlot}
                 onSelectSession={onSelectSession}
                 onDragSessionStart={onDragSessionStart}
-                onDragSessionEnd={onDragSessionEnd}
                 dragging={dragging}
-                draggingGrabOffsetY={draggingGrabOffsetY}
+                dragIndicatorTop={
+                  dragIndicator?.dateKey === toDateKey(day)
+                    ? dragIndicator.top
+                    : null
+                }
                 onDeleteSession={onDeleteSession}
-                onDropSession={onDropSession}
               />
             ))}
           </div>
@@ -92,11 +94,13 @@ export function ProgrammationWeekView({
               onEmptySlot={onEmptySlot}
               onSelectSession={onSelectSession}
               onDragSessionStart={onDragSessionStart}
-              onDragSessionEnd={onDragSessionEnd}
               dragging={dragging}
-              draggingGrabOffsetY={draggingGrabOffsetY}
+              dragIndicatorTop={
+                dragIndicator?.dateKey === toDateKey(day)
+                  ? dragIndicator.top
+                  : null
+              }
               onDeleteSession={onDeleteSession}
-              onDropSession={onDropSession}
             />
           ))}
         </div>

@@ -13,19 +13,10 @@ import { parseTimeToMinutes } from "@/lib/programmation/duration"
 import type { ProgrammationSession } from "@/lib/programmation/types"
 import { cn } from "@/lib/utils"
 
-const transparentDragImage = (() => {
-  if (typeof Image === "undefined") return null
-  const image = new Image()
-  image.src =
-    "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
-  return image
-})()
-
 export type SessionBlockProps = {
   session: ProgrammationSession
   onSelect: (sessionId: string) => void
-  onDragStart: (sessionId: string, grabOffsetY: number) => void
-  onDragEnd: () => void
+  onDragStart: (sessionId: string, grabOffsetY: number, pointerId: number) => void
   onDelete: (sessionId: string) => void
   className?: string
 }
@@ -41,7 +32,6 @@ export function SessionBlock({
   session,
   onSelect,
   onDragStart,
-  onDragEnd,
   onDelete,
   className,
 }: SessionBlockProps) {
@@ -58,23 +48,12 @@ export function SessionBlock({
       <Button
         type="button"
         variant="ghost"
-        draggable
         onPointerDown={(event) => {
           event.stopPropagation()
-        }}
-        onDragStart={(event) => {
-          event.stopPropagation()
-          event.dataTransfer.setData("text/plain", session.id)
-          event.dataTransfer.effectAllowed = "move"
-          if (transparentDragImage) {
-            event.dataTransfer.setDragImage(transparentDragImage, 0, 0)
-          }
+          if (event.button !== 0) return
           const rect = event.currentTarget.getBoundingClientRect()
-          onDragStart(session.id, event.clientY - rect.top)
-        }}
-        onDragEnd={(event) => {
-          event.stopPropagation()
-          onDragEnd()
+          event.currentTarget.setPointerCapture(event.pointerId)
+          onDragStart(session.id, event.clientY - rect.top, event.pointerId)
         }}
         onClick={(event) => {
           event.stopPropagation()
