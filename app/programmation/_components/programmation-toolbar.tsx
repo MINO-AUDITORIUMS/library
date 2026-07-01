@@ -2,9 +2,9 @@
 
 import {
   CalendarDaysIcon,
+  CalendarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  ImageIcon,
   ListIcon,
 } from "lucide-react"
 
@@ -87,7 +87,7 @@ export function ProgrammationToolbar({
               aria-label="Mode visuel"
               onClick={() => onDisplayModeChange("visual")}
             >
-              <ImageIcon />
+              <CalendarIcon />
             </Button>
             <Button
               type="button"
