@@ -2,6 +2,7 @@
 
 import { PlusIcon } from "lucide-react"
 
+import { CurrentTimeIndicator } from "@/app/programmation/_components/current-time-indicator"
 import { SessionBlock } from "@/app/programmation/_components/session-block"
 import { SessionTextRow } from "@/app/programmation/_components/session-text-row"
 import { DayGridLines } from "@/app/programmation/_components/day-grid-lines"
@@ -68,6 +69,7 @@ export function DayColumnBody({
         onPointerDown={handlePointerDown}
       >
         <DayGridLines />
+        <CurrentTimeIndicator date={date} />
         {daySessions.map((session) => (
           <SessionBlock
             key={session.id}
