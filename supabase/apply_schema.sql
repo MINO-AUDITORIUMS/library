@@ -18,3 +18,5 @@
 \ir schema/album_attachments.sql
 \ir schema/album_search.sql
 \ir schema/album_drop_description.sql
+\ir schema/artists_image_storage.sql
+\ir storage/artist_images.sql

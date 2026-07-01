@@ -9,6 +9,7 @@ import { fetchDiscogsArtistProfile } from "@/lib/catalog/discogs/fetch-artist"
 import { fetchMusicBrainzArtistProfile } from "@/lib/catalog/musicbrainz/fetch-artist"
 import { coverHueFromId } from "@/lib/catalog/cover-hue"
 import { normalizeArtistDisplayName } from "@/lib/catalog/normalize-artist-name"
+import { resolveArtistImageUrl } from "@/lib/catalog/storage/artist-image"
 import { slugify } from "@/lib/catalog/slug"
 import type { AlbumSummary, ArtistDetail, ArtistSummary } from "@/lib/catalog/types"
 
@@ -18,6 +19,7 @@ export type ArtistRow = {
   slug: string
   bio: string | null
   image_url: string | null
+  image_storage_path: string | null
   country: string | null
   external_ids: Record<string, unknown>
   created_at: string
@@ -29,6 +31,7 @@ const artistSelect = `
   slug,
   bio,
   image_url,
+  image_storage_path,
   country,
   external_ids,
   created_at
@@ -61,7 +64,13 @@ function trimBio(value: string, maxLength = 2000) {
 export function mapArtistSummary(
   row: Pick<
     ArtistRow,
-    "id" | "name" | "slug" | "image_url" | "country" | "created_at"
+    | "id"
+    | "name"
+    | "slug"
+    | "image_url"
+    | "image_storage_path"
+    | "country"
+    | "created_at"
   >,
   albumCount: number
 ): ArtistSummary {
@@ -69,7 +78,10 @@ export function mapArtistSummary(
     id: row.id,
     name: normalizeArtistDisplayName(row.name),
     slug: row.slug,
-    imageUrl: row.image_url,
+    imageUrl: resolveArtistImageUrl({
+      imageStoragePath: row.image_storage_path,
+      imageUrl: row.image_url,
+    }),
     country: row.country?.trim() ?? "",
     coverHue: coverHueFromId(row.id),
     albumCount,
@@ -119,6 +131,7 @@ export async function searchArtistsByLabel(
       name,
       slug,
       image_url,
+      image_storage_path,
       country,
       created_at,
       albums(count)
@@ -133,7 +146,7 @@ export async function searchArtistsByLabel(
     mapArtistSummary(
       row as Pick<
         ArtistRow,
-        "id" | "name" | "slug" | "image_url" | "country" | "created_at"
+        "id" | "name" | "slug" | "image_url" | "image_storage_path" | "country" | "created_at"
       >,
       readAlbumCount((row as { albums?: { count: number }[] }).albums)
     )
@@ -156,6 +169,7 @@ export async function searchArtistSummaries(
       name,
       slug,
       image_url,
+      image_storage_path,
       country,
       created_at,
       albums(count)
@@ -170,7 +184,7 @@ export async function searchArtistSummaries(
     mapArtistSummary(
       row as Pick<
         ArtistRow,
-        "id" | "name" | "slug" | "image_url" | "country" | "created_at"
+        "id" | "name" | "slug" | "image_url" | "image_storage_path" | "country" | "created_at"
       >,
       readAlbumCount((row as { albums?: { count: number }[] }).albums)
     )
@@ -194,6 +208,7 @@ export async function listArtistSummaries(supabase: SupabaseClient) {
       name,
       slug,
       image_url,
+      image_storage_path,
       country,
       created_at,
       albums(count)
@@ -206,7 +221,7 @@ export async function listArtistSummaries(supabase: SupabaseClient) {
     mapArtistSummary(
       row as Pick<
         ArtistRow,
-        "id" | "name" | "slug" | "image_url" | "country" | "created_at"
+        "id" | "name" | "slug" | "image_url" | "image_storage_path" | "country" | "created_at"
       >,
       readAlbumCount((row as { albums?: { count: number }[] }).albums)
     )
@@ -222,7 +237,10 @@ export function mapArtistDetail(
     name: normalizeArtistDisplayName(row.name),
     slug: row.slug,
     bio: row.bio?.trim() ?? "",
-    imageUrl: row.image_url,
+    imageUrl: resolveArtistImageUrl({
+      imageStoragePath: row.image_storage_path,
+      imageUrl: row.image_url,
+    }),
     country: row.country?.trim() ?? "",
     coverHue: coverHueFromId(row.id),
     discogsArtistId: discogsArtistIdFromExternalIds(row.external_ids),

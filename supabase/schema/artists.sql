@@ -4,6 +4,7 @@ create table if not exists public.artists (
   slug text not null,
   bio text,
   image_url text,
+  image_storage_path text,
   country text,
   external_ids jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),

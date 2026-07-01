@@ -14,6 +14,7 @@ const artistSelect = `
   slug,
   bio,
   image_url,
+  image_storage_path,
   country,
   external_ids,
   created_at

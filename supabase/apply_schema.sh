@@ -41,6 +41,7 @@ FILES=(
   supabase/schema/subgenres.sql
   supabase/schema/tags.sql
   supabase/schema/artists.sql
+  supabase/schema/artists_image_storage.sql
   supabase/schema/albums.sql
   supabase/schema/album_drop_format.sql
   supabase/schema/album_artist_fk.sql
@@ -57,9 +58,11 @@ FILES=(
   supabase/schema/album_user_ratings.sql
   supabase/schema/album_attachments.sql
   supabase/schema/album_search.sql
+  supabase/schema/album_drop_description.sql
   supabase/schema/seances.sql
   supabase/storage/album_attachments.sql
   supabase/storage/album_covers.sql
+  supabase/storage/artist_images.sql
   supabase/storage/mino_assets.sql
   supabase/seed/lookups.sql
 )

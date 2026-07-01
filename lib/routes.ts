@@ -21,4 +21,8 @@ export function artistDetailRoute(id: string) {
   return `/artistes/${id}` as const
 }
 
+export function artistEditRoute(id: string) {
+  return `/artistes/${id}/modifier` as const
+}
+
 export type AppRoute = (typeof routes)[keyof typeof routes]

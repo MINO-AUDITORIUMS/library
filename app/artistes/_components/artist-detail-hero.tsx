@@ -1,4 +1,4 @@
-import { ArtistAvatar } from "@/components/catalog/artist-avatar"
+import { ArtistImageEditable } from "@/app/artistes/_components/artist-image-editable"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import type { ArtistDetail } from "@/lib/catalog/types"
@@ -11,12 +11,12 @@ export function ArtistDetailHero({ artist }: ArtistDetailHeroProps) {
   return (
     <Card className="py-0">
       <CardContent className="flex flex-col gap-4 py-5 sm:flex-row sm:items-start">
-        <ArtistAvatar
+        <ArtistImageEditable
+          artistId={artist.id}
           name={artist.name}
-          hue={artist.coverHue}
+          coverHue={artist.coverHue}
           imageUrl={artist.imageUrl}
-          size="lg"
-          className="mx-auto sm:mx-0"
+          className="mx-auto size-32 sm:mx-0"
         />
         <div className="min-w-0 flex-1 space-y-3">
           <div className="space-y-1 text-center sm:text-left">

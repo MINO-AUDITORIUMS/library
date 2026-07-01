@@ -4,6 +4,7 @@ import { notFound } from "next/navigation"
 import { ArrowLeftIcon } from "lucide-react"
 
 import { ArtistDetailView } from "@/app/artistes/_components/artist-detail-view"
+import { ArtistDetailActions } from "@/app/artistes/_components/artist-detail-actions"
 import { Button } from "@/components/ui/button"
 import { getArtistDetailById } from "@/lib/catalog/db/artist-detail"
 import { getAuthenticatedUser } from "@/lib/auth/require-authenticated-user"
@@ -38,12 +39,15 @@ export default async function ArtistDetailPage({
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <Button variant="ghost" size="sm" className="w-fit" asChild>
-        <Link href={routes.artistes}>
-          <ArrowLeftIcon />
-          Artistes
-        </Link>
-      </Button>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Button variant="ghost" size="sm" className="w-fit" asChild>
+          <Link href={routes.artistes}>
+            <ArrowLeftIcon />
+            Artistes
+          </Link>
+        </Button>
+        <ArtistDetailActions artistId={artist.id} />
+      </div>
       <ArtistDetailView artist={artist} />
     </div>
   )
