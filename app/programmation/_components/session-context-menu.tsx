@@ -1,6 +1,7 @@
  "use client"
  
  import type { ReactNode } from "react"
+import { ExternalLinkIcon, Trash2Icon } from "lucide-react"
  
  import {
    ContextMenu,
@@ -36,6 +37,7 @@
             onOpenDetails()
           }}
         >
+          <ExternalLinkIcon className="size-4 opacity-80" />
           Ouvrir les détails
         </ContextMenuItem>
          <ContextMenuSeparator />
@@ -51,7 +53,8 @@
             onDelete()
           }}
         >
-           Retirer du planning
+          <Trash2Icon className="size-4 opacity-80" />
+          Retirer du planning
          </ContextMenuItem>
        </ContextMenuContent>
      </ContextMenu>
