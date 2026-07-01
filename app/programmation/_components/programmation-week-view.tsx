@@ -17,7 +17,10 @@ export type ProgrammationWeekViewProps = {
   displayMode: PlanningDisplayMode
   onEmptySlot: (dateKey: string, startTime: string) => void
   onSelectSession: (sessionId: string) => void
-  onDragSessionStart: (sessionId: string) => void
+  onDragSessionStart: (sessionId: string, grabOffsetY: number) => void
+  onDragSessionEnd: () => void
+  dragging: boolean
+  draggingGrabOffsetY: number
   onDeleteSession: (sessionId: string) => void
   onDropSession: (dateKey: string, offsetY: number) => void
 }
@@ -29,6 +32,9 @@ export function ProgrammationWeekView({
   onEmptySlot,
   onSelectSession,
   onDragSessionStart,
+  onDragSessionEnd,
+  dragging,
+  draggingGrabOffsetY,
   onDeleteSession,
   onDropSession,
 }: ProgrammationWeekViewProps) {
@@ -66,6 +72,9 @@ export function ProgrammationWeekView({
                 onEmptySlot={onEmptySlot}
                 onSelectSession={onSelectSession}
                 onDragSessionStart={onDragSessionStart}
+                onDragSessionEnd={onDragSessionEnd}
+                dragging={dragging}
+                draggingGrabOffsetY={draggingGrabOffsetY}
                 onDeleteSession={onDeleteSession}
                 onDropSession={onDropSession}
               />
@@ -83,6 +92,9 @@ export function ProgrammationWeekView({
               onEmptySlot={onEmptySlot}
               onSelectSession={onSelectSession}
               onDragSessionStart={onDragSessionStart}
+              onDragSessionEnd={onDragSessionEnd}
+              dragging={dragging}
+              draggingGrabOffsetY={draggingGrabOffsetY}
               onDeleteSession={onDeleteSession}
               onDropSession={onDropSession}
             />

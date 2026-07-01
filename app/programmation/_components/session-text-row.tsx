@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils"
 export type SessionTextRowProps = {
   session: ProgrammationSession
   onSelect: (sessionId: string) => void
-  onDragStart: (sessionId: string) => void
+  onDragStart: (sessionId: string, grabOffsetY: number) => void
+  onDragEnd: () => void
   onDelete: (sessionId: string) => void
 }
 
@@ -18,6 +19,7 @@ export function SessionTextRow({
   session,
   onSelect,
   onDragStart,
+  onDragEnd,
   onDelete,
 }: SessionTextRowProps) {
   return (
@@ -34,7 +36,13 @@ export function SessionTextRow({
         }}
         onDragStart={(event) => {
           event.stopPropagation()
-          onDragStart(session.id)
+          event.dataTransfer.setData("text/plain", session.id)
+          event.dataTransfer.effectAllowed = "move"
+          onDragStart(session.id, 0)
+        }}
+        onDragEnd={(event) => {
+          event.stopPropagation()
+          onDragEnd()
         }}
         onClick={(event) => {
           event.stopPropagation()
@@ -42,6 +50,7 @@ export function SessionTextRow({
         }}
         className={cn(
           "h-auto w-full justify-start gap-3 rounded-lg border bg-card px-3 py-2 text-left transition hover:bg-muted/40",
+          "cursor-grab active:cursor-grabbing",
           session.status === "annulee" && "opacity-50"
         )}
       >

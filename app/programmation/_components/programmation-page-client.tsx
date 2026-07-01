@@ -26,7 +26,10 @@ export function ProgrammationPageClient({
   initialSessions,
 }: ProgrammationPageClientProps) {
   const controller = useProgrammation({ initialSessions })
-  const [draggingSessionId, setDraggingSessionId] = useState<string | null>(null)
+  const [draggingSession, setDraggingSession] = useState<{
+    id: string
+    grabOffsetY: number
+  } | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [draft, setDraft] = useState<SessionDraft>(defaultSessionDraft())
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
@@ -78,11 +81,15 @@ export function ProgrammationPageClient({
   }
 
   async function handleDrop(dateKey: string, offsetY: number) {
-    if (!draggingSessionId) return
+    if (!draggingSession) return
 
     try {
-      await controller.moveSessionFromPointer(draggingSessionId, dateKey, offsetY)
-      setDraggingSessionId(null)
+      await controller.moveSessionFromPointer(
+        draggingSession.id,
+        dateKey,
+        offsetY - draggingSession.grabOffsetY
+      )
+      setDraggingSession(null)
       toast.success("Séance déplacée.")
     } catch (error) {
       const message =
@@ -158,7 +165,12 @@ export function ProgrammationPageClient({
             setSelectedSessionId(sessionId)
             setDetailOpen(true)
           }}
-          onDragSessionStart={setDraggingSessionId}
+          onDragSessionStart={(sessionId, grabOffsetY) =>
+            setDraggingSession({ id: sessionId, grabOffsetY })
+          }
+          onDragSessionEnd={() => setDraggingSession(null)}
+          dragging={draggingSession != null}
+          draggingGrabOffsetY={draggingSession?.grabOffsetY ?? 0}
           onDeleteSession={handleDelete}
           onDropSession={handleDrop}
         />

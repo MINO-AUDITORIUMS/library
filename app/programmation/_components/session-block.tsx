@@ -13,10 +13,19 @@ import { parseTimeToMinutes } from "@/lib/programmation/duration"
 import type { ProgrammationSession } from "@/lib/programmation/types"
 import { cn } from "@/lib/utils"
 
+const transparentDragImage = (() => {
+  if (typeof Image === "undefined") return null
+  const image = new Image()
+  image.src =
+    "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
+  return image
+})()
+
 export type SessionBlockProps = {
   session: ProgrammationSession
   onSelect: (sessionId: string) => void
-  onDragStart: (sessionId: string) => void
+  onDragStart: (sessionId: string, grabOffsetY: number) => void
+  onDragEnd: () => void
   onDelete: (sessionId: string) => void
   className?: string
 }
@@ -32,6 +41,7 @@ export function SessionBlock({
   session,
   onSelect,
   onDragStart,
+  onDragEnd,
   onDelete,
   className,
 }: SessionBlockProps) {
@@ -54,7 +64,17 @@ export function SessionBlock({
         }}
         onDragStart={(event) => {
           event.stopPropagation()
-          onDragStart(session.id)
+          event.dataTransfer.setData("text/plain", session.id)
+          event.dataTransfer.effectAllowed = "move"
+          if (transparentDragImage) {
+            event.dataTransfer.setDragImage(transparentDragImage, 0, 0)
+          }
+          const rect = event.currentTarget.getBoundingClientRect()
+          onDragStart(session.id, event.clientY - rect.top)
+        }}
+        onDragEnd={(event) => {
+          event.stopPropagation()
+          onDragEnd()
         }}
         onClick={(event) => {
           event.stopPropagation()
@@ -62,6 +82,7 @@ export function SessionBlock({
         }}
         className={cn(
           "absolute right-1 left-1 h-auto justify-start overflow-hidden rounded-lg border border-border/70 p-0 text-left shadow-sm transition hover:bg-transparent hover:ring-2 hover:ring-primary/30",
+          "cursor-grab active:cursor-grabbing",
           session.status === "annulee" && "opacity-50",
           className
         )}
