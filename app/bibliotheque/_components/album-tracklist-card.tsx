@@ -1,5 +1,6 @@
 import { AlbumTracklistEditButton } from "@/app/bibliotheque/_components/album-tracklist-edit-button"
 import { TrackClipActions } from "@/components/catalog/track-clip-actions"
+import { TrackCreditsPopover } from "@/components/catalog/track-credits-popover"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { formatTrackDuration } from "@/lib/catalog/format"
@@ -26,28 +27,21 @@ function AlbumTrackRow({ albumId, track }: AlbumTrackRowProps) {
           {track.position}
         </span>
         <div className="min-w-0 space-y-0.5">
-          <div className="flex min-w-0 items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-1">
             <p className="truncate">{track.title}</p>
             <TrackClipActions albumId={albumId} track={track} />
+            {hasCredits ? (
+              <TrackCreditsPopover
+                trackTitle={track.title}
+                writers={track.writers}
+                producers={track.producers}
+              />
+            ) : null}
           </div>
           {track.featuring.length > 0 ? (
             <p className="truncate text-xs font-normal text-muted-foreground">
               Feat. {track.featuring.join(", ")}
             </p>
-          ) : null}
-          {hasCredits ? (
-            <div className="space-y-0.5 text-xs text-muted-foreground">
-              {track.writers.length > 0 ? (
-                <p className="truncate">
-                  Écriture : {track.writers.join(", ")}
-                </p>
-              ) : null}
-              {track.producers.length > 0 ? (
-                <p className="truncate">
-                  Production : {track.producers.join(", ")}
-                </p>
-              ) : null}
-            </div>
           ) : null}
         </div>
       </div>
