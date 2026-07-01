@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
 import { XIcon } from "lucide-react"
+import { useCallback, useEffect, useState } from "react"
 
 import { FeaturingArtistSuggestions } from "@/components/catalog/featuring-artist-suggestions"
 import { Badge } from "@/components/ui/badge"
@@ -134,10 +134,6 @@ export function FeaturingArtistField({
     >
       <div>
         <Label className="text-xs text-muted-foreground">Feat.</Label>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Recherche dans ta bibliothèque puis Spotify pour garder la bonne
-          orthographe (ex. Jay-Z).
-        </p>
       </div>
 
       {value.length > 0 ? (
@@ -146,7 +142,7 @@ export function FeaturingArtistField({
             <Badge
               key={name}
               variant="default"
-              className="h-auto max-w-full gap-1 py-1 pr-1 whitespace-normal break-words"
+              className="h-auto max-w-full gap-1 py-1 pr-1 break-words whitespace-normal"
             >
               {name}
               <Button
