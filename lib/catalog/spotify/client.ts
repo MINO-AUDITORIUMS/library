@@ -20,6 +20,60 @@ type TokenCache = {
 
 let tokenCache: TokenCache | null = null
 
+function parseSpotifyErrorBody(body: string) {
+  try {
+    const parsed = JSON.parse(body) as {
+      error?: { message?: string; status?: number } | string
+      error_description?: string
+    }
+
+    if (typeof parsed.error === "object" && parsed.error?.message) {
+      return parsed.error.message
+    }
+
+    if (typeof parsed.error === "string" && parsed.error.trim()) {
+      return parsed.error
+    }
+
+    if (parsed.error_description?.trim()) {
+      return parsed.error_description
+    }
+  } catch {
+  }
+
+  return body.trim()
+}
+
+function formatSpotifyApiError(body: string, status: number) {
+  if (status === 429) {
+    return "Spotify limite temporairement les requêtes. Réessayez dans quelques secondes."
+  }
+
+  if (status === 502 || status === 503) {
+    return "Spotify est temporairement indisponible. Réessayez dans quelques instants."
+  }
+
+  if (status === 401) {
+    return "Identifiants Spotify invalides ou accès refusé."
+  }
+
+  const detail = parseSpotifyErrorBody(body)
+  if (detail && !detail.startsWith("{")) {
+    return detail
+  }
+
+  return `Erreur Spotify (${status}).`
+}
+
+function isRetryableSpotifyStatus(status: number) {
+  return status === 429 || status === 502 || status === 503
+}
+
+function spotifyClientStatus(status: number) {
+  if (status === 502 || status === 503) return 503
+  return status
+}
+
 async function getAccessToken() {
   const config = getSpotifyConfig()
   if (!config.isConfigured) {
@@ -50,8 +104,8 @@ async function getAccessToken() {
   if (!response.ok) {
     const body = await response.text()
     throw new SpotifyApiError(
-      body || `Spotify token error (${response.status})`,
-      response.status
+      formatSpotifyApiError(body, response.status),
+      spotifyClientStatus(response.status)
     )
   }
 
@@ -78,11 +132,38 @@ type SpotifyFetchOptions = {
   searchParams?: Record<string, string | number | undefined>
 }
 
+async function spotifyAuthorizedFetch(url: string, attempt: number) {
+  const token = await getAccessToken()
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  })
+
+  if (!response.ok) {
+    const body = await response.text()
+    const status = response.status
+
+    if (attempt === 0 && isRetryableSpotifyStatus(status)) {
+      await new Promise((resolve) => setTimeout(resolve, 400))
+      return spotifyAuthorizedFetch(url, attempt + 1)
+    }
+
+    throw new SpotifyApiError(
+      formatSpotifyApiError(body, status),
+      spotifyClientStatus(status)
+    )
+  }
+
+  return response
+}
+
 export async function spotifyFetch<T>({
   path,
   searchParams,
 }: SpotifyFetchOptions): Promise<T> {
-  const token = await getAccessToken()
   const normalizedPath = path.startsWith("/") ? path : `/${path}`
   const url = new URL(`${SPOTIFY_API_BASE}${normalizedPath}`)
 
@@ -93,42 +174,11 @@ export async function spotifyFetch<T>({
     }
   }
 
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-    },
-    next: { revalidate: 300 },
-  })
-
-  if (!response.ok) {
-    const body = await response.text()
-    throw new SpotifyApiError(
-      body || `Spotify API error (${response.status})`,
-      response.status
-    )
-  }
-
+  const response = await spotifyAuthorizedFetch(url.toString(), 0)
   return response.json() as Promise<T>
 }
 
 export async function spotifyFetchUrl<T>(url: string): Promise<T> {
-  const token = await getAccessToken()
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-    },
-    next: { revalidate: 300 },
-  })
-
-  if (!response.ok) {
-    const body = await response.text()
-    throw new SpotifyApiError(
-      body || `Spotify API error (${response.status})`,
-      response.status
-    )
-  }
-
+  const response = await spotifyAuthorizedFetch(url, 0)
   return response.json() as Promise<T>
 }
