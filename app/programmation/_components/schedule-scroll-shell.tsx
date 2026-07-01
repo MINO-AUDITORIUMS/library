@@ -7,6 +7,7 @@ export type ScheduleScrollShellProps = {
   children: ReactNode
   minWidth?: number
   className?: string
+  contentClassName?: string
 }
 
 export function ScheduleScrollShell({
@@ -14,6 +15,7 @@ export function ScheduleScrollShell({
   children,
   minWidth,
   className,
+  contentClassName,
 }: ScheduleScrollShellProps) {
   return (
     <div
@@ -23,9 +25,12 @@ export function ScheduleScrollShell({
       )}
     >
       <div className="shrink-0 border-b bg-card px-3 py-3">{header}</div>
-      <div className="min-h-0 flex-1 overflow-x-auto overflow-y-auto">
+      <div className="flex min-h-0 flex-1 flex-col overflow-x-auto overflow-y-auto">
         <div
-          className="p-3 pt-2"
+          className={cn(
+            "flex min-h-0 flex-1 flex-col p-3 pt-2",
+            contentClassName
+          )}
           style={minWidth != null ? { minWidth } : undefined}
         >
           {children}

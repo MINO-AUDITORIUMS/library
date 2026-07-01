@@ -45,8 +45,9 @@ export function ProgrammationMonthView({
           ))}
         </div>
       }
+      contentClassName="pb-0"
     >
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid flex-1 grid-cols-7 grid-rows-5 items-stretch gap-2 pb-2">
         {days.map((day) => {
           const dateKey = toDateKey(day)
           const daySessions = sessionsForDay(sessions, dateKey)
@@ -56,7 +57,7 @@ export function ProgrammationMonthView({
             <div
               key={dateKey}
               className={cn(
-                "min-h-28 rounded-xl border p-2",
+                "flex h-full flex-col rounded-xl border p-2",
                 inMonth ? "bg-background" : "bg-muted/20 opacity-60",
                 isToday(day) && "ring-2 ring-primary/30"
               )}
