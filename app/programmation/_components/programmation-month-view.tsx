@@ -80,7 +80,6 @@ export function ProgrammationMonthView({
                 {daySessions.slice(0, 3).map((session) => (
                   <SessionContextMenu
                     key={session.id}
-                    onOpenDetails={() => onSelectSession(session.id)}
                     onDelete={() => onDeleteSession(session.id)}
                   >
                     <Button

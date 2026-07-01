@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils"
 export type SessionTextRowProps = {
   session: ProgrammationSession
   onSelect: (sessionId: string) => void
-  onDragStart: (sessionId: string, grabOffsetY: number, pointerId: number) => void
+  onDragStart: (sessionId: string, grabOffsetY: number) => void
   onDelete: (sessionId: string) => void
 }
 
@@ -21,18 +21,19 @@ export function SessionTextRow({
   onDelete,
 }: SessionTextRowProps) {
   return (
-    <SessionContextMenu
-      onOpenDetails={() => onSelect(session.id)}
-      onDelete={() => onDelete(session.id)}
-    >
+    <SessionContextMenu onDelete={() => onDelete(session.id)}>
       <Button
         type="button"
         variant="ghost"
+        draggable
         onPointerDown={(event) => {
           event.stopPropagation()
-          if (event.button !== 0) return
-          event.currentTarget.setPointerCapture(event.pointerId)
-          onDragStart(session.id, 0, event.pointerId)
+        }}
+        onDragStart={(event) => {
+          event.stopPropagation()
+          event.dataTransfer.setData("text/plain", session.id)
+          event.dataTransfer.effectAllowed = "move"
+          onDragStart(session.id, 0)
         }}
         onClick={(event) => {
           event.stopPropagation()

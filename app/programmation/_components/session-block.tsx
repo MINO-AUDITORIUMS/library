@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils"
 export type SessionBlockProps = {
   session: ProgrammationSession
   onSelect: (sessionId: string) => void
-  onDragStart: (sessionId: string, grabOffsetY: number, pointerId: number) => void
+  onDragStart: (sessionId: string, grabOffsetY: number) => void
   onDelete: (sessionId: string) => void
   className?: string
 }
@@ -41,19 +41,20 @@ export function SessionBlock({
   const height = Math.max(session.durationMinutes * PIXELS_PER_MINUTE, 48)
 
   return (
-    <SessionContextMenu
-      onOpenDetails={() => onSelect(session.id)}
-      onDelete={() => onDelete(session.id)}
-    >
+    <SessionContextMenu onDelete={() => onDelete(session.id)}>
       <Button
         type="button"
         variant="ghost"
+        draggable
         onPointerDown={(event) => {
           event.stopPropagation()
-          if (event.button !== 0) return
+        }}
+        onDragStart={(event) => {
+          event.stopPropagation()
+          event.dataTransfer.setData("text/plain", session.id)
+          event.dataTransfer.effectAllowed = "move"
           const rect = event.currentTarget.getBoundingClientRect()
-          event.currentTarget.setPointerCapture(event.pointerId)
-          onDragStart(session.id, event.clientY - rect.top, event.pointerId)
+          onDragStart(session.id, event.clientY - rect.top)
         }}
         onClick={(event) => {
           event.stopPropagation()
