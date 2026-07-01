@@ -1,6 +1,6 @@
 export type SessionStatus = "brouillon" | "confirmee" | "passee" | "annulee"
 
-export type PlanningView = "day" | "week" | "month"
+export type PlanningView = "week" | "month"
 
 export type PlanningDisplayMode = "visual" | "text"
 

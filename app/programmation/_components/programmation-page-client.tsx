@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 
-import { ProgrammationDayView } from "@/app/programmation/_components/programmation-day-view"
 import { ProgrammationMonthView } from "@/app/programmation/_components/programmation-month-view"
 import { ProgrammationToolbar } from "@/app/programmation/_components/programmation-toolbar"
 import { ProgrammationWeekView } from "@/app/programmation/_components/programmation-week-view"
@@ -151,22 +150,6 @@ export function ProgrammationPageClient({
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {controller.view === "week" ? (
         <ProgrammationWeekView
-          anchorDate={controller.anchorDate}
-          sessions={controller.sessions}
-          displayMode={controller.displayMode}
-          onEmptySlot={openCreateForm}
-          onSelectSession={(sessionId) => {
-            setSelectedSessionId(sessionId)
-            setDetailOpen(true)
-          }}
-          onDragSessionStart={setDraggingSessionId}
-          onDeleteSession={handleDelete}
-          onDropSession={handleDrop}
-        />
-      ) : null}
-
-      {controller.view === "day" ? (
-        <ProgrammationDayView
           anchorDate={controller.anchorDate}
           sessions={controller.sessions}
           displayMode={controller.displayMode}

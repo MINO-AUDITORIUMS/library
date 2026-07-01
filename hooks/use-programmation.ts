@@ -53,7 +53,6 @@ export function useProgrammation({ initialSessions }: UseProgrammationOptions) {
 
   const goPrevious = useCallback(() => {
     setAnchorDate((current) => {
-      if (view === "day") return addDays(current, -1)
       if (view === "week") return addDays(current, -7)
       return new Date(current.getFullYear(), current.getMonth() - 1, 1)
     })
@@ -61,7 +60,6 @@ export function useProgrammation({ initialSessions }: UseProgrammationOptions) {
 
   const goNext = useCallback(() => {
     setAnchorDate((current) => {
-      if (view === "day") return addDays(current, 1)
       if (view === "week") return addDays(current, 7)
       return new Date(current.getFullYear(), current.getMonth() + 1, 1)
     })

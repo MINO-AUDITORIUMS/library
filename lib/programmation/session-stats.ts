@@ -42,11 +42,6 @@ function summarize(sessions: ProgrammationSession[]): PeriodSummary {
 }
 
 export function getPeriodBounds(view: PlanningView, anchor: Date) {
-  if (view === "day") {
-    const key = toDateKey(anchor)
-    return { startKey: key, endKey: key }
-  }
-
   if (view === "week") {
     const start = startOfWeek(anchor)
     const end = addDays(start, 6)
@@ -111,6 +106,5 @@ export function overlapsSession(
 }
 
 export function dateFromAnchor(view: PlanningView, anchor: Date, dateKey: string) {
-  if (view === "day") return parseDateKey(dateKey)
   return parseDateKey(dateKey)
 }

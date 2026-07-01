@@ -2,7 +2,6 @@
 
 import {
   CalendarDaysIcon,
-  CalendarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ImageIcon,
@@ -12,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { formatListeningDuration } from "@/lib/programmation/duration"
 import {
-  formatDayTitle,
   formatMonthYear,
   formatWeekRange,
 } from "@/lib/programmation/dates"
@@ -34,14 +32,13 @@ export type ProgrammationToolbarProps = {
   onToday: () => void
 }
 
-const viewOptions: { value: PlanningView; label: string; icon: typeof CalendarIcon }[] = [
-  { value: "day", label: "Jour", icon: CalendarIcon },
-  { value: "week", label: "Semaine", icon: CalendarDaysIcon },
-  { value: "month", label: "Mois", icon: CalendarDaysIcon },
-]
+const viewOptions: { value: PlanningView; label: string; icon: typeof CalendarDaysIcon }[] =
+  [
+    { value: "week", label: "Semaine", icon: CalendarDaysIcon },
+    { value: "month", label: "Mois", icon: CalendarDaysIcon },
+  ]
 
 function periodLabel(view: PlanningView, anchorDate: Date) {
-  if (view === "day") return formatDayTitle(anchorDate)
   if (view === "week") return formatWeekRange(anchorDate)
   return formatMonthYear(anchorDate)
 }
