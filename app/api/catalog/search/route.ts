@@ -1,19 +1,8 @@
 import { NextResponse } from "next/server"
 
 import { getAuthenticatedUser } from "@/lib/auth/require-authenticated-user"
-import { discogsFetch, DiscogsApiError } from "@/lib/catalog/discogs/client"
-import { mapDiscogsMasterSearchResponse } from "@/lib/catalog/discogs/map-search"
-import type { DiscogsSearchResponse } from "@/lib/catalog/discogs/types"
-import { isSpotifyOnlyCatalogImport } from "@/lib/catalog/import-flags"
-import { mergeCatalogSearchResults } from "@/lib/catalog/merge-catalog-search"
-import { searchMusicBrainzReleaseGroups } from "@/lib/catalog/musicbrainz/search-release-groups"
-import { MusicBrainzApiError } from "@/lib/catalog/musicbrainz/client"
 import { searchSpotifyAlbums } from "@/lib/catalog/spotify/search-albums"
 import { SpotifyApiError } from "@/lib/catalog/spotify/client"
-
-function escapeLucene(value: string) {
-  return value.replace(/[+\-&|!(){}[\]^"~*?:\\/]/g, "\\$&")
-}
 
 export async function GET(request: Request) {
   try {
@@ -32,53 +21,11 @@ export async function GET(request: Request) {
       )
     }
 
-    const albumQuery = `(${escapeLucene(q)}) AND primarytype:album`
-    const spotifyOnly = isSpotifyOnlyCatalogImport()
-
-    const [spotifyResults, discogsData, musicBrainzResults] = await Promise.all([
-      searchSpotifyAlbums(q).catch(() => []),
-      spotifyOnly
-        ? Promise.resolve(null)
-        : discogsFetch<DiscogsSearchResponse>({
-            path: "/database/search",
-            searchParams: {
-              q,
-              type: "master",
-              per_page: 10,
-            },
-          }).catch(() => null),
-      spotifyOnly
-        ? Promise.resolve([])
-        : (async () => {
-            let results = await searchMusicBrainzReleaseGroups(albumQuery).catch(
-              () => []
-            )
-            if (results.length === 0) {
-              results = await searchMusicBrainzReleaseGroups(escapeLucene(q)).catch(
-                () => []
-              )
-            }
-            return results
-          })(),
-    ])
-
-    const discogsResults = discogsData
-      ? mapDiscogsMasterSearchResponse(discogsData)
-      : []
-
-    const results = mergeCatalogSearchResults([
-      ...spotifyResults,
-      ...discogsResults,
-      ...musicBrainzResults,
-    ])
+    const results = await searchSpotifyAlbums(q)
 
     return NextResponse.json({ results })
   } catch (error) {
-    if (
-      error instanceof DiscogsApiError ||
-      error instanceof MusicBrainzApiError ||
-      error instanceof SpotifyApiError
-    ) {
+    if (error instanceof SpotifyApiError) {
       return NextResponse.json({ error: error.message }, { status: error.status })
     }
     return NextResponse.json(

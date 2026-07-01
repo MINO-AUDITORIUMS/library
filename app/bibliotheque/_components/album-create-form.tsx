@@ -21,17 +21,9 @@ function normalizeReleaseDate(value: string) {
   return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : ""
 }
 
-function buildImportUrl(hit: CatalogSearchHit) {
+function buildImportUrl(spotifyAlbumId: string) {
   const params = new URLSearchParams()
-  if (hit.spotifyAlbumId) {
-    params.set("spotifyAlbum", hit.spotifyAlbumId)
-  }
-  if (hit.discogsMasterId) {
-    params.set("discogsMaster", String(hit.discogsMasterId))
-  }
-  if (hit.musicbrainzReleaseGroupId) {
-    params.set("musicbrainzReleaseGroup", hit.musicbrainzReleaseGroupId)
-  }
+  params.set("spotifyAlbum", spotifyAlbumId)
   return `/api/catalog/import?${params.toString()}`
 }
 
@@ -180,19 +172,15 @@ export function AlbumCreateForm() {
   }
 
   async function applyResult(hit: CatalogSearchHit) {
-    if (
-      !hit.spotifyAlbumId &&
-      !hit.discogsMasterId &&
-      !hit.musicbrainzReleaseGroupId
-    ) {
-      toast.error("Cette référence ne peut pas être importée.")
+    if (!hit.spotifyAlbumId) {
+      toast.error("Cette référence Spotify ne peut pas être importée.")
       return
     }
 
     setImportingKey(hit.key)
 
     try {
-      const response = await fetch(buildImportUrl(hit))
+      const response = await fetch(buildImportUrl(hit.spotifyAlbumId))
       const data = (await response.json()) as {
         release?: {
           title: string
@@ -334,9 +322,9 @@ export function AlbumCreateForm() {
             Recherche automatique
           </CardTitle>
           <CardDescription>
-            Recherche par album ou artiste (Spotify en priorité, enrichi par
-            Discogs et MusicBrainz). Couvertures officielles, tracklists
-            complètes et featurings détectés automatiquement.
+            Recherche Spotify par album ou artiste. À la sélection, l&apos;album
+            est enrichi automatiquement via Discogs et MusicBrainz pour les
+            métadonnées manquantes.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
