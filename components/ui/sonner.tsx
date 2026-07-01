@@ -28,6 +28,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           <Loader2Icon className="size-4 animate-spin" />
         ),
       }}
+      closeButton
       style={
         {
           "--normal-bg": "var(--popover)",
@@ -37,6 +38,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         } as React.CSSProperties
       }
       toastOptions={{
+        duration: 2500,
         classNames: {
           toast: "cn-toast",
         },
