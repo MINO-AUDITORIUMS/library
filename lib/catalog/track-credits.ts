@@ -64,10 +64,44 @@ export type ImportedTrack = {
   duration_seconds: number | null
   writers: string[]
   producers: string[]
+  featuring: string[]
   musicbrainz_recording_id?: string | null
+  spotify_track_id?: string | null
   youtube_video_id?: string | null
   video_source?: TrackVideoSource | null
   video_confirmed?: boolean
+}
+
+export function normalizeTrackTitle(title: string) {
+  return title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\(feat\.?[^)]*\)/gi, "")
+    .replace(/\(ft\.?[^)]*\)/gi, "")
+    .replace(/ - feat\.? .+$/i, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function findMatchingSecondaryTrack(
+  track: ImportedTrack,
+  index: number,
+  secondary: ImportedTrack[]
+) {
+  const byPosition = secondary.find((item) => item.position === track.position)
+  if (byPosition) return byPosition
+
+  const normalized = normalizeTrackTitle(track.title)
+  if (normalized) {
+    const byTitle = secondary.find(
+      (item) => normalizeTrackTitle(item.title) === normalized
+    )
+    if (byTitle) return byTitle
+  }
+
+  return secondary[index]
 }
 
 export function mergeImportTracks(
@@ -78,8 +112,7 @@ export function mergeImportTracks(
   if (secondary.length === 0) return primary
 
   return primary.map((track, index) => {
-    const byPosition = secondary.find((item) => item.position === track.position)
-    const fallback = byPosition ?? secondary[index]
+    const fallback = findMatchingSecondaryTrack(track, index, secondary)
 
     const videoSource = fallback?.youtube_video_id
       ? fallback
@@ -100,10 +133,16 @@ export function mergeImportTracks(
         ...track.producers,
         ...(fallback?.producers ?? []),
       ]),
+      featuring: uniqueCreditNames([
+        ...track.featuring,
+        ...(fallback?.featuring ?? []),
+      ]),
       musicbrainz_recording_id:
         fallback?.musicbrainz_recording_id ??
         track.musicbrainz_recording_id ??
         null,
+      spotify_track_id:
+        track.spotify_track_id ?? fallback?.spotify_track_id ?? null,
       youtube_video_id:
         videoSource?.youtube_video_id ?? null,
       video_source: videoSource?.video_source ?? null,

@@ -63,9 +63,8 @@ export function mapDiscogsMasterSearchResponse(
     .slice(0, 10)
     .map((item) => {
       const parsed = parseDiscogsMasterTitle(item.title ?? "Sans titre")
-      const parts = ["Référence principale"]
+      const parts = ["Discogs"]
       if (item.label?.[0]) parts.push(item.label[0])
-      if (item.year) parts.push(item.year)
 
       return {
         key: `discogs-master:${item.id}`,
@@ -75,6 +74,7 @@ export function mapDiscogsMasterSearchResponse(
         year: item.year ?? null,
         thumbUrl: item.thumb ?? null,
         variantCount: null,
+        spotifyAlbumId: null,
         discogsMasterId: item.id,
         musicbrainzReleaseGroupId: null,
       }

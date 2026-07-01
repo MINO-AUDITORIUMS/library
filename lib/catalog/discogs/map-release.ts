@@ -59,6 +59,8 @@ export function mapDiscogsRelease(data: unknown): CatalogReleaseImport {
   const artist = primaryDiscogsArtist(release)
 
   return {
+    spotifyAlbumId: null,
+    spotifyArtistId: null,
     discogsReleaseId: release.id,
     musicbrainzReleaseId: null,
     barcode: readBarcode(release),

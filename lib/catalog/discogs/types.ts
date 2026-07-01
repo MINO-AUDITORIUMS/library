@@ -32,6 +32,7 @@ export type CatalogSearchHit = {
   year: string | null
   thumbUrl: string | null
   variantCount: number | null
+  spotifyAlbumId: string | null
   discogsMasterId: number | null
   musicbrainzReleaseGroupId: string | null
 }
@@ -53,6 +54,8 @@ export type DiscogsCommunityStats = {
 }
 
 export type CatalogReleaseImport = {
+  spotifyAlbumId: string | null
+  spotifyArtistId: string | null
   discogsReleaseId: number | null
   musicbrainzReleaseId: string | null
   barcode: string | null

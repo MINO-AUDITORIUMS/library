@@ -14,26 +14,37 @@ function albumKey(title: string, artist: string) {
   return `${normalizeToken(artist)}::${normalizeToken(title)}`
 }
 
+function sourceLabel(hit: CatalogSearchHit) {
+  const sources: string[] = []
+  if (hit.spotifyAlbumId) sources.push("Spotify")
+  if (hit.discogsMasterId) sources.push("Discogs")
+  if (hit.musicbrainzReleaseGroupId) sources.push("MusicBrainz")
+  return sources.length > 0 ? sources.join(" + ") : "Catalogue"
+}
+
 function mergeHits(existing: CatalogSearchHit, incoming: CatalogSearchHit) {
-  return {
+  const preferIncomingThumb = incoming.spotifyAlbumId && !existing.spotifyAlbumId
+  const preferExistingThumb = existing.spotifyAlbumId && !incoming.spotifyAlbumId
+  const thumbUrl = preferIncomingThumb
+    ? incoming.thumbUrl ?? existing.thumbUrl
+    : preferExistingThumb
+      ? existing.thumbUrl ?? incoming.thumbUrl
+      : existing.thumbUrl ?? incoming.thumbUrl
+
+  const merged = {
     ...existing,
+    spotifyAlbumId: existing.spotifyAlbumId ?? incoming.spotifyAlbumId,
     discogsMasterId: existing.discogsMasterId ?? incoming.discogsMasterId,
     musicbrainzReleaseGroupId:
       existing.musicbrainzReleaseGroupId ?? incoming.musicbrainzReleaseGroupId,
-    thumbUrl: existing.thumbUrl ?? incoming.thumbUrl,
+    thumbUrl,
     year: existing.year ?? incoming.year,
-    subtitle: [
-      "Référence principale",
-      existing.discogsMasterId && incoming.musicbrainzReleaseGroupId
-        ? "Discogs + MusicBrainz"
-        : existing.discogsMasterId
-          ? "Discogs"
-          : "MusicBrainz",
-      existing.year ?? incoming.year ?? "",
-    ]
-      .filter(Boolean)
-      .join(" · "),
-    key: `merged:${existing.discogsMasterId ?? "d"}:${incoming.musicbrainzReleaseGroupId ?? existing.musicbrainzReleaseGroupId ?? "m"}`,
+  }
+
+  return {
+    ...merged,
+    subtitle: [sourceLabel(merged)].filter(Boolean).join(" · "),
+    key: `merged:${merged.spotifyAlbumId ?? "s"}:${merged.discogsMasterId ?? "d"}:${merged.musicbrainzReleaseGroupId ?? "m"}`,
   }
 }
 
@@ -51,5 +62,11 @@ export function mergeCatalogSearchResults(hits: CatalogSearchHit[]) {
     merged.set(key, mergeHits(current, hit))
   }
 
-  return [...merged.values()].slice(0, 12)
+  return [...merged.values()]
+    .sort((a, b) => {
+      const aSpotify = a.spotifyAlbumId ? 1 : 0
+      const bSpotify = b.spotifyAlbumId ? 1 : 0
+      return bSpotify - aSpotify
+    })
+    .slice(0, 12)
 }

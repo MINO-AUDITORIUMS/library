@@ -70,6 +70,7 @@ type AlbumRow = {
         duration_seconds: number | null
         writers: string[]
         producers: string[]
+        featuring?: string[]
         youtube_video_id: string | null
         video_confirmed: boolean
       }[]
@@ -115,7 +116,7 @@ const albumDetailSelect = `
   album_genres(genres(name)),
   album_subgenres(subgenres(name)),
   album_tags(tags(name)),
-  album_tracks(position, title, duration_seconds, writers, producers, youtube_video_id, video_confirmed)
+  album_tracks(position, title, duration_seconds, writers, producers, featuring, youtube_video_id, video_confirmed)
 `
 
 function readName(value: { name: string } | { name: string }[] | null | undefined) {
@@ -154,6 +155,7 @@ function mapTracks(
       durationSeconds: track.duration_seconds,
       writers: uniqueCreditNames(track.writers ?? []),
       producers: uniqueCreditNames(track.producers ?? []),
+      featuring: uniqueCreditNames(track.featuring ?? []),
       youtubeVideoId:
         track.video_confirmed && track.youtube_video_id
           ? track.youtube_video_id
@@ -434,6 +436,7 @@ export async function createAlbum(
   })
 
   const externalIds: Record<string, unknown> = {}
+  if (input.spotifyAlbumId) externalIds.spotify = input.spotifyAlbumId
   if (input.discogsReleaseId) externalIds.discogs = input.discogsReleaseId
   if (input.musicbrainzReleaseId) {
     externalIds.musicbrainz = input.musicbrainzReleaseId
@@ -507,11 +510,14 @@ export async function createAlbum(
     }
   }
 
-  if (input.discogsReleaseId || input.musicbrainzReleaseId) {
+  if (input.spotifyAlbumId || input.discogsReleaseId || input.musicbrainzReleaseId) {
     try {
       const tracks = await resolveImportTracks({
+        spotifyAlbumId: input.spotifyAlbumId,
         discogsReleaseId: input.discogsReleaseId,
         musicbrainzReleaseId: input.musicbrainzReleaseId,
+        albumTitle: input.title,
+        albumArtist: input.artist,
       })
       if (tracks.length > 0) {
         await persistAlbumTracks(supabase, albumId, tracks)

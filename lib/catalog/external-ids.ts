@@ -21,10 +21,21 @@ export function musicbrainzIdFromExternalIds(
   return trimmed.length > 0 ? trimmed : null
 }
 
+export function spotifyIdFromExternalIds(
+  externalIds: Record<string, unknown> | null | undefined
+) {
+  if (!externalIds) return null
+  const id = externalIds.spotify
+  if (typeof id !== "string") return null
+  const trimmed = id.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
 export function hasTrackImportSources(
   externalIds: Record<string, unknown> | null | undefined
 ) {
   return (
+    spotifyIdFromExternalIds(externalIds) !== null ||
     discogsIdFromExternalIds(externalIds) !== null ||
     musicbrainzIdFromExternalIds(externalIds) !== null
   )

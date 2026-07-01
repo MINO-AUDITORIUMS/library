@@ -177,6 +177,7 @@ export async function fetchMusicBrainzTracks(releaseId: string) {
       duration_seconds: track.duration_seconds,
       writers: uniqueCreditNames([...track.writers, ...extraWriters]),
       producers: track.producers,
+      featuring: [],
       musicbrainz_recording_id: track.recordingId,
       youtube_video_id: youtubeVideoId,
       video_source: youtubeVideoId ? ("musicbrainz" as const) : null,

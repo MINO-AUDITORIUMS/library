@@ -5,10 +5,12 @@ import {
   buildMergedCatalogImportFromDiscogsMasterId,
   buildMergedCatalogImportFromDiscogsReleaseId,
   buildMergedCatalogImportFromMusicBrainzReleaseGroupId,
+  buildMergedCatalogImportFromSpotifyAlbumId,
 } from "@/lib/catalog/build-merged-catalog-import"
 import { buildArtistImportPreview } from "@/lib/catalog/build-artist-preview"
 import { DiscogsApiError } from "@/lib/catalog/discogs/client"
 import { MusicBrainzApiError } from "@/lib/catalog/musicbrainz/client"
+import { SpotifyApiError } from "@/lib/catalog/spotify/client"
 import { createClient } from "@/lib/supabase/server"
 
 export async function GET(request: Request) {
@@ -19,12 +21,22 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url)
+    const spotifyAlbumId = searchParams.get("spotifyAlbum")?.trim() ?? ""
     const discogsMasterId = Number(searchParams.get("discogsMaster"))
     const discogsReleaseId = Number(searchParams.get("discogsRelease"))
     const musicbrainzReleaseGroupId =
       searchParams.get("musicbrainzReleaseGroup")?.trim() ?? ""
 
     const supabase = await createClient()
+
+    if (spotifyAlbumId) {
+      const payload = await buildMergedCatalogImportFromSpotifyAlbumId(
+        spotifyAlbumId,
+        musicbrainzReleaseGroupId || null
+      )
+      const artist = await buildArtistImportPreview(supabase, payload.release)
+      return NextResponse.json({ ...payload, artist })
+    }
 
     if (Number.isFinite(discogsMasterId) && discogsMasterId > 0) {
       const payload = await buildMergedCatalogImportFromDiscogsMasterId(
@@ -58,7 +70,11 @@ export async function GET(request: Request) {
       { status: 400 }
     )
   } catch (error) {
-    if (error instanceof DiscogsApiError || error instanceof MusicBrainzApiError) {
+    if (
+      error instanceof DiscogsApiError ||
+      error instanceof MusicBrainzApiError ||
+      error instanceof SpotifyApiError
+    ) {
       return NextResponse.json({ error: error.message }, { status: error.status })
     }
     if (error instanceof Error) {

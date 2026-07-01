@@ -35,8 +35,7 @@ export async function searchMusicBrainzReleaseGroups(query: string) {
     .map((group) => {
       const artist = group["artist-credit"]?.[0]?.artist.name ?? ""
       const year = parseYear(group["first-release-date"])
-      const parts = ["Référence principale", "MusicBrainz"]
-      if (year) parts.push(year)
+      const parts = ["MusicBrainz"]
 
       return {
         key: `musicbrainz-group:${group.id}`,
@@ -46,6 +45,7 @@ export async function searchMusicBrainzReleaseGroups(query: string) {
         year,
         thumbUrl: null,
         variantCount: null,
+        spotifyAlbumId: null,
         discogsMasterId: null,
         musicbrainzReleaseGroupId: group.id,
       } satisfies CatalogSearchHit

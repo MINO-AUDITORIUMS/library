@@ -21,6 +21,7 @@ export type AlbumTrack = {
   durationSeconds: number | null
   writers: string[]
   producers: string[]
+  featuring: string[]
   youtubeVideoId: string | null
 }
 

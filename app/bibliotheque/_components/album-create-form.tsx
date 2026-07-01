@@ -8,7 +8,6 @@ import { toast } from "sonner"
 
 import { AlbumTagsField } from "@/components/catalog/album-tags-field"
 import { ArtistImportPanel } from "@/app/bibliotheque/_components/artist-import-panel"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -24,6 +23,9 @@ function normalizeReleaseDate(value: string) {
 
 function buildImportUrl(hit: CatalogSearchHit) {
   const params = new URLSearchParams()
+  if (hit.spotifyAlbumId) {
+    params.set("spotifyAlbum", hit.spotifyAlbumId)
+  }
   if (hit.discogsMasterId) {
     params.set("discogsMaster", String(hit.discogsMasterId))
   }
@@ -51,10 +53,12 @@ type FormState = {
   description: string
   personalNotes: string
   trackCount: string
+  spotifyAlbumId: string | null
   discogsReleaseId: number | null
   musicbrainzReleaseId: string | null
   discogsArtistId: number | null
   musicbrainzArtistId: string | null
+  spotifyArtistId: string | null
   coverImageUrl: string | null
   certification: string
   tags: string[]
@@ -74,10 +78,12 @@ const emptyForm: FormState = {
   description: "",
   personalNotes: "",
   trackCount: "",
+  spotifyAlbumId: null,
   discogsReleaseId: null,
   musicbrainzReleaseId: null,
   discogsArtistId: null,
   musicbrainzArtistId: null,
+  spotifyArtistId: null,
   coverImageUrl: null,
   certification: "",
   tags: [],
@@ -164,7 +170,7 @@ export function AlbumCreateForm() {
 
       setResults(data.results ?? [])
       if ((data.results ?? []).length === 0) {
-        toast.message("Aucune référence principale trouvée.")
+        toast.message("Aucun album trouvé.")
       }
     } catch {
       toast.error("Erreur réseau lors de la recherche.")
@@ -174,7 +180,11 @@ export function AlbumCreateForm() {
   }
 
   async function applyResult(hit: CatalogSearchHit) {
-    if (!hit.discogsMasterId && !hit.musicbrainzReleaseGroupId) {
+    if (
+      !hit.spotifyAlbumId &&
+      !hit.discogsMasterId &&
+      !hit.musicbrainzReleaseGroupId
+    ) {
       toast.error("Cette référence ne peut pas être importée.")
       return
     }
@@ -197,15 +207,18 @@ export function AlbumCreateForm() {
           country: string
           description: string
           trackCount: string
+          spotifyAlbumId: string | null
           discogsReleaseId: number | null
           musicbrainzReleaseId: string | null
           discogsArtistId: number | null
           musicbrainzArtistId: string | null
+          spotifyArtistId: string | null
           coverUrl: string | null
           certification: string
         }
         artist?: ArtistImportPreview | null
         sources?: {
+          spotify: boolean
           discogs: boolean
           musicbrainz: boolean
         }
@@ -232,10 +245,12 @@ export function AlbumCreateForm() {
         country: release.country,
         description: release.description,
         trackCount: release.trackCount,
+        spotifyAlbumId: release.spotifyAlbumId,
         discogsReleaseId: release.discogsReleaseId,
         musicbrainzReleaseId: release.musicbrainzReleaseId,
         discogsArtistId: release.discogsArtistId,
         musicbrainzArtistId: release.musicbrainzArtistId,
+        spotifyArtistId: release.spotifyArtistId,
         coverImageUrl: release.coverUrl,
         certification: release.certification,
       })
@@ -248,15 +263,15 @@ export function AlbumCreateForm() {
           ? ` (${data.variantCount} éditions analysées)`
           : ""
 
-      if (sources?.discogs && sources.musicbrainz) {
-        toast.success(
-          `Référence principale importée${variantSuffix} · Discogs + MusicBrainz`
-        )
-      } else if (sources?.musicbrainz) {
-        toast.success(`Référence principale importée${variantSuffix} · MusicBrainz`)
-      } else {
-        toast.success(`Référence principale importée${variantSuffix} · Discogs`)
-      }
+      const sourceParts = [
+        sources?.spotify ? "Spotify" : null,
+        sources?.discogs ? "Discogs" : null,
+        sources?.musicbrainz ? "MusicBrainz" : null,
+      ].filter(Boolean)
+
+      toast.success(
+        `Référence importée${variantSuffix} · ${sourceParts.join(" + ") || "catalogue"}`
+      )
     } catch {
       toast.error("Erreur réseau lors de l'import.")
     } finally {
@@ -301,7 +316,7 @@ export function AlbumCreateForm() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Nouvel album</h1>
           <p className="text-sm text-muted-foreground">
-            Page dédiée — import Discogs puis complétion manuelle.
+            Page dédiée — import Spotify avec complément Discogs / MusicBrainz.
           </p>
         </div>
         <Button variant="outline" size="sm" asChild>
@@ -319,9 +334,9 @@ export function AlbumCreateForm() {
             Recherche automatique
           </CardTitle>
           <CardDescription>
-            Recherche par référence principale (Discogs master + MusicBrainz
-            release group). L&apos;import choisit automatiquement l&apos;édition la
-            plus complète.
+            Recherche par album ou artiste (Spotify en priorité, enrichi par
+            Discogs et MusicBrainz). Couvertures officielles, tracklists
+            complètes et featurings détectés automatiquement.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -360,12 +375,7 @@ export function AlbumCreateForm() {
                       />
                     ) : null}
                     <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-medium">{item.title}</p>
-                        <Badge variant="secondary" className="text-[10px]">
-                          Référence principale
-                        </Badge>
-                      </div>
+                      <p className="font-medium">{item.title}</p>
                       <p className="text-sm text-muted-foreground">
                         {resultArtistLine(item)}
                       </p>

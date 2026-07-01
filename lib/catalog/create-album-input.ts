@@ -16,10 +16,12 @@ export type CreateAlbumInput = {
   description: string
   personalNotes: string
   trackCount: string
+  spotifyAlbumId: string | null
   discogsReleaseId: number | null
   musicbrainzReleaseId: string | null
   discogsArtistId: number | null
   musicbrainzArtistId: string | null
+  spotifyArtistId: string | null
   coverImageUrl: string | null
   certification: string
   tags: string[]
@@ -59,6 +61,18 @@ export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
       ? musicbrainzArtistRaw.trim()
       : null
 
+  const spotifyAlbumRaw = data.spotifyAlbumId
+  const spotifyAlbumId =
+    typeof spotifyAlbumRaw === "string" && spotifyAlbumRaw.trim().length > 0
+      ? spotifyAlbumRaw.trim()
+      : null
+
+  const spotifyArtistRaw = data.spotifyArtistId
+  const spotifyArtistId =
+    typeof spotifyArtistRaw === "string" && spotifyArtistRaw.trim().length > 0
+      ? spotifyArtistRaw.trim()
+      : null
+
   const coverRaw = data.coverImageUrl
   const coverImageUrl =
     typeof coverRaw === "string" && coverRaw.trim().length > 0
@@ -87,10 +101,12 @@ export function parseCreateAlbumInput(body: unknown): CreateAlbumInput | null {
     personalNotes:
       typeof data.personalNotes === "string" ? data.personalNotes : "",
     trackCount: typeof data.trackCount === "string" ? data.trackCount : "",
+    spotifyAlbumId,
     discogsReleaseId,
     musicbrainzReleaseId,
     discogsArtistId,
     musicbrainzArtistId,
+    spotifyArtistId,
     coverImageUrl,
     certification:
       typeof data.certification === "string" ? data.certification.trim() : "",

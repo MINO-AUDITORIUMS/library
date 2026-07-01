@@ -86,6 +86,7 @@ export function parseDiscogsReleaseData(data: RawDiscogsRelease): DiscogsRelease
       duration_seconds: parseDiscogsDuration(track.duration),
       writers: credits.writers,
       producers: credits.producers,
+      featuring: [],
     })
   }
 

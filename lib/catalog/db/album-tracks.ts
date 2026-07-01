@@ -86,6 +86,7 @@ function toImportedTrack(
     duration_seconds: track.durationSeconds,
     writers: track.writers,
     producers: track.producers,
+    featuring: [],
     musicbrainz_recording_id: track.musicbrainzRecordingId,
     youtube_video_id: track.youtubeVideoId,
     video_source:

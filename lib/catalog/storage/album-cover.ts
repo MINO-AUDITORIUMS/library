@@ -27,6 +27,14 @@ export function getAlbumCoverPublicUrl(storagePath: string | null | undefined) {
   return `${baseUrl}/storage/v1/object/public/${ALBUM_COVERS_BUCKET}/${storagePath}`
 }
 
+function coverFetchHeaders(sourceUrl: string): Record<string, string> {
+  if (/\.scdn\.co\//i.test(sourceUrl) || /spotify\.com/i.test(sourceUrl)) {
+    return { Accept: "image/*" }
+  }
+  const { userAgent } = getDiscogsConfig()
+  return { "User-Agent": userAgent, Accept: "image/*" }
+}
+
 export async function uploadAlbumCoverFromUrl(
   supabase: SupabaseClient,
   albumId: string,
@@ -35,10 +43,8 @@ export async function uploadAlbumCoverFromUrl(
   const trimmed = sourceUrl.trim()
   if (!trimmed) return null
 
-  const { userAgent } = getDiscogsConfig()
-
   const response = await fetch(trimmed, {
-    headers: { "User-Agent": userAgent },
+    headers: coverFetchHeaders(trimmed),
   })
 
   if (!response.ok) return null

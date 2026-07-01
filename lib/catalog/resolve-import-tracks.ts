@@ -1,23 +1,84 @@
+import { isSpotifyOnlyCatalogImport } from "@/lib/catalog/import-flags"
 import { fetchDiscogsReleaseData } from "@/lib/catalog/discogs/fetch-release"
+import { findDiscogsReleaseImport } from "@/lib/catalog/link-discogs-release"
+import { findMusicBrainzRelease } from "@/lib/catalog/musicbrainz/find-release"
 import { fetchMusicBrainzTracks } from "@/lib/catalog/musicbrainz/fetch-tracks"
 import { matchDiscogsVideosToTracks } from "@/lib/catalog/match-track-videos"
+import { fetchSpotifyTracks } from "@/lib/catalog/spotify/fetch-tracks"
 import { mergeImportTracks } from "@/lib/catalog/track-credits"
 
 export type TrackImportSources = {
+  spotifyAlbumId?: string | null
   discogsReleaseId?: number | null
   musicbrainzReleaseId?: string | null
+  albumTitle?: string
+  albumArtist?: string
+  barcode?: string | null
+}
+
+async function resolveDiscogsReleaseId(sources: TrackImportSources) {
+  if (sources.discogsReleaseId) return sources.discogsReleaseId
+  if (!sources.albumTitle?.trim() || !sources.albumArtist?.trim()) return null
+
+  const discogs = await findDiscogsReleaseImport(
+    sources.albumTitle,
+    sources.albumArtist,
+    sources.barcode ?? null
+  ).catch(() => null)
+
+  return discogs?.discogsReleaseId ?? null
+}
+
+async function resolveMusicBrainzReleaseId(sources: TrackImportSources) {
+  if (sources.musicbrainzReleaseId) return sources.musicbrainzReleaseId
+  if (!sources.albumTitle?.trim() || !sources.albumArtist?.trim()) return null
+
+  const musicbrainz = await findMusicBrainzRelease({
+    title: sources.albumTitle,
+    artist: sources.albumArtist,
+    releaseYear: "",
+    discogsReleaseId: sources.discogsReleaseId ?? 0,
+    barcode: sources.barcode ?? null,
+  }).catch(() => null)
+
+  return musicbrainz?.musicbrainzReleaseId ?? null
 }
 
 export async function resolveImportTracks(sources: TrackImportSources) {
+  const spotifyOnly = isSpotifyOnlyCatalogImport()
+  let spotifyTracks: Awaited<ReturnType<typeof fetchSpotifyTracks>> = []
   let discogsTracks: Awaited<ReturnType<typeof fetchDiscogsReleaseData>>["tracks"] =
     []
   let discogsVideos: Awaited<ReturnType<typeof fetchDiscogsReleaseData>>["videos"] =
     []
   let mbTracks: Awaited<ReturnType<typeof fetchMusicBrainzTracks>> = []
 
-  if (sources.discogsReleaseId) {
+  if (sources.spotifyAlbumId) {
     try {
-      const releaseData = await fetchDiscogsReleaseData(sources.discogsReleaseId)
+      spotifyTracks = await fetchSpotifyTracks(sources.spotifyAlbumId)
+    } catch {
+      spotifyTracks = []
+    }
+  }
+
+  let discogsReleaseId = sources.discogsReleaseId ?? null
+  let musicbrainzReleaseId = sources.musicbrainzReleaseId ?? null
+
+  if (!spotifyOnly) {
+    if (!discogsReleaseId) {
+      discogsReleaseId = await resolveDiscogsReleaseId(sources)
+    }
+    if (!musicbrainzReleaseId) {
+      musicbrainzReleaseId = await resolveMusicBrainzReleaseId({
+        ...sources,
+        discogsReleaseId,
+      })
+    }
+  }
+
+  if (!spotifyOnly && discogsReleaseId) {
+    try {
+      const releaseData = await fetchDiscogsReleaseData(discogsReleaseId)
       discogsTracks = releaseData.tracks
       discogsVideos = releaseData.videos
     } catch {
@@ -26,20 +87,27 @@ export async function resolveImportTracks(sources: TrackImportSources) {
     }
   }
 
-  if (sources.musicbrainzReleaseId) {
+  if (!spotifyOnly && musicbrainzReleaseId) {
     try {
-      mbTracks = await fetchMusicBrainzTracks(sources.musicbrainzReleaseId)
+      mbTracks = await fetchMusicBrainzTracks(musicbrainzReleaseId)
     } catch {
       mbTracks = []
     }
   }
 
-  let tracks =
-    discogsTracks.length === 0
-      ? mbTracks
-      : mbTracks.length === 0
+  let tracks = spotifyTracks
+
+  if (discogsTracks.length > 0) {
+    tracks =
+      tracks.length === 0
         ? discogsTracks
-        : mergeImportTracks(discogsTracks, mbTracks)
+        : mergeImportTracks(tracks, discogsTracks)
+  }
+
+  if (mbTracks.length > 0) {
+    tracks =
+      tracks.length === 0 ? mbTracks : mergeImportTracks(tracks, mbTracks)
+  }
 
   if (discogsVideos.length > 0 && tracks.length > 0) {
     tracks = matchDiscogsVideosToTracks(tracks, discogsVideos)

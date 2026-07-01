@@ -1,22 +1,17 @@
 import { pickMergedCountry } from "@/lib/catalog/country-code"
-import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
-import { normalizeProducersString } from "@/lib/catalog/track-credits"
 import type { CatalogReleaseImport } from "@/lib/catalog/discogs/types"
-import { parseCertificationFromText } from "@/lib/catalog/parse-certification"
+import { stripCatalogDisambiguation } from "@/lib/catalog/normalize-artist-name"
 import type { MusicBrainzPartialImport } from "@/lib/catalog/musicbrainz/types"
+import { parseCertificationFromText } from "@/lib/catalog/parse-certification"
+import type { SpotifyPartialImport } from "@/lib/catalog/spotify/types"
+import { normalizeProducersString } from "@/lib/catalog/track-credits"
 
-function pickPrimary(preferred: string, fallback: string) {
-  const primary = preferred.trim()
-  if (primary) return primary
-  return fallback.trim()
-}
-
-function pickDiscogsFirst(discogs: string, musicbrainz: string) {
-  return pickPrimary(discogs, musicbrainz)
-}
-
-function pickMusicBrainzFirst(musicbrainz: string, discogs: string) {
-  return pickPrimary(musicbrainz, discogs)
+function pickPrimary(...values: string[]) {
+  for (const value of values) {
+    const trimmed = value.trim()
+    if (trimmed) return trimmed
+  }
+  return ""
 }
 
 function pickDiscogsFirstId(
@@ -37,35 +32,30 @@ function pickMusicBrainzFirstId(
   return null
 }
 
-function pickTrackCount(discogs: string, musicbrainz: string) {
-  const discogsCount = Number.parseInt(discogs, 10)
-  const mbCount = Number.parseInt(musicbrainz, 10)
-  const best = Math.max(
-    Number.isFinite(discogsCount) ? discogsCount : 0,
-    Number.isFinite(mbCount) ? mbCount : 0
-  )
-  return best > 0 ? String(best) : pickPrimary(discogs, musicbrainz)
+function pickTrackCount(...values: string[]) {
+  const counts = values
+    .map((value) => Number.parseInt(value, 10))
+    .filter((value) => Number.isFinite(value) && value > 0)
+  if (counts.length === 0) return ""
+  return String(Math.max(...counts))
 }
 
 function pickCoverUrl(
-  discogs: string | null,
-  musicbrainz: string | null
+  spotify: string | null | undefined,
+  discogs: string | null | undefined,
+  musicbrainz: string | null | undefined
 ) {
-  if (discogs?.trim()) return discogs.trim()
-  if (musicbrainz?.trim()) return musicbrainz.trim()
-  return null
+  if (spotify?.trim()) return spotify.trim()
+  return pickPrimary(discogs ?? "", musicbrainz ?? "") || null
 }
 
-function mergeDescription(discogs: string, musicbrainz: string) {
-  const discogsText = discogs.trim()
-  const mbText = musicbrainz.trim()
-  if (discogsText && mbText && discogsText !== mbText) {
-    return `${discogsText}\n\n${mbText}`
-  }
-  return pickPrimary(discogsText, mbText)
+function mergeDescription(...parts: string[]) {
+  const unique = [...new Set(parts.map((part) => part.trim()).filter(Boolean))]
+  return unique.join("\n\n")
 }
 
 export type CatalogImportSources = {
+  spotify: boolean
   discogs: boolean
   musicbrainz: boolean
 }
@@ -83,51 +73,109 @@ function withNormalizedNames(
   }
 }
 
+export function mergeCatalogImportsFromSources(input: {
+  spotify: SpotifyPartialImport | null
+  discogs: CatalogReleaseImport | null
+  musicbrainz: MusicBrainzPartialImport | null
+}): CatalogReleaseImport {
+  const spotify = input.spotify
+  const discogs = input.discogs
+  const musicbrainz = input.musicbrainz
+
+  const description = mergeDescription(
+    spotify?.description ?? "",
+    discogs?.description ?? "",
+    musicbrainz?.description ?? ""
+  )
+
+  return withNormalizedNames({
+    spotifyAlbumId: spotify?.spotifyAlbumId ?? null,
+    spotifyArtistId: spotify?.spotifyArtistId ?? null,
+    discogsReleaseId: discogs?.discogsReleaseId ?? null,
+    musicbrainzReleaseId: musicbrainz?.musicbrainzReleaseId ?? null,
+    barcode: spotify?.barcode ?? discogs?.barcode ?? musicbrainz?.barcode ?? null,
+    title: pickPrimary(
+      spotify?.title ?? "",
+      musicbrainz?.title ?? "",
+      discogs?.title ?? ""
+    ),
+    artist: pickPrimary(
+      spotify?.artist ?? "",
+      musicbrainz?.artist ?? "",
+      discogs?.artist ?? ""
+    ),
+    releaseYear: pickPrimary(
+      spotify?.releaseYear ?? "",
+      musicbrainz?.releaseYear ?? "",
+      discogs?.releaseYear ?? ""
+    ),
+    releaseDate: pickPrimary(
+      spotify?.releaseDate ?? "",
+      musicbrainz?.releaseDate ?? "",
+      discogs?.releaseDate ?? ""
+    ),
+    genre: pickPrimary(discogs?.genre ?? "", musicbrainz?.genre ?? ""),
+    subgenre: pickPrimary(discogs?.subgenre ?? "", musicbrainz?.subgenre ?? ""),
+    label: pickPrimary(
+      spotify?.label ?? "",
+      musicbrainz?.label ?? "",
+      discogs?.label ?? ""
+    ),
+    recordCompany: pickPrimary(
+      discogs?.recordCompany ?? "",
+      musicbrainz?.recordCompany ?? "",
+      spotify?.recordCompany ?? ""
+    ),
+    producers: pickPrimary(
+      musicbrainz?.producers ?? "",
+      discogs?.producers ?? ""
+    ),
+    country: pickMergedCountry(
+      discogs?.country ?? "",
+      musicbrainz?.country ?? ""
+    ),
+    discogsArtistId: pickDiscogsFirstId(
+      discogs?.discogsArtistId ?? null,
+      musicbrainz?.discogsArtistId ?? null
+    ),
+    musicbrainzArtistId: pickMusicBrainzFirstId(
+      musicbrainz?.musicbrainzArtistId ?? null,
+      discogs?.musicbrainzArtistId ?? null
+    ),
+    description,
+    trackCount: pickTrackCount(
+      spotify?.trackCount ?? "",
+      discogs?.trackCount ?? "",
+      musicbrainz?.trackCount ?? ""
+    ),
+    coverUrl: pickCoverUrl(
+      spotify?.coverUrl,
+      discogs?.coverUrl,
+      musicbrainz?.coverUrl
+    ),
+    certification: parseCertificationFromText(description),
+  })
+}
+
 export function mergeCatalogImports(
   discogs: CatalogReleaseImport,
   musicbrainz: MusicBrainzPartialImport | null
 ): CatalogReleaseImport {
-  if (!musicbrainz) {
-    return withNormalizedNames({
-      ...discogs,
-      country: pickMergedCountry(discogs.country, ""),
-      certification: parseCertificationFromText(discogs.description),
-    })
-  }
-
-  return withNormalizedNames({
-    discogsReleaseId: discogs.discogsReleaseId,
-    musicbrainzReleaseId: musicbrainz.musicbrainzReleaseId,
-    barcode: discogs.barcode ?? musicbrainz.barcode,
-    title: pickMusicBrainzFirst(musicbrainz.title, discogs.title),
-    artist: pickMusicBrainzFirst(musicbrainz.artist, discogs.artist),
-    releaseYear: pickMusicBrainzFirst(musicbrainz.releaseYear, discogs.releaseYear),
-    releaseDate: pickMusicBrainzFirst(musicbrainz.releaseDate, discogs.releaseDate),
-    genre: pickDiscogsFirst(discogs.genre, musicbrainz.genre),
-    subgenre: pickDiscogsFirst(discogs.subgenre, musicbrainz.subgenre),
-    label: pickMusicBrainzFirst(musicbrainz.label, discogs.label),
-    recordCompany: pickDiscogsFirst(discogs.recordCompany, musicbrainz.recordCompany),
-    producers: pickMusicBrainzFirst(musicbrainz.producers, discogs.producers),
-    country: pickMergedCountry(discogs.country, musicbrainz.country),
-    discogsArtistId: pickDiscogsFirstId(discogs.discogsArtistId, musicbrainz.discogsArtistId),
-    musicbrainzArtistId: pickMusicBrainzFirstId(
-      musicbrainz.musicbrainzArtistId,
-      discogs.musicbrainzArtistId
-    ),
-    description: mergeDescription(discogs.description, musicbrainz.description),
-    trackCount: pickTrackCount(discogs.trackCount, musicbrainz.trackCount),
-    coverUrl: pickCoverUrl(discogs.coverUrl, musicbrainz.coverUrl),
-    certification: parseCertificationFromText(
-      [discogs.description, musicbrainz.description].join("\n")
-    ),
+  return mergeCatalogImportsFromSources({
+    spotify: null,
+    discogs,
+    musicbrainz,
   })
 }
 
-export function catalogImportSources(
-  musicbrainz: MusicBrainzPartialImport | null
-): CatalogImportSources {
+export function catalogImportSources(input: {
+  spotify?: boolean
+  discogs?: boolean
+  musicbrainz?: MusicBrainzPartialImport | null
+}): CatalogImportSources {
   return {
-    discogs: true,
-    musicbrainz: Boolean(musicbrainz),
+    spotify: Boolean(input.spotify),
+    discogs: Boolean(input.discogs),
+    musicbrainz: Boolean(input.musicbrainz),
   }
 }

@@ -5,12 +5,14 @@ import { normalizeArtistDisplayName } from "@/lib/catalog/normalize-artist-name"
 import type { CatalogReleaseImport } from "@/lib/catalog/discogs/types"
 import { fetchDiscogsArtistProfile } from "@/lib/catalog/discogs/fetch-artist"
 import { fetchMusicBrainzArtistProfile } from "@/lib/catalog/musicbrainz/fetch-artist"
+import { fetchSpotifyArtistProfile } from "@/lib/catalog/spotify/fetch-artist"
 import {
   findArtistByExternalIds,
   countAlbumsByArtistId,
 } from "@/lib/catalog/db/artists"
 
 export type ArtistImportPreview = {
+  spotifyArtistId: string | null
   discogsArtistId: number | null
   musicbrainzArtistId: string | null
   name: string
@@ -31,13 +33,14 @@ export async function buildArtistImportPreview(
   supabase: SupabaseClient,
   release: CatalogReleaseImport
 ): Promise<ArtistImportPreview | null> {
+  const spotifyArtistId = release.spotifyArtistId?.trim() || null
   const discogsArtistId =
     release.discogsArtistId && release.discogsArtistId > 0
       ? release.discogsArtistId
       : null
   const musicbrainzArtistId = release.musicbrainzArtistId?.trim() || null
 
-  if (!discogsArtistId && !musicbrainzArtistId) {
+  if (!spotifyArtistId && !discogsArtistId && !musicbrainzArtistId) {
     return null
   }
 
@@ -51,17 +54,30 @@ export async function buildArtistImportPreview(
   let imageUrl: string | null = null
   let country = ""
 
+  if (spotifyArtistId) {
+    try {
+      const profile = await fetchSpotifyArtistProfile(spotifyArtistId)
+      if (profile) {
+        name = profile.name || name
+        imageUrl = profile.imageUrl
+        if (profile.genres.length > 0) {
+          bio = trimBio(profile.genres.join(", "))
+        }
+      }
+    } catch {
+    }
+  }
+
   if (discogsArtistId) {
     try {
       const profile = await fetchDiscogsArtistProfile(discogsArtistId)
       if (profile) {
         name = profile.name || name
-        bio = trimBio(profile.bio)
-        imageUrl = profile.imageUrl
+        if (!bio) bio = trimBio(profile.bio)
+        if (!imageUrl) imageUrl = profile.imageUrl
         country = profile.country
       }
     } catch {
-      // Profile fetch is optional for preview.
     }
   }
 
@@ -74,7 +90,6 @@ export async function buildArtistImportPreview(
         if (!country) country = profile.country
       }
     } catch {
-      // Profile fetch is optional for preview.
     }
   }
 
@@ -84,6 +99,7 @@ export async function buildArtistImportPreview(
     : 0
 
   return {
+    spotifyArtistId,
     discogsArtistId,
     musicbrainzArtistId,
     name: normalizeArtistDisplayName(name || release.artist.trim()),

@@ -16,8 +16,7 @@ type AlbumTrackRowProps = {
 }
 
 function AlbumTrackRow({ track }: AlbumTrackRowProps) {
-  const hasCredits =
-    track.writers.length > 0 || track.producers.length > 0
+  const hasCredits = track.writers.length > 0 || track.producers.length > 0
 
   return (
     <div className="flex items-start justify-between gap-4 px-4 py-3 text-sm">
@@ -25,7 +24,7 @@ function AlbumTrackRow({ track }: AlbumTrackRowProps) {
         <span className="w-6 shrink-0 pt-0.5 text-muted-foreground tabular-nums">
           {track.position}
         </span>
-        <div className="min-w-0 space-y-1">
+        <div className="min-w-0 space-y-0.5">
           <div className="flex min-w-0 items-center gap-2">
             <p className="truncate">{track.title}</p>
             {track.youtubeVideoId ? (
@@ -35,6 +34,11 @@ function AlbumTrackRow({ track }: AlbumTrackRowProps) {
               />
             ) : null}
           </div>
+          {track.featuring.length > 0 ? (
+            <p className="truncate text-xs font-normal text-muted-foreground">
+              Feat. {track.featuring.join(", ")}
+            </p>
+          ) : null}
           {hasCredits ? (
             <div className="space-y-0.5 text-xs text-muted-foreground">
               {track.writers.length > 0 ? (

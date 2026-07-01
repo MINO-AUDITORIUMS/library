@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 import {
   discogsIdFromExternalIds,
   musicbrainzIdFromExternalIds,
+  spotifyIdFromExternalIds,
 } from "@/lib/catalog/external-ids"
 import {
   persistAlbumTracks,
@@ -28,7 +29,7 @@ export async function syncAlbumTracks(
 ): Promise<SyncAlbumTracksResult> {
   const { data: album, error } = await supabase
     .from("albums")
-    .select("id, external_ids")
+    .select("id, title, artist, external_ids")
     .eq("id", albumId)
     .maybeSingle()
 
@@ -38,24 +39,28 @@ export async function syncAlbumTracks(
   }
 
   const externalIds = album.external_ids as Record<string, unknown>
+  const spotifyAlbumId = spotifyIdFromExternalIds(externalIds)
   const discogsReleaseId = discogsIdFromExternalIds(externalIds)
   const musicbrainzReleaseId = musicbrainzIdFromExternalIds(externalIds)
 
-  if (!discogsReleaseId && !musicbrainzReleaseId) {
+  if (!spotifyAlbumId && !discogsReleaseId && !musicbrainzReleaseId) {
     throw new SyncAlbumTracksError(
-      "Aucune source Discogs ou MusicBrainz liée à cet album.",
+      "Aucune source Spotify, Discogs ou MusicBrainz liée à cet album.",
       "no_sources"
     )
   }
 
   const tracks = await resolveImportTracks({
+    spotifyAlbumId,
     discogsReleaseId,
     musicbrainzReleaseId,
+    albumTitle: album.title as string,
+    albumArtist: album.artist as string,
   })
 
   if (tracks.length === 0) {
     throw new SyncAlbumTracksError(
-      "Aucune piste trouvée sur Discogs ou MusicBrainz.",
+      "Aucune piste trouvée sur les sources liées.",
       "no_tracks"
     )
   }
