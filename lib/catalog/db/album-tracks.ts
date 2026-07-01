@@ -119,3 +119,63 @@ export async function replaceAlbumTracks(
 
   return result
 }
+
+function trackHasYouTubeVideo(row: {
+  youtube_video_id: string | null
+  video_confirmed: boolean | null
+}) {
+  return Boolean(row.youtube_video_id && row.video_confirmed !== false)
+}
+
+export async function updateAlbumTrackVideo(
+  supabase: SupabaseClient,
+  user: User,
+  albumId: string,
+  position: number,
+  youtubeVideoId: string | null
+): Promise<{ youtubeVideoId: string | null } | null> {
+  if (!(await albumExists(supabase, albumId))) return null
+
+  const { data: existing, error: existingError } = await supabase
+    .from("album_tracks")
+    .select("position")
+    .eq("album_id", albumId)
+    .eq("position", position)
+    .maybeSingle()
+
+  if (existingError) throw existingError
+  if (!existing) return null
+
+  const { error: updateError } = await supabase
+    .from("album_tracks")
+    .update({
+      youtube_video_id: youtubeVideoId,
+      video_source: youtubeVideoId ? "manual" : null,
+      video_confirmed: Boolean(youtubeVideoId),
+    })
+    .eq("album_id", albumId)
+    .eq("position", position)
+
+  if (updateError) throw updateError
+
+  const { data: tracks, error: tracksError } = await supabase
+    .from("album_tracks")
+    .select("youtube_video_id, video_confirmed")
+    .eq("album_id", albumId)
+
+  if (tracksError) throw tracksError
+
+  const tracksWithVideos = (tracks ?? []).filter(trackHasYouTubeVideo).length
+
+  const { error: albumError } = await supabase
+    .from("albums")
+    .update({
+      official_videos_count: tracksWithVideos,
+      updated_by: user.id,
+    })
+    .eq("id", albumId)
+
+  if (albumError) throw albumError
+
+  return { youtubeVideoId }
+}

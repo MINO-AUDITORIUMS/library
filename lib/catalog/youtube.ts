@@ -33,3 +33,19 @@ export function youTubeWatchUrl(videoId: string) {
 export function youTubeEmbedUrl(videoId: string) {
   return `https://www.youtube.com/embed/${videoId}`
 }
+
+const RAW_YOUTUBE_VIDEO_ID = /^[\w-]{11}$/
+
+export function parseYouTubeVideoInput(value: string): string | null {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+
+  const fromUrl = parseYouTubeVideoId(trimmed)
+  if (fromUrl) return fromUrl
+
+  return RAW_YOUTUBE_VIDEO_ID.test(trimmed) ? trimmed : null
+}
+
+export function formatYouTubeVideoInput(videoId: string | null) {
+  return videoId ? youTubeWatchUrl(videoId) : ""
+}

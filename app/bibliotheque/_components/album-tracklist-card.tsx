@@ -1,5 +1,5 @@
 import { AlbumTracklistEditButton } from "@/app/bibliotheque/_components/album-tracklist-edit-button"
-import { TrackVideoDialog } from "@/components/catalog/track-video-dialog"
+import { TrackClipActions } from "@/components/catalog/track-clip-actions"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { formatTrackDuration } from "@/lib/catalog/format"
@@ -12,10 +12,11 @@ export type AlbumTracklistCardProps = {
 }
 
 type AlbumTrackRowProps = {
+  albumId: string
   track: AlbumTrack
 }
 
-function AlbumTrackRow({ track }: AlbumTrackRowProps) {
+function AlbumTrackRow({ albumId, track }: AlbumTrackRowProps) {
   const hasCredits = track.writers.length > 0 || track.producers.length > 0
 
   return (
@@ -27,12 +28,7 @@ function AlbumTrackRow({ track }: AlbumTrackRowProps) {
         <div className="min-w-0 space-y-0.5">
           <div className="flex min-w-0 items-center gap-2">
             <p className="truncate">{track.title}</p>
-            {track.youtubeVideoId ? (
-              <TrackVideoDialog
-                videoId={track.youtubeVideoId}
-                trackTitle={track.title}
-              />
-            ) : null}
+            <TrackClipActions albumId={albumId} track={track} />
           </div>
           {track.featuring.length > 0 ? (
             <p className="truncate text-xs font-normal text-muted-foreground">
@@ -82,7 +78,7 @@ export function AlbumTracklistCard({
           tracks.map((track, index) => (
             <div key={track.position}>
               {index > 0 ? <Separator /> : null}
-              <AlbumTrackRow track={track} />
+              <AlbumTrackRow albumId={albumId} track={track} />
             </div>
           ))
         )}
