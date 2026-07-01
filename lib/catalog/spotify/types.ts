@@ -56,6 +56,18 @@ export type SpotifyAlbumTracksResponse = {
   next: string | null
 }
 
+export type SpotifyArtistSearchItem = {
+  id: string
+  name: string
+  images: SpotifyImage[]
+}
+
+export type SpotifyArtistSearchResponse = {
+  artists: {
+    items: SpotifyArtistSearchItem[]
+  }
+}
+
 export type SpotifyArtist = {
   id: string
   name: string

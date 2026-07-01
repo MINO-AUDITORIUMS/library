@@ -14,15 +14,17 @@ export type EditorTrack = {
   key: string
   title: string
   duration: string
-  writers: string
-  producers: string
+  writers: string[]
+  producers: string[]
+  featuring: string[]
   youtubeVideoId: string | null
   videoSource: string | null
   videoConfirmed: boolean
   musicbrainzRecordingId: string | null
 }
 
-export type EditorTrackField = "title" | "duration" | "writers" | "producers"
+export type EditorTrackField = "title" | "duration"
+export type EditorCreditField = "writers" | "producers" | "featuring"
 
 function createKey() {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -35,20 +37,14 @@ function toEditorTrack(track: EditableAlbumTrack): EditorTrack {
     key: createKey(),
     title: track.title,
     duration: formatDurationInput(track.durationSeconds),
-    writers: track.writers.join(", "),
-    producers: track.producers.join(", "),
+    writers: track.writers,
+    producers: track.producers,
+    featuring: track.featuring,
     youtubeVideoId: track.youtubeVideoId,
     videoSource: track.videoSource,
     videoConfirmed: track.videoConfirmed,
     musicbrainzRecordingId: track.musicbrainzRecordingId,
   }
-}
-
-function splitCredits(value: string) {
-  return value
-    .split(",")
-    .map((part) => part.trim())
-    .filter((part) => part.length > 0)
 }
 
 export function useTracklistEditor(albumId: string) {
@@ -88,6 +84,17 @@ export function useTracklistEditor(albumId: string) {
     []
   )
 
+  const patchCredits = useCallback(
+    (key: string, field: EditorCreditField, value: string[]) => {
+      setTracks((prev) =>
+        prev.map((track) =>
+          track.key === key ? { ...track, [field]: value } : track
+        )
+      )
+    },
+    []
+  )
+
   const removeTrack = useCallback((key: string) => {
     setTracks((prev) => prev.filter((track) => track.key !== key))
   }, [])
@@ -110,8 +117,9 @@ export function useTracklistEditor(albumId: string) {
         key: createKey(),
         title: "",
         duration: "",
-        writers: "",
-        producers: "",
+        writers: [],
+        producers: [],
+        featuring: [],
         youtubeVideoId: null,
         videoSource: null,
         videoConfirmed: false,
@@ -134,8 +142,9 @@ export function useTracklistEditor(albumId: string) {
           tracks: cleaned.map((track) => ({
             title: track.title.trim(),
             durationSeconds: parseDurationInput(track.duration),
-            writers: splitCredits(track.writers),
-            producers: splitCredits(track.producers),
+            writers: track.writers,
+            producers: track.producers,
+            featuring: track.featuring,
             youtubeVideoId: track.youtubeVideoId,
             videoSource: track.videoSource,
             videoConfirmed: track.videoConfirmed,
@@ -173,6 +182,7 @@ export function useTracklistEditor(albumId: string) {
     saving,
     load,
     patchTrack,
+    patchCredits,
     removeTrack,
     moveTrack,
     addTrack,

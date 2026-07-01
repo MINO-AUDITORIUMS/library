@@ -9,6 +9,7 @@ export type EditableTrackInput = {
   durationSeconds: number | null
   writers: string[]
   producers: string[]
+  featuring: string[]
   youtubeVideoId: string | null
   videoSource: TrackVideoSource | null
   videoConfirmed: boolean
@@ -78,6 +79,7 @@ export function parseAlbumTracksInput(
       durationSeconds: parseDuration(track.durationSeconds),
       writers: parseCreditNames(track.writers),
       producers: parseCreditNames(track.producers),
+      featuring: parseCreditNames(track.featuring),
       youtubeVideoId,
       videoSource: parseVideoSource(track.videoSource),
       videoConfirmed: track.videoConfirmed === true,

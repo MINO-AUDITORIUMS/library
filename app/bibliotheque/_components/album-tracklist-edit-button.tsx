@@ -7,14 +7,14 @@ import { AlbumTracklistEditRow } from "@/app/bibliotheque/_components/album-trac
 import { useTracklistEditor } from "@/app/bibliotheque/_components/use-tracklist-editor"
 import { Button } from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
 export type AlbumTracklistEditButtonProps = {
   albumId: string
@@ -32,6 +32,7 @@ export function AlbumTracklistEditButton({
     saving,
     load,
     patchTrack,
+    patchCredits,
     removeTrack,
     moveTrack,
     addTrack,
@@ -44,20 +45,23 @@ export function AlbumTracklistEditButton({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetTrigger asChild>
         <Button type="button" variant="outline" size="sm">
           <PencilIcon />
           Modifier
         </Button>
-      </DialogTrigger>
-      <DialogContent className="flex max-h-[85vh] flex-col gap-0 p-0 sm:max-w-2xl">
-        <DialogHeader className="border-b p-4">
-          <DialogTitle>Modifier la tracklist</DialogTitle>
-          <DialogDescription>{albumTitle}</DialogDescription>
-        </DialogHeader>
+      </SheetTrigger>
+      <SheetContent
+        side="right"
+        className="flex min-w-0 flex-col gap-0 p-0 data-[side=right]:sm:w-[min(50vw,56rem)] data-[side=right]:sm:max-w-[min(50vw,56rem)]"
+      >
+        <SheetHeader className="border-b">
+          <SheetTitle>Modifier la tracklist</SheetTitle>
+          <SheetDescription>{albumTitle}</SheetDescription>
+        </SheetHeader>
 
-        <div className="flex-1 space-y-2 overflow-y-auto p-4">
+        <div className="min-w-0 flex-1 space-y-2 overflow-x-hidden overflow-y-auto p-4">
           {loading ? (
             <div className="flex items-center justify-center py-10 text-muted-foreground">
               <Loader2Icon className="size-5 animate-spin" />
@@ -76,6 +80,7 @@ export function AlbumTracklistEditButton({
                 isLast={index === tracks.length - 1}
                 disabled={saving}
                 onPatch={patchTrack}
+                onPatchCredits={patchCredits}
                 onMove={moveTrack}
                 onRemove={removeTrack}
               />
@@ -97,7 +102,7 @@ export function AlbumTracklistEditButton({
           ) : null}
         </div>
 
-        <DialogFooter className="p-4">
+        <SheetFooter className="border-t sm:flex-row sm:justify-end">
           <Button
             type="button"
             variant="outline"
@@ -114,8 +119,8 @@ export function AlbumTracklistEditButton({
             {saving ? <Loader2Icon className="animate-spin" /> : null}
             Enregistrer
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   )
 }

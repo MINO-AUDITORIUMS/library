@@ -17,6 +17,7 @@ export type EditableAlbumTrack = {
   durationSeconds: number | null
   writers: string[]
   producers: string[]
+  featuring: string[]
   youtubeVideoId: string | null
   videoSource: TrackVideoSource | null
   videoConfirmed: boolean
@@ -29,6 +30,7 @@ type AlbumTrackRow = {
   duration_seconds: number | null
   writers: string[] | null
   producers: string[] | null
+  featuring: string[] | null
   youtube_video_id: string | null
   video_source: string | null
   video_confirmed: boolean | null
@@ -36,7 +38,7 @@ type AlbumTrackRow = {
 }
 
 const editableTrackSelect =
-  "position, title, duration_seconds, writers, producers, youtube_video_id, video_source, video_confirmed, musicbrainz_recording_id"
+  "position, title, duration_seconds, writers, producers, featuring, youtube_video_id, video_source, video_confirmed, musicbrainz_recording_id"
 
 async function albumExists(supabase: SupabaseClient, albumId: string) {
   const { data, error } = await supabase
@@ -69,6 +71,7 @@ export async function getEditableAlbumTracks(
     durationSeconds: row.duration_seconds,
     writers: uniqueCreditNames(row.writers ?? []),
     producers: uniqueCreditNames(row.producers ?? []),
+    featuring: uniqueCreditNames(row.featuring ?? []),
     youtubeVideoId: row.youtube_video_id,
     videoSource: (row.video_source as TrackVideoSource | null) ?? null,
     videoConfirmed: row.video_confirmed ?? false,
@@ -86,7 +89,7 @@ function toImportedTrack(
     duration_seconds: track.durationSeconds,
     writers: track.writers,
     producers: track.producers,
-    featuring: [],
+    featuring: track.featuring,
     musicbrainz_recording_id: track.musicbrainzRecordingId,
     youtube_video_id: track.youtubeVideoId,
     video_source:
