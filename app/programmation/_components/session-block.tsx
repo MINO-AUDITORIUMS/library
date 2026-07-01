@@ -49,6 +49,9 @@ export function SessionBlock({
         type="button"
         variant="ghost"
         draggable
+        onPointerDown={(event) => {
+          event.stopPropagation()
+        }}
         onDragStart={(event) => {
           event.stopPropagation()
           onDragStart(session.id)

@@ -29,8 +29,17 @@ export function SessionTextRow({
         type="button"
         variant="ghost"
         draggable
-        onDragStart={() => onDragStart(session.id)}
-        onClick={() => onSelect(session.id)}
+        onPointerDown={(event) => {
+          event.stopPropagation()
+        }}
+        onDragStart={(event) => {
+          event.stopPropagation()
+          onDragStart(session.id)
+        }}
+        onClick={(event) => {
+          event.stopPropagation()
+          onSelect(session.id)
+        }}
         className={cn(
           "h-auto w-full justify-start gap-3 rounded-lg border bg-card px-3 py-2 text-left transition hover:bg-muted/40",
           session.status === "annulee" && "opacity-50"
