@@ -7,6 +7,7 @@ import {
 } from "@/lib/catalog/artist-external-ids"
 import { fetchDiscogsArtistProfile } from "@/lib/catalog/discogs/fetch-artist"
 import { fetchMusicBrainzArtistProfile } from "@/lib/catalog/musicbrainz/fetch-artist"
+import { fetchSpotifyArtistProfile } from "@/lib/catalog/spotify/fetch-artist"
 import { coverHueFromId } from "@/lib/catalog/cover-hue"
 import { normalizeArtistDisplayName } from "@/lib/catalog/normalize-artist-name"
 import { resolveArtistImageUrl } from "@/lib/catalog/storage/artist-image"
@@ -41,6 +42,7 @@ export type ResolveArtistInput = {
   name: string
   discogsArtistId: number | null
   musicbrainzArtistId: string | null
+  spotifyArtistId?: string | null
 }
 
 function buildArtistSlug(input: ResolveArtistInput) {
@@ -306,17 +308,29 @@ async function fetchArtistProfile(input: ResolveArtistInput) {
   let imageUrl: string | null = null
   let country = ""
 
+  const spotifyArtistId = input.spotifyArtistId?.trim() || null
+
+  if (spotifyArtistId) {
+    try {
+      const profile = await fetchSpotifyArtistProfile(spotifyArtistId)
+      if (profile) {
+        name = profile.name || name
+        imageUrl = profile.imageUrl
+      }
+    } catch {
+    }
+  }
+
   if (input.discogsArtistId && input.discogsArtistId > 0) {
     try {
       const profile = await fetchDiscogsArtistProfile(input.discogsArtistId)
       if (profile) {
         name = profile.name || name
-        bio = trimBio(profile.bio)
-        imageUrl = profile.imageUrl
+        if (!bio) bio = trimBio(profile.bio)
+        if (!imageUrl) imageUrl = profile.imageUrl
         country = profile.country
       }
     } catch {
-      // Optional enrichment.
     }
   }
 
@@ -331,7 +345,6 @@ async function fetchArtistProfile(input: ResolveArtistInput) {
         if (!country) country = profile.country
       }
     } catch {
-      // Optional enrichment.
     }
   }
 
@@ -366,6 +379,7 @@ export async function resolveOrCreateArtist(
       ? input.discogsArtistId
       : null
   const musicbrainzArtistId = input.musicbrainzArtistId?.trim() || null
+  const spotifyArtistId = input.spotifyArtistId?.trim() || null
 
   if (!discogsArtistId && !musicbrainzArtistId) {
     return null
@@ -388,6 +402,7 @@ export async function resolveOrCreateArtist(
     name: input.name,
     discogsArtistId,
     musicbrainzArtistId,
+    spotifyArtistId,
   })
 
   if (existing) {
@@ -407,6 +422,7 @@ export async function resolveOrCreateArtist(
       name: profile.name,
       discogsArtistId,
       musicbrainzArtistId,
+      spotifyArtistId,
     })
 
     return existing.id
@@ -423,6 +439,7 @@ export async function resolveOrCreateArtist(
       external_ids: buildArtistExternalIds({
         discogsArtistId,
         musicbrainzArtistId,
+        spotifyArtistId,
       }),
     })
     .select("id")

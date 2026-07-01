@@ -434,6 +434,7 @@ export async function createAlbum(
     name: input.artist,
     discogsArtistId: input.discogsArtistId,
     musicbrainzArtistId: input.musicbrainzArtistId,
+    spotifyArtistId: input.spotifyArtistId,
   })
 
   const externalIds: Record<string, unknown> = {}

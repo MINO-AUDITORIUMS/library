@@ -1,6 +1,7 @@
 export type ArtistExternalIds = {
   discogs?: number
   musicbrainz?: string
+  spotify?: string
 }
 
 export function discogsArtistIdFromExternalIds(
@@ -26,9 +27,20 @@ export function musicbrainzArtistIdFromExternalIds(
   return trimmed.length > 0 ? trimmed : null
 }
 
+export function spotifyArtistIdFromExternalIds(
+  externalIds: Record<string, unknown> | null | undefined
+) {
+  if (!externalIds) return null
+  const id = externalIds.spotify
+  if (typeof id !== "string") return null
+  const trimmed = id.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
 export function buildArtistExternalIds(input: {
   discogsArtistId?: number | null
   musicbrainzArtistId?: string | null
+  spotifyArtistId?: string | null
 }): ArtistExternalIds {
   const externalIds: ArtistExternalIds = {}
   if (input.discogsArtistId && input.discogsArtistId > 0) {
@@ -36,6 +48,9 @@ export function buildArtistExternalIds(input: {
   }
   if (input.musicbrainzArtistId?.trim()) {
     externalIds.musicbrainz = input.musicbrainzArtistId.trim()
+  }
+  if (input.spotifyArtistId?.trim()) {
+    externalIds.spotify = input.spotifyArtistId.trim()
   }
   return externalIds
 }
