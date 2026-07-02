@@ -1,11 +1,11 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
 
 import { AlbumDetailView } from "@/app/bibliotheque/_components/album-detail-view"
+import { AlbumNotFoundView } from "@/app/bibliotheque/_components/album-not-found-view"
 import { getAlbumRatingsSnapshot } from "@/lib/catalog/db/album-user-ratings"
 import { listAlbumComments } from "@/lib/catalog/db/album-comments"
 import { getAlbumDetailById } from "@/lib/catalog/db/albums"
-import { getAuthenticatedUser } from "@/lib/auth/require-authenticated-user"
+import { requireAuthenticatedUser } from "@/lib/auth/require-authenticated-user"
 import { createClient } from "@/lib/supabase/server"
 
 export async function generateMetadata({
@@ -16,9 +16,7 @@ export async function generateMetadata({
   const { id } = await params
   const supabase = await createClient()
   const album = await getAlbumDetailById(supabase, id)
-  return {
-    title: album?.title ?? "Album",
-  }
+  return { title: album?.title ?? "Album introuvable" }
 }
 
 export default async function AlbumDetailPage({
@@ -27,17 +25,18 @@ export default async function AlbumDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const session = await getAuthenticatedUser()
-  if (!session) notFound()
-
+  const session = await requireAuthenticatedUser()
   const supabase = await createClient()
-  const [album, comments, albumRatings] = await Promise.all([
-    getAlbumDetailById(supabase, id),
+  const album = await getAlbumDetailById(supabase, id)
+
+  if (!album) {
+    return <AlbumNotFoundView />
+  }
+
+  const [comments, albumRatings] = await Promise.all([
     listAlbumComments(supabase, id),
     getAlbumRatingsSnapshot(supabase, id, session.user.id),
   ])
-
-  if (!album) notFound()
 
   return (
     <AlbumDetailView

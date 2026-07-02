@@ -19,9 +19,8 @@ export async function generateMetadata({
   const { id } = await params
   const supabase = await createClient()
   const artist = await getArtistDetailById(supabase, id)
-  return {
-    title: artist?.name ?? "Artiste",
-  }
+  if (!artist) notFound()
+  return { title: artist.name }
 }
 
 export default async function ArtistDetailPage({
