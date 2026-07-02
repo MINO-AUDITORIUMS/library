@@ -1,9 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 
 import { countryDisplayName, resolveCountryCode } from "@/lib/catalog/country-code"
-import {
-  listAlbumSummariesByIds,
-} from "@/lib/catalog/db/albums"
+import { listAlbumSummariesByIds } from "@/lib/catalog/db/albums"
+import { getRequestCachedLibraryFilterOptions } from "@/lib/catalog/db/library-cache"
 import {
   LIBRARY_FILTER_ALL,
   type LibraryFilterOptions,
@@ -171,39 +170,25 @@ export type LibraryPageData = {
   filterOptions: LibraryFilterOptions
 }
 
-export async function getLibraryPageData(
+export async function fetchLibraryAlbumsPage(
   supabase: SupabaseClient,
   filters: LibraryFilters,
   pagination: LibraryPagination
-): Promise<LibraryPageData> {
-  const filterOptions = await getLibraryFilterOptions(supabase, filters.genre)
-  const normalizedFilters = normalizeLibraryFilters(filters, filterOptions)
-
-  const { country, countryCode } = resolveCountryFilter(
-    normalizedFilters.country
-  )
+) {
+  const { country, countryCode } = resolveCountryFilter(filters.country)
 
   const { data, error } = await supabase.rpc("list_library_albums_page", {
-    p_query: normalizedFilters.query.trim() || null,
+    p_query: filters.query.trim() || null,
     p_genre:
-      normalizedFilters.genre !== LIBRARY_FILTER_ALL
-        ? normalizedFilters.genre
-        : null,
+      filters.genre !== LIBRARY_FILTER_ALL ? filters.genre : null,
     p_subgenre:
-      normalizedFilters.subgenre !== LIBRARY_FILTER_ALL
-        ? normalizedFilters.subgenre
-        : null,
-    p_tag:
-      normalizedFilters.tag !== LIBRARY_FILTER_ALL
-        ? normalizedFilters.tag
-        : null,
+      filters.subgenre !== LIBRARY_FILTER_ALL ? filters.subgenre : null,
+    p_tag: filters.tag !== LIBRARY_FILTER_ALL ? filters.tag : null,
     p_country: country,
     p_country_code: countryCode,
-    p_year_from: parseYearFilter(normalizedFilters.yearFrom),
-    p_year_to: parseYearFilter(normalizedFilters.yearTo),
-    p_min_mino_rating: parseMinMinoRatingFilter(
-      normalizedFilters.minMinoRating
-    ),
+    p_year_from: parseYearFilter(filters.yearFrom),
+    p_year_to: parseYearFilter(filters.yearTo),
+    p_min_mino_rating: parseMinMinoRatingFilter(filters.minMinoRating),
     p_page: pagination.page,
     p_page_size: pagination.pageSize,
   })
@@ -226,8 +211,60 @@ export async function getLibraryPageData(
   return {
     albums,
     totalFilteredCount,
-    filters: normalizedFilters,
     pagination: normalizedPagination,
+  }
+}
+
+function libraryFiltersAffectQuery(
+  left: LibraryFilters,
+  right: LibraryFilters
+) {
+  return (
+    left.query !== right.query ||
+    left.genre !== right.genre ||
+    left.subgenre !== right.subgenre ||
+    left.tag !== right.tag ||
+    left.country !== right.country ||
+    left.yearFrom !== right.yearFrom ||
+    left.yearTo !== right.yearTo ||
+    left.minMinoRating !== right.minMinoRating
+  )
+}
+
+export async function getLibraryPageData(
+  supabase: SupabaseClient,
+  filters: LibraryFilters,
+  pagination: LibraryPagination,
+  options?: { cacheFilterOptions?: boolean }
+): Promise<LibraryPageData> {
+  const loadFilterOptions = options?.cacheFilterOptions
+    ? () => getRequestCachedLibraryFilterOptions(supabase, filters.genre)
+    : () => getLibraryFilterOptions(supabase, filters.genre)
+
+  const [filterOptions, preliminaryPage] = await Promise.all([
+    loadFilterOptions(),
+    fetchLibraryAlbumsPage(supabase, filters, pagination),
+  ])
+
+  const normalizedFilters = normalizeLibraryFilters(filters, filterOptions)
+
+  if (!libraryFiltersAffectQuery(filters, normalizedFilters)) {
+    return {
+      ...preliminaryPage,
+      filters: normalizedFilters,
+      filterOptions,
+    }
+  }
+
+  const pageResult = await fetchLibraryAlbumsPage(
+    supabase,
+    normalizedFilters,
+    pagination
+  )
+
+  return {
+    ...pageResult,
+    filters: normalizedFilters,
     filterOptions,
   }
 }

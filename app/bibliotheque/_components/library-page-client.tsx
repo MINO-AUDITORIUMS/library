@@ -19,6 +19,7 @@ import {
   type LibraryViewMode,
 } from "@/components/catalog/library-toolbar"
 import { Button } from "@/components/ui/button"
+import { fetchLibraryPageClient } from "@/lib/catalog/fetch-library-page-client"
 import {
   hasActiveLibraryFilters,
   LIBRARY_FILTER_ALL,
@@ -28,6 +29,7 @@ import {
 import {
   DEFAULT_LIBRARY_PAGE_SIZE,
   hasExplicitPageSizeInSearchParams,
+  parseLibraryStateFromSearchParams,
   serializeLibraryStateToSearchParams,
   type LibraryPageSize,
   type LibraryPagination,
@@ -63,12 +65,21 @@ export function LibraryPageClient({
   const [isPending, startTransition] = useTransition()
   const [viewMode, setViewMode] = useState<LibraryViewMode>("grid")
   const [queryDraft, setQueryDraft] = useState(filters.query)
+  const [displayAlbums, setDisplayAlbums] = useState(albums)
+  const [displayFilteredCount, setDisplayFilteredCount] =
+    useState(totalFilteredCount)
+  const [displayPagination, setDisplayPagination] = useState(pagination)
+  const [isPaginating, setIsPaginating] = useState(false)
   const queryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pageSizePreferenceAppliedRef = useRef(false)
+  const paginationRequestRef = useRef(0)
 
   useEffect(() => {
     setQueryDraft(filters.query)
-  }, [filters.query])
+    setDisplayAlbums(albums)
+    setDisplayFilteredCount(totalFilteredCount)
+    setDisplayPagination(pagination)
+  }, [albums, filters.query, pagination, totalFilteredCount])
 
   useEffect(() => {
     return () => {
@@ -102,7 +113,7 @@ export function LibraryPageClient({
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
   }, [filters, pagination, pathname, router, searchParams])
 
-  const navigate = useCallback(
+  const navigateWithServer = useCallback(
     (nextFilters: LibraryFilters, nextPagination: LibraryPagination) => {
       const query = serializeLibraryStateToSearchParams(
         nextFilters,
@@ -118,11 +129,69 @@ export function LibraryPageClient({
     [pathname, router]
   )
 
+  const navigatePagination = useCallback(
+    async (nextPagination: LibraryPagination) => {
+      const query = serializeLibraryStateToSearchParams(filters, nextPagination)
+      const nextUrl = query ? `${pathname}?${query}` : pathname
+
+      window.history.replaceState(null, "", nextUrl)
+
+      const requestId = paginationRequestRef.current + 1
+      paginationRequestRef.current = requestId
+      setIsPaginating(true)
+
+      try {
+        const pageData = await fetchLibraryPageClient(query)
+        if (paginationRequestRef.current !== requestId) return
+
+        setDisplayAlbums(pageData.albums)
+        setDisplayFilteredCount(pageData.totalFilteredCount)
+        setDisplayPagination(pageData.pagination)
+      } catch {
+        router.replace(nextUrl, { scroll: false })
+      } finally {
+        if (paginationRequestRef.current === requestId) {
+          setIsPaginating(false)
+        }
+      }
+    },
+    [filters, pathname, router]
+  )
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search)
+      const state = parseLibraryStateFromSearchParams(params)
+      const filtersChanged =
+        state.filters.query !== filters.query ||
+        state.filters.genre !== filters.genre ||
+        state.filters.subgenre !== filters.subgenre ||
+        state.filters.tag !== filters.tag ||
+        state.filters.country !== filters.country ||
+        state.filters.yearFrom !== filters.yearFrom ||
+        state.filters.yearTo !== filters.yearTo ||
+        state.filters.minMinoRating !== filters.minMinoRating
+
+      if (filtersChanged) {
+        router.replace(
+          params.toString() ? `${pathname}?${params}` : pathname,
+          { scroll: false }
+        )
+        return
+      }
+
+      void navigatePagination(state.pagination)
+    }
+
+    window.addEventListener("popstate", handlePopState)
+    return () => window.removeEventListener("popstate", handlePopState)
+  }, [filters, navigatePagination, pathname, router])
+
   const handleFiltersChange = useCallback(
     (patch: Partial<LibraryFilters>) => {
-      navigate({ ...filters, ...patch }, { ...pagination, page: 1 })
+      navigateWithServer({ ...filters, ...patch }, { ...pagination, page: 1 })
     },
-    [filters, navigate, pagination]
+    [filters, navigateWithServer, pagination]
   )
 
   const handleQueryChange = useCallback(
@@ -134,14 +203,14 @@ export function LibraryPageClient({
       }
 
       queryTimerRef.current = setTimeout(() => {
-        navigate({ ...filters, query }, { ...pagination, page: 1 })
+        navigateWithServer({ ...filters, query }, { ...pagination, page: 1 })
       }, 300)
     },
-    [filters, navigate, pagination]
+    [filters, navigateWithServer, pagination]
   )
 
   const handleResetFilters = useCallback(() => {
-    navigate(
+    navigateWithServer(
       {
         query: "",
         genre: LIBRARY_FILTER_ALL,
@@ -154,31 +223,32 @@ export function LibraryPageClient({
       },
       { ...pagination, page: 1 }
     )
-  }, [navigate, pagination])
+  }, [navigateWithServer, pagination])
 
   const handlePageChange = useCallback(
     (page: number) => {
-      navigate(filters, { ...pagination, page })
+      void navigatePagination({ ...displayPagination, page })
     },
-    [filters, navigate, pagination]
+    [displayPagination, navigatePagination]
   )
 
   const handlePageSizeChange = useCallback(
     (pageSize: LibraryPageSize) => {
       writeLibraryPageSizePreference(pageSize)
-      navigate(filters, { page: 1, pageSize })
+      void navigatePagination({ page: 1, pageSize })
     },
-    [filters, navigate]
+    [navigatePagination]
   )
 
   const emptyBecauseFilters =
-    totalAlbumCount > 0 && totalFilteredCount === 0
+    totalAlbumCount > 0 && displayFilteredCount === 0
+  const isLoading = isPending || isPaginating
 
   return (
     <div
       className={cn(
         "flex w-full flex-col gap-6 transition-opacity",
-        isPending && "opacity-60"
+        isLoading && "opacity-60"
       )}
     >
       <LibraryToolbar
@@ -187,7 +257,7 @@ export function LibraryPageClient({
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         totalCount={totalAlbumCount}
-        filteredCount={totalFilteredCount}
+        filteredCount={displayFilteredCount}
       />
 
       {totalAlbumCount > 0 ? (
@@ -225,23 +295,23 @@ export function LibraryPageClient({
         </p>
       ) : viewMode === "grid" ? (
         <div className="grid auto-rows-fr grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {albums.map((album) => (
+          {displayAlbums.map((album) => (
             <AlbumCard key={album.id} album={album} variant="compact" />
           ))}
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          {albums.map((album) => (
+          {displayAlbums.map((album) => (
             <AlbumListRow key={album.id} album={album} />
           ))}
         </div>
       )}
 
-      {totalAlbumCount > 0 && totalFilteredCount > 0 ? (
+      {totalAlbumCount > 0 && displayFilteredCount > 0 ? (
         <LibraryPaginationBar
-          page={pagination.page}
-          pageSize={pagination.pageSize}
-          totalItems={totalFilteredCount}
+          page={displayPagination.page}
+          pageSize={displayPagination.pageSize}
+          totalItems={displayFilteredCount}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
         />

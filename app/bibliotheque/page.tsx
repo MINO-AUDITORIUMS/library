@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import { Suspense } from "react"
 
 import { LibraryPageClient } from "@/app/bibliotheque/_components/library-page-client"
-import { countAlbums } from "@/lib/catalog/db/albums"
+import { getRequestCachedTotalAlbumCount } from "@/lib/catalog/db/library-cache"
 import { getLibraryPageData } from "@/lib/catalog/db/library-list"
 import {
   parseLibraryStateFromSearchParams,
@@ -48,9 +48,10 @@ export default async function BibliothequePage({
     getLibraryPageData(
       supabase,
       initialState.filters,
-      initialState.pagination
+      initialState.pagination,
+      { cacheFilterOptions: true }
     ),
-    countAlbums(supabase),
+    getRequestCachedTotalAlbumCount(supabase),
   ])
 
   const shouldRedirect =
