@@ -15,10 +15,7 @@ export type AlbumDetailHeroProps = {
   albumRatings: AlbumRatingsSnapshot
 }
 
-export function AlbumDetailHero({
-  album,
-  albumRatings,
-}: AlbumDetailHeroProps) {
+export function AlbumDetailHero({ album, albumRatings }: AlbumDetailHeroProps) {
   return (
     <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,320px)_1fr]">
       <Card className="h-full py-0">
@@ -69,7 +66,7 @@ export function AlbumDetailHero({
         </CardContent>
       </Card>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,11.5rem)_minmax(0,11.5rem)_minmax(0,1fr)]">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,15rem)_minmax(0,15rem)_minmax(0,1fr)]">
         <PersonalRatingEditor
           key={`${album.id}-${albumRatings.myRating ?? "none"}`}
           albumId={album.id}
