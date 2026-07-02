@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { ArrowLeftIcon } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeftIcon } from "lucide-react"
+import { useState } from "react"
 import { toast } from "sonner"
 
 import { AlbumCreateManualForm } from "@/app/bibliotheque/_components/album-create-manual-form"
@@ -28,9 +28,8 @@ export function AlbumCreateForm() {
   const router = useRouter()
   const importQueue = useAlbumImportQueue()
   const [form, setForm] = useState<AlbumCreateFormState>(emptyAlbumCreateForm)
-  const [artistPreview, setArtistPreview] = useState<ArtistImportPreview | null>(
-    null
-  )
+  const [artistPreview, setArtistPreview] =
+    useState<ArtistImportPreview | null>(null)
   const [saving, setSaving] = useState(false)
   const [manualFormOpen, setManualFormOpen] = useState(false)
 
@@ -100,11 +99,9 @@ export function AlbumCreateForm() {
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Nouvel album</h1>
-          <p className="text-sm text-muted-foreground">
-            Import multi-albums ou saisie manuelle avec enrichissement Discogs /
-            MusicBrainz.
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Nouvel album
+          </h1>
         </div>
         <Button variant="outline" size="sm" asChild>
           <Link href={routes.bibliotheque}>

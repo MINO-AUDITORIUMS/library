@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
 import { Loader2Icon, PlusIcon, Trash2Icon, XIcon } from "lucide-react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 
 import {
@@ -17,7 +17,6 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import type { CatalogTag } from "@/lib/catalog/types"
 import { cn } from "@/lib/utils"
 
@@ -187,7 +186,6 @@ export function AlbumTagsField({
   return (
     <div className="space-y-3">
       <div>
-        <Label htmlFor="album-tags-input">Tags</Label>
         <p className="mt-1 text-sm text-muted-foreground">
           Choisis dans la liste, crée un tag ou supprime un tag du catalogue.
         </p>
@@ -213,7 +211,9 @@ export function AlbumTagsField({
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">Aucun tag pour l&apos;instant.</p>
+        <p className="text-sm text-muted-foreground">
+          Aucun tag pour l&apos;instant.
+        </p>
       )}
 
       <div className="space-y-2">

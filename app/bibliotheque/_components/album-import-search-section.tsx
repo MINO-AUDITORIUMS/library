@@ -1,19 +1,24 @@
 "use client"
 
+import {
+  Loader2Icon,
+  PenLineIcon,
+  SearchIcon,
+  SparklesIcon,
+} from "lucide-react"
 import { useState } from "react"
-import { Loader2Icon, PenLineIcon, SearchIcon, SparklesIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AlbumImportQueuePanel } from "@/app/bibliotheque/_components/album-import-queue-panel"
 import { AlbumSearchResultRow } from "@/app/bibliotheque/_components/album-search-result-row"
 import type { useAlbumImportQueue } from "@/app/bibliotheque/_components/use-album-import-queue"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import type { CatalogSearchHit } from "@/lib/catalog/discogs/types"
-import type { ArtistImportPreview } from "@/lib/catalog/build-artist-preview"
-import { fetchCatalogImport } from "@/lib/catalog/fetch-catalog-import"
 import { releaseToFormState } from "@/lib/catalog/album-create-form-state"
+import type { ArtistImportPreview } from "@/lib/catalog/build-artist-preview"
+import type { CatalogSearchHit } from "@/lib/catalog/discogs/types"
+import { fetchCatalogImport } from "@/lib/catalog/fetch-catalog-import"
 
 type ImportQueue = ReturnType<typeof useAlbumImportQueue>
 
@@ -182,11 +187,6 @@ export function AlbumImportSearchSection({
           <SparklesIcon className="size-4 text-primary" />
           Recherche automatique
         </CardTitle>
-        <CardDescription>
-          Ajoute plusieurs albums à la file avec le bouton +, puis importe
-          tout d&apos;un coup. Utilise Éditer pour ajuster un album avant
-          enregistrement.
-        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <form onSubmit={onSearch} className="flex gap-2">
@@ -235,7 +235,12 @@ export function AlbumImportSearchSection({
 
         {manualFormHidden ? (
           <div className="flex justify-center border-t pt-4">
-            <Button type="button" variant="ghost" size="sm" onClick={onShowManualForm}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onShowManualForm}
+            >
               <PenLineIcon />
               Saisie manuelle
             </Button>

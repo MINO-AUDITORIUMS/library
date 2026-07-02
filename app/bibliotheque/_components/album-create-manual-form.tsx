@@ -1,11 +1,17 @@
 "use client"
 
-import Link from "next/link"
 import { Loader2Icon } from "lucide-react"
+import Link from "next/link"
 
 import { AlbumTagsField } from "@/components/catalog/album-tags-field"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -114,10 +120,7 @@ export function AlbumCreateManualForm({
         </div>
       </FormSection>
 
-      <FormSection
-        title="Tags"
-        description="Libellés transverses pour classer et filtrer la bibliothèque."
-      >
+      <FormSection title="Tags">
         <AlbumTagsField
           value={form.tags}
           onChange={(tags) => onPatch({ tags })}
