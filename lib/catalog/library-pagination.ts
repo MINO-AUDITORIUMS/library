@@ -8,7 +8,7 @@ export const LIBRARY_PAGE_SIZE_OPTIONS = [12, 24, 48] as const
 
 export type LibraryPageSize = (typeof LIBRARY_PAGE_SIZE_OPTIONS)[number]
 
-export const DEFAULT_LIBRARY_PAGE_SIZE: LibraryPageSize = 24
+export const DEFAULT_LIBRARY_PAGE_SIZE: LibraryPageSize = 12
 
 export type LibraryPagination = {
   page: number
@@ -21,6 +21,10 @@ function parsePageSize(value: string | null): LibraryPageSize {
     return parsed as LibraryPageSize
   }
   return DEFAULT_LIBRARY_PAGE_SIZE
+}
+
+export function hasExplicitPageSizeInSearchParams(params: URLSearchParams) {
+  return params.has("perPage")
 }
 
 export function parseLibraryPaginationFromSearchParams(

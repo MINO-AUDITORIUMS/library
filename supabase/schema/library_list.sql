@@ -17,7 +17,7 @@ create or replace function public.list_library_albums_page(
   p_year_to int default null,
   p_min_mino_rating int default null,
   p_page int default 1,
-  p_page_size int default 24
+  p_page_size int default 12
 )
 returns json
 language plpgsql

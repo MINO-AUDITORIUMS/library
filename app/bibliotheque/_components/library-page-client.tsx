@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import {
   useCallback,
   useEffect,
@@ -26,10 +26,16 @@ import {
   type LibraryFilters,
 } from "@/lib/catalog/library-filters"
 import {
+  DEFAULT_LIBRARY_PAGE_SIZE,
+  hasExplicitPageSizeInSearchParams,
   serializeLibraryStateToSearchParams,
   type LibraryPageSize,
   type LibraryPagination,
 } from "@/lib/catalog/library-pagination"
+import {
+  readLibraryPageSizePreference,
+  writeLibraryPageSizePreference,
+} from "@/lib/catalog/library-page-size-preference"
 import type { AlbumSummary } from "@/lib/catalog/types"
 import { routes } from "@/lib/routes"
 import { cn } from "@/lib/utils"
@@ -53,10 +59,12 @@ export function LibraryPageClient({
 }: LibraryPageClientProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
   const [viewMode, setViewMode] = useState<LibraryViewMode>("grid")
   const [queryDraft, setQueryDraft] = useState(filters.query)
   const queryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pageSizePreferenceAppliedRef = useRef(false)
 
   useEffect(() => {
     setQueryDraft(filters.query)
@@ -69,6 +77,30 @@ export function LibraryPageClient({
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (pageSizePreferenceAppliedRef.current) return
+    pageSizePreferenceAppliedRef.current = true
+
+    const params = new URLSearchParams(searchParams.toString())
+    if (hasExplicitPageSizeInSearchParams(params)) return
+
+    const preferredPageSize = readLibraryPageSizePreference()
+    if (
+      !preferredPageSize ||
+      preferredPageSize === DEFAULT_LIBRARY_PAGE_SIZE
+    ) {
+      return
+    }
+
+    const query = serializeLibraryStateToSearchParams(filters, {
+      ...pagination,
+      page: 1,
+      pageSize: preferredPageSize,
+    })
+
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+  }, [filters, pagination, pathname, router, searchParams])
 
   const navigate = useCallback(
     (nextFilters: LibraryFilters, nextPagination: LibraryPagination) => {
@@ -133,6 +165,7 @@ export function LibraryPageClient({
 
   const handlePageSizeChange = useCallback(
     (pageSize: LibraryPageSize) => {
+      writeLibraryPageSizePreference(pageSize)
       navigate(filters, { page: 1, pageSize })
     },
     [filters, navigate]
