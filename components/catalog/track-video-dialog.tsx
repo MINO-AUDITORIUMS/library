@@ -1,6 +1,6 @@
 "use client"
 
-import { ExternalLinkIcon, PlayIcon } from "lucide-react"
+import { ExternalLinkIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -9,32 +9,24 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { youTubeEmbedUrl, youTubeWatchUrl } from "@/lib/catalog/youtube"
 
 export type TrackVideoDialogProps = {
   videoId: string
   trackTitle: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
 export function TrackVideoDialog({
   videoId,
   trackTitle,
+  open,
+  onOpenChange,
 }: TrackVideoDialogProps) {
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-7 shrink-0 gap-1 px-2 text-xs text-primary"
-        >
-          <PlayIcon className="size-3" />
-          Vidéo
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-full max-w-[calc(100%-2rem)] gap-0 overflow-hidden p-0 sm:max-w-4xl lg:max-w-5xl">
         <DialogHeader className="border-b p-4">
           <DialogTitle>{trackTitle}</DialogTitle>
@@ -48,7 +40,7 @@ export function TrackVideoDialog({
             className="h-full w-full border-0"
           />
         </div>
-        <DialogFooter className="-mx-0 -mb-0 border-t p-4 pb-4">
+        <DialogFooter className="mx-0 mb-0 border-t p-4 pb-4">
           <Button variant="outline" size="sm" asChild>
             <a
               href={youTubeWatchUrl(videoId)}

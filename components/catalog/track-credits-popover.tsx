@@ -21,13 +21,7 @@ export type TrackCreditsPopoverProps = {
 const HOVER_OPEN_MS = 150
 const HOVER_CLOSE_MS = 80
 
-function CreditSection({
-  label,
-  names,
-}: {
-  label: string
-  names: string[]
-}) {
+function CreditSection({ label, names }: { label: string; names: string[] }) {
   if (names.length === 0) return null
 
   return (
@@ -35,23 +29,6 @@ function CreditSection({
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="text-sm leading-snug wrap-break-word">{names.join(", ")}</p>
     </div>
-  )
-}
-
-function TrackCreditsPanel({
-  trackTitle,
-  writers,
-  producers,
-}: TrackCreditsPopoverProps) {
-  return (
-    <>
-      <PopoverHeader className="gap-0.5">
-        <PopoverTitle className="text-sm">Crédits</PopoverTitle>
-        <p className="truncate text-xs text-muted-foreground">{trackTitle}</p>
-      </PopoverHeader>
-      <CreditSection label="Écriture" names={writers} />
-      <CreditSection label="Production" names={producers} />
-    </>
   )
 }
 
@@ -83,8 +60,6 @@ export function TrackCreditsPopover({
     closeTimer.current = setTimeout(() => setOpen(false), HOVER_CLOSE_MS)
   }
 
-  const panel = { trackTitle, writers, producers }
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverAnchor asChild>
@@ -108,8 +83,14 @@ export function TrackCreditsPopover({
         onMouseLeave={scheduleClose}
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
-        <TrackCreditsPanel {...panel} />
+        <PopoverHeader className="gap-0.5">
+          <PopoverTitle className="text-sm">Crédits</PopoverTitle>
+          <p className="truncate text-xs text-muted-foreground">{trackTitle}</p>
+        </PopoverHeader>
+        <CreditSection label="Écriture" names={writers} />
+        <CreditSection label="Production" names={producers} />
       </PopoverContent>
     </Popover>
   )
 }
+

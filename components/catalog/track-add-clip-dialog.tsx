@@ -1,6 +1,6 @@
 "use client"
 
-import { Loader2Icon, PlusIcon } from "lucide-react"
+import { Loader2Icon } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -13,7 +13,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,15 +21,18 @@ export type TrackAddClipDialogProps = {
   albumId: string
   position: number
   trackTitle: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
 export function TrackAddClipDialog({
   albumId,
   position,
   trackTitle,
+  open,
+  onOpenChange,
 }: TrackAddClipDialogProps) {
   const router = useRouter()
-  const [open, setOpen] = useState(false)
   const [youtubeUrl, setYoutubeUrl] = useState("")
   const [saving, setSaving] = useState(false)
 
@@ -53,7 +55,7 @@ export function TrackAddClipDialog({
       }
 
       toast.success("Clip ajouté.")
-      setOpen(false)
+      onOpenChange(false)
       setYoutubeUrl("")
       router.refresh()
     } catch {
@@ -67,26 +69,15 @@ export function TrackAddClipDialog({
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        setOpen(next)
+        onOpenChange(next)
         if (!next) setYoutubeUrl("")
       }}
     >
-      <DialogTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-7 shrink-0 gap-1 px-2 text-xs text-muted-foreground"
-        >
-          <PlusIcon className="size-3" />
-          Ajouter un clip
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Ajouter un clip</DialogTitle>
           <DialogDescription>
-            Titre de la piste : {trackTitle}
+            Titre de la piste : <strong>{trackTitle}</strong>
           </DialogDescription>
         </DialogHeader>
 
@@ -113,7 +104,7 @@ export function TrackAddClipDialog({
             type="button"
             variant="outline"
             disabled={saving}
-            onClick={() => setOpen(false)}
+            onClick={() => onOpenChange(false)}
           >
             Annuler
           </Button>
