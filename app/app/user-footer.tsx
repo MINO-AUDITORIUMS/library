@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { LogOutIcon } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { toast } from "sonner"
 
+import { AppVersion } from "@/components/app/app-version"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { routes } from "@/lib/routes"
@@ -57,7 +58,7 @@ export function UserFooter({ email }: UserFooterProps) {
         <LogOutIcon />
         <span className="ml-2">Déconnexion</span>
       </Button>
+      <AppVersion />
     </div>
   )
 }
-
