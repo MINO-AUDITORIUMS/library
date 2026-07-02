@@ -101,3 +101,13 @@ export function formatWeekRange(anchor: Date) {
 
   return `${formatDayMonth(start)} – ${formatDayMonth(end)} ${end.getFullYear()}`
 }
+
+export function formatUpcomingSessionDate(dateKey: string) {
+  const todayKey = toDateKey(new Date())
+  const tomorrowKey = toDateKey(addDays(new Date(), 1))
+
+  if (dateKey === todayKey) return "Aujourd'hui"
+  if (dateKey === tomorrowKey) return "Demain"
+
+  return formatDayMonth(parseDateKey(dateKey))
+}

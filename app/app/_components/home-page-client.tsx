@@ -6,14 +6,17 @@ import { toast } from "sonner"
 
 import { HomeQuickLinks } from "@/app/app/_components/home-quick-links"
 import { HomeRecentAlbums } from "@/app/app/_components/home-recent-albums"
+import { HomeUpcomingSessions } from "@/app/app/_components/home-upcoming-sessions"
 import { greetingFromEmail } from "@/lib/auth/greeting-from-email"
 import type { AlbumSummary } from "@/lib/catalog/types"
+import type { ProgrammationSession } from "@/lib/programmation/types"
 
 export type HomePageClientProps = {
   email: string
   albumCount: number
   artistCount: number
   recentAlbums: AlbumSummary[]
+  upcomingSessions: ProgrammationSession[]
 }
 
 export function HomePageClient({
@@ -21,6 +24,7 @@ export function HomePageClient({
   albumCount,
   artistCount,
   recentAlbums,
+  upcomingSessions,
 }: HomePageClientProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -76,6 +80,7 @@ export function HomePageClient({
 
       <HomeQuickLinks albumCount={albumCount} artistCount={artistCount} />
       <HomeRecentAlbums albums={recentAlbums} />
+      <HomeUpcomingSessions sessions={upcomingSessions} />
     </div>
   )
 }

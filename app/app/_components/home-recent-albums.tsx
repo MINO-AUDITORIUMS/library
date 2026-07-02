@@ -1,5 +1,5 @@
-import Link from "next/link"
 import { ArrowRightIcon } from "lucide-react"
+import Link from "next/link"
 
 import { AlbumCard } from "@/components/catalog/album-card"
 import { Button } from "@/components/ui/button"
@@ -14,7 +14,9 @@ export function HomeRecentAlbums({ albums }: HomeRecentAlbumsProps) {
   if (albums.length === 0) {
     return (
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight">Derniers ajouts</h2>
+        <h2 className="text-lg font-semibold tracking-tight">
+          Derniers ajouts
+        </h2>
         <div className="rounded-xl border border-dashed px-6 py-12 text-center">
           <p className="text-sm text-muted-foreground">
             Aucun album pour le moment. Importe le premier depuis Discogs ou
@@ -35,9 +37,11 @@ export function HomeRecentAlbums({ albums }: HomeRecentAlbumsProps) {
     <section className="space-y-4">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">Derniers ajouts</h2>
+          <h2 className="text-lg font-semibold tracking-tight">
+            Derniers ajouts
+          </h2>
           <p className="text-sm text-muted-foreground">
-            Les albums récemment importés dans MINO.
+            Les albums récemment importés.
           </p>
         </div>
         <Button variant="ghost" size="sm" asChild>

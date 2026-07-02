@@ -3,6 +3,7 @@ import type { SupabaseClient, User } from "@supabase/supabase-js"
 import { ensureProfile } from "@/lib/auth/ensure-profile"
 import { coverHueFromId } from "@/lib/catalog/cover-hue"
 import { getAlbumCoverPublicUrl } from "@/lib/catalog/storage/album-cover"
+import { toDateKey } from "@/lib/programmation/dates"
 import { minutesFromSeconds } from "@/lib/programmation/duration"
 import type {
   ProgrammationAlbumRef,
@@ -121,6 +122,25 @@ export async function listSessions(supabase: SupabaseClient) {
     .select(seanceSelect)
     .order("date", { ascending: true })
     .order("heure_debut", { ascending: true })
+
+  if (error) throw error
+  return (data as unknown as SeanceRow[]).map(mapSeanceRow)
+}
+
+export async function listUpcomingSessions(
+  supabase: SupabaseClient,
+  limit = 6
+) {
+  const todayKey = toDateKey(new Date())
+
+  const { data, error } = await supabase
+    .from("seances")
+    .select(seanceSelect)
+    .gte("date", todayKey)
+    .in("statut", ["brouillon", "confirmee"])
+    .order("date", { ascending: true })
+    .order("heure_debut", { ascending: true })
+    .limit(limit)
 
   if (error) throw error
   return (data as unknown as SeanceRow[]).map(mapSeanceRow)
