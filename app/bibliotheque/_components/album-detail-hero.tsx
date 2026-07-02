@@ -17,52 +17,48 @@ export type AlbumDetailHeroProps = {
 
 export function AlbumDetailHero({ album, albumRatings }: AlbumDetailHeroProps) {
   return (
-    <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,320px)_1fr]">
+    <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,20rem)_1fr]">
       <Card className="h-full py-0">
-        <CardContent className="py-4">
-          <div className="flex gap-4">
-            <AlbumCoverEditable
-              albumId={album.id}
-              title={album.title}
-              coverHue={album.coverHue}
-              coverImageUrl={album.coverImageUrl}
-              className="size-36 shrink-0"
-            />
+        <CardContent className="flex flex-col gap-4 py-4">
+          <AlbumCoverEditable
+            albumId={album.id}
+            title={album.title}
+            coverHue={album.coverHue}
+            coverImageUrl={album.coverImageUrl}
+            className="size-36 shrink-0"
+          />
 
-            <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
-              <div className="min-w-0 space-y-0.5">
-                <h1 className="truncate text-xl font-semibold tracking-tight">
-                  {album.title}
-                </h1>
-                {album.artistId ? (
-                  <Link
-                    href={artistDetailRoute(album.artistId)}
-                    className="block truncate text-sm text-muted-foreground transition-colors hover:text-primary"
-                  >
-                    {album.artist}
-                  </Link>
-                ) : (
-                  <p className="truncate text-sm text-muted-foreground">
-                    {album.artist}
-                  </p>
-                )}
-              </div>
-
-              {album.tags.length > 0 ? (
-                <div className="flex flex-wrap gap-1">
-                  {album.tags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="px-2 py-0 text-xs"
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              ) : null}
-            </div>
+          <div className="min-w-0 space-y-1">
+            <h1 className="text-pretty text-xl font-semibold tracking-tight wrap-break-word">
+              {album.title}
+            </h1>
+            {album.artistId ? (
+              <Link
+                href={artistDetailRoute(album.artistId)}
+                className="block text-pretty text-sm wrap-break-word text-muted-foreground transition-colors hover:text-primary"
+              >
+                {album.artist}
+              </Link>
+            ) : (
+              <p className="text-pretty text-sm wrap-break-word text-muted-foreground">
+                {album.artist}
+              </p>
+            )}
           </div>
+
+          {album.tags.length > 0 ? (
+            <div className="flex flex-wrap gap-1">
+              {album.tags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="px-2 py-0 text-xs"
+                >
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 
