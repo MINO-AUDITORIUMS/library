@@ -6,12 +6,13 @@ export type AlbumCoverProps = {
   title: string
   hue: number
   imageUrl?: string | null
-  size?: "sm" | "md" | "lg"
+  size?: "sm" | "xs" | "md" | "lg"
   className?: string
 }
 
 const sizeClasses = {
   sm: "size-12 rounded-md [&_svg]:size-5",
+  xs: "aspect-square w-full rounded-md [&_svg]:size-7",
   md: "aspect-square w-full rounded-lg [&_svg]:size-10",
   lg: "aspect-square w-full max-w-xs rounded-xl [&_svg]:size-16",
 }

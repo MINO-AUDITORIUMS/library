@@ -376,6 +376,31 @@ export async function listRecentAlbumSummaries(
   return (data as unknown as AlbumRow[]).map(mapAlbumSummary)
 }
 
+export async function listAlbumSummariesByIds(
+  supabase: SupabaseClient,
+  ids: string[]
+) {
+  if (ids.length === 0) return []
+
+  const { data, error } = await supabase
+    .from("albums")
+    .select(albumListSelect)
+    .in("id", ids)
+
+  if (error) throw error
+
+  const byId = new Map(
+    (data as unknown as AlbumRow[]).map((row) => [
+      row.id,
+      mapAlbumSummary(row),
+    ])
+  )
+
+  return ids
+    .map((id) => byId.get(id))
+    .filter((album): album is AlbumSummary => album !== undefined)
+}
+
 export async function listAlbumSummaries(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("albums")
