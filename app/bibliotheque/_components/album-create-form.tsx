@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { AlbumCreateManualForm } from "@/app/bibliotheque/_components/album-create-manual-form"
 import { AlbumImportSearchSection } from "@/app/bibliotheque/_components/album-import-search-section"
 import { ArtistImportPanel } from "@/app/bibliotheque/_components/artist-import-panel"
+import { useAlbumImportQueue } from "@/app/bibliotheque/_components/use-album-import-queue"
 import { Button } from "@/components/ui/button"
 import {
   emptyAlbumCreateForm,
@@ -17,13 +18,25 @@ import {
 import type { ArtistImportPreview } from "@/lib/catalog/build-artist-preview"
 import { albumDetailRoute, routes } from "@/lib/routes"
 
+function hasPendingQueue(
+  queue: ReturnType<typeof useAlbumImportQueue>["queue"]
+) {
+  return queue.some((item) => item.status === "pending")
+}
+
 export function AlbumCreateForm() {
   const router = useRouter()
+  const importQueue = useAlbumImportQueue()
   const [form, setForm] = useState<AlbumCreateFormState>(emptyAlbumCreateForm)
   const [artistPreview, setArtistPreview] = useState<ArtistImportPreview | null>(
     null
   )
   const [saving, setSaving] = useState(false)
+  const [manualFormOpen, setManualFormOpen] = useState(false)
+
+  const multiImportActive =
+    importQueue.importing || hasPendingQueue(importQueue.queue)
+  const showManualForm = !multiImportActive || manualFormOpen
 
   function patchForm(partial: Partial<AlbumCreateFormState>) {
     setForm((prev) => ({ ...prev, ...partial }))
@@ -35,6 +48,7 @@ export function AlbumCreateForm() {
   ) {
     setForm(nextForm)
     setArtistPreview(artist)
+    setManualFormOpen(true)
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -100,16 +114,25 @@ export function AlbumCreateForm() {
         </Button>
       </div>
 
-      <AlbumImportSearchSection onApplyToForm={applyImportToForm} />
-
-      {artistPreview ? <ArtistImportPanel preview={artistPreview} /> : null}
-
-      <AlbumCreateManualForm
-        form={form}
-        saving={saving}
-        onPatch={patchForm}
-        onSubmit={onSubmit}
+      <AlbumImportSearchSection
+        importQueue={importQueue}
+        manualFormHidden={!showManualForm}
+        onShowManualForm={() => setManualFormOpen(true)}
+        onApplyToForm={applyImportToForm}
       />
+
+      {showManualForm ? (
+        <>
+          {artistPreview ? <ArtistImportPanel preview={artistPreview} /> : null}
+
+          <AlbumCreateManualForm
+            form={form}
+            saving={saving}
+            onPatch={patchForm}
+            onSubmit={onSubmit}
+          />
+        </>
+      ) : null}
     </div>
   )
 }

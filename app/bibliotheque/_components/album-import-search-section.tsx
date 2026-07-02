@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { Loader2Icon, SearchIcon, SparklesIcon } from "lucide-react"
+import { Loader2Icon, PenLineIcon, SearchIcon, SparklesIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { AlbumImportQueuePanel } from "@/app/bibliotheque/_components/album-import-queue-panel"
 import { AlbumSearchResultRow } from "@/app/bibliotheque/_components/album-search-result-row"
-import { useAlbumImportQueue } from "@/app/bibliotheque/_components/use-album-import-queue"
+import type { useAlbumImportQueue } from "@/app/bibliotheque/_components/use-album-import-queue"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,7 +15,12 @@ import type { ArtistImportPreview } from "@/lib/catalog/build-artist-preview"
 import { fetchCatalogImport } from "@/lib/catalog/fetch-catalog-import"
 import { releaseToFormState } from "@/lib/catalog/album-create-form-state"
 
+type ImportQueue = ReturnType<typeof useAlbumImportQueue>
+
 export type AlbumImportSearchSectionProps = {
+  importQueue: ImportQueue
+  manualFormHidden: boolean
+  onShowManualForm: () => void
   onApplyToForm: (
     form: ReturnType<typeof releaseToFormState>,
     artist: ArtistImportPreview | null
@@ -23,6 +28,9 @@ export type AlbumImportSearchSectionProps = {
 }
 
 export function AlbumImportSearchSection({
+  importQueue,
+  manualFormHidden,
+  onShowManualForm,
   onApplyToForm,
 }: AlbumImportSearchSectionProps) {
   const [searchQuery, setSearchQuery] = useState("")
@@ -40,7 +48,7 @@ export function AlbumImportSearchSection({
     clearFinished,
     importAll,
     openAlbum,
-  } = useAlbumImportQueue()
+  } = importQueue
 
   async function onSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -176,8 +184,8 @@ export function AlbumImportSearchSection({
         </CardTitle>
         <CardDescription>
           Ajoute plusieurs albums à la file avec le bouton +, puis importe
-          tout d&apos;un coup. Utilise Éditer pour préremplir le formulaire
-          manuellement.
+          tout d&apos;un coup. Utilise Éditer pour ajuster un album avant
+          enregistrement.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -224,6 +232,15 @@ export function AlbumImportSearchSection({
           onImportAll={onImportAll}
           onOpenAlbum={openAlbum}
         />
+
+        {manualFormHidden ? (
+          <div className="flex justify-center border-t pt-4">
+            <Button type="button" variant="ghost" size="sm" onClick={onShowManualForm}>
+              <PenLineIcon />
+              Saisie manuelle
+            </Button>
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   )
