@@ -5,7 +5,7 @@ security definer
 set search_path = ''
 as $$
 declare
-  allowed_domains text[] := array['mino.co', 'imagine-nation.co', 'pm.me'];
+  allowed_domains text[] := array['mino.co', 'imagine-nation.co'];
   domain text;
 begin
   if new.email is null then

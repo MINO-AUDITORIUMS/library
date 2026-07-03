@@ -1,7 +1,6 @@
 export const ALLOWED_EMAIL_DOMAINS = [
   "mino.co",
   "imagine-nation.co",
-  "pm.me",
 ] as const
 
 export type AllowedEmailDomain = (typeof ALLOWED_EMAIL_DOMAINS)[number]
