@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation"
+import { cache } from "react"
 
 import { getEmailDomain, isAllowedEmail } from "@/lib/auth/allowed-domains"
 import { routes } from "@/lib/routes"
 import { createClient } from "@/lib/supabase/server"
 
-export async function getAuthenticatedUser() {
+export const getAuthenticatedUser = cache(async () => {
   const supabase = await createClient()
   const { data, error } = await supabase.auth.getUser()
 
@@ -14,7 +15,7 @@ export async function getAuthenticatedUser() {
   if (!email || !isAllowedEmail(email)) return null
 
   return { user: data.user, email }
-}
+})
 
 export async function requireAuthenticatedUser() {
   const session = await getAuthenticatedUser()

@@ -11,30 +11,56 @@ import type {
   SessionStatus,
 } from "@/lib/programmation/types"
 
+type SeanceAlbumEmbed = {
+  id: string
+  title: string
+  artist: string
+  total_duration_seconds: number | null
+  cover_storage_path: string | null
+}
+
 type SeanceRow = {
   id: string
-  album_id: string
+  album_id?: string
   date: string
   heure_debut: string
   duree_minutes: number
-  notes: string
+  notes?: string
   statut: SessionStatus
-  created_at: string
-  updated_at: string
-  albums: {
-    id: string
-    title: string
-    artist: string
-    total_duration_seconds: number | null
-    cover_storage_path: string | null
-  } | {
-    id: string
-    title: string
-    artist: string
-    total_duration_seconds: number | null
-    cover_storage_path: string | null
-  }[] | null
+  created_at?: string
+  updated_at?: string
+  albums: SeanceAlbumEmbed | SeanceAlbumEmbed[] | null
 }
+
+const seanceAlbumEmbed = `
+  albums (
+    id,
+    title,
+    artist,
+    total_duration_seconds,
+    cover_storage_path
+  )
+`
+
+const seancePreviewSelect = `
+  id,
+  date,
+  heure_debut,
+  duree_minutes,
+  statut,
+  ${seanceAlbumEmbed}
+`
+
+const seanceListSelect = `
+  id,
+  album_id,
+  date,
+  heure_debut,
+  duree_minutes,
+  notes,
+  statut,
+  ${seanceAlbumEmbed}
+`
 
 const seanceSelect = `
   id,
@@ -46,13 +72,7 @@ const seanceSelect = `
   statut,
   created_at,
   updated_at,
-  albums (
-    id,
-    title,
-    artist,
-    total_duration_seconds,
-    cover_storage_path
-  )
+  ${seanceAlbumEmbed}
 `
 
 function readAlbum(row: SeanceRow) {
@@ -94,10 +114,10 @@ export function mapSeanceRow(row: SeanceRow): ProgrammationSession {
     date: row.date,
     startTime: formatTimeFromDb(row.heure_debut),
     durationMinutes: row.duree_minutes,
-    notes: row.notes,
+    notes: row.notes ?? "",
     status: row.statut,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: row.created_at ?? "",
+    updatedAt: row.updated_at ?? "",
   }
 }
 
@@ -119,7 +139,7 @@ async function getAlbumDurationMinutes(
 export async function listSessions(supabase: SupabaseClient) {
   const { data, error } = await supabase
     .from("seances")
-    .select(seanceSelect)
+    .select(seanceListSelect)
     .order("date", { ascending: true })
     .order("heure_debut", { ascending: true })
 
@@ -135,7 +155,7 @@ export async function listUpcomingSessions(
 
   const { data, error } = await supabase
     .from("seances")
-    .select(seanceSelect)
+    .select(seancePreviewSelect)
     .gte("date", todayKey)
     .in("statut", ["brouillon", "confirmee"])
     .order("date", { ascending: true })

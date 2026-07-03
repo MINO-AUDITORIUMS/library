@@ -72,7 +72,6 @@ export function mapArtistSummary(
     | "image_url"
     | "image_storage_path"
     | "country"
-    | "created_at"
   >,
   albumCount: number
 ): ArtistSummary {
@@ -212,7 +211,6 @@ export async function listArtistSummaries(supabase: SupabaseClient) {
       image_url,
       image_storage_path,
       country,
-      created_at,
       albums(count)
     `)
     .order("name", { ascending: true })
@@ -223,7 +221,7 @@ export async function listArtistSummaries(supabase: SupabaseClient) {
     mapArtistSummary(
       row as Pick<
         ArtistRow,
-        "id" | "name" | "slug" | "image_url" | "image_storage_path" | "country" | "created_at"
+        "id" | "name" | "slug" | "image_url" | "image_storage_path" | "country"
       >,
       readAlbumCount((row as { albums?: { count: number }[] }).albums)
     )

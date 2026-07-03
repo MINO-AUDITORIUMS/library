@@ -78,6 +78,45 @@ type AlbumRow = {
     | null
 }
 
+const albumHomeListSelect = `
+  id,
+  title,
+  artist,
+  release_year,
+  label,
+  cover_storage_path,
+  album_user_ratings(rating)
+`
+
+type AlbumHomeRow = Pick<
+  AlbumRow,
+  | "id"
+  | "title"
+  | "artist"
+  | "release_year"
+  | "label"
+  | "cover_storage_path"
+  | "album_user_ratings"
+>
+
+function mapAlbumHomeSummary(row: AlbumHomeRow): AlbumSummary {
+  return {
+    id: row.id,
+    title: stripCatalogDisambiguation(row.title),
+    artist: stripCatalogDisambiguation(row.artist),
+    releaseYear: row.release_year ?? 0,
+    label: stripCatalogDisambiguation(row.label ?? "—") || "—",
+    minoRating: minoRatingFromRows(row.album_user_ratings),
+    tags: [],
+    genre: "—",
+    genreName: "",
+    subgenreName: "",
+    country: "",
+    coverHue: coverHueFromId(row.id),
+    coverImageUrl: getAlbumCoverPublicUrl(row.cover_storage_path),
+  }
+}
+
 const albumListSelect = `
   id,
   title,
@@ -368,12 +407,12 @@ export async function listRecentAlbumSummaries(
 ) {
   const { data, error } = await supabase
     .from("albums")
-    .select(albumListSelect)
+    .select(albumHomeListSelect)
     .order("created_at", { ascending: false })
     .limit(limit)
 
   if (error) throw error
-  return (data as unknown as AlbumRow[]).map(mapAlbumSummary)
+  return (data as unknown as AlbumHomeRow[]).map(mapAlbumHomeSummary)
 }
 
 export async function listAlbumSummariesByIds(
