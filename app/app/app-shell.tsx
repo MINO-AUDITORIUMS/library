@@ -53,6 +53,8 @@ const navItems = [
   },
 ] as const
 
+const libraryItems = navItems
+
 function isNavActive(
   pathname: string,
   item: (typeof navItems)[number]
@@ -82,10 +84,10 @@ export function AppShell({ email, children }: AppShellProps) {
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+            <SidebarGroupLabel>Librairie</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1">
-                {navItems.map((item) => (
+                {libraryItems.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       isActive={isNavActive(pathname, item)}
