@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react"
 
-import { AlbumCover } from "@/components/catalog/album-cover"
 import { AlbumPickerDialog } from "@/app/programmation/_components/album-picker-dialog"
+import { AlbumCover } from "@/components/catalog/album-cover"
+import { DatePickerField } from "@/components/shared/date-picker-field"
+import { TimePickerField } from "@/components/shared/time-picker-field"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -13,8 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { DatePickerField } from "@/components/shared/date-picker-field"
-import { TimePickerField } from "@/components/shared/time-picker-field"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -141,12 +141,14 @@ export function SessionFormDialog({
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(SESSION_STATUS_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
+                <SelectContent position="popper" align="start">
+                  {Object.entries(SESSION_STATUS_LABELS).map(
+                    ([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    )
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -163,10 +165,18 @@ export function SessionFormDialog({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Annuler
             </Button>
-            <Button type="button" disabled={!draft.album || submitting} onClick={onSubmit}>
+            <Button
+              type="button"
+              disabled={!draft.album || submitting}
+              onClick={onSubmit}
+            >
               {submitting ? "Ajout…" : "Ajouter au planning"}
             </Button>
           </DialogFooter>

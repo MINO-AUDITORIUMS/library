@@ -2,12 +2,6 @@
 
 import { RotateCcwIcon, SlidersHorizontalIcon } from "lucide-react"
 
-import {
-  countActiveLibraryFilters,
-  LIBRARY_FILTER_ALL,
-  type LibraryFilterOptions,
-  type LibraryFilters,
-} from "@/lib/catalog/library-filters"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -18,6 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  countActiveLibraryFilters,
+  LIBRARY_FILTER_ALL,
+  type LibraryFilterOptions,
+  type LibraryFilters,
+} from "@/lib/catalog/library-filters"
 import { cn } from "@/lib/utils"
 
 export type LibraryFiltersPanelProps = {
@@ -56,7 +56,7 @@ function FilterSelect({
         <SelectTrigger id={id} size="sm" className="w-full min-w-0">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent position="popper" align="start">
           <SelectItem value={LIBRARY_FILTER_ALL}>Tous</SelectItem>
           {options.map((option) => (
             <SelectItem key={option.value} value={option.value}>
@@ -111,7 +111,9 @@ export function LibraryFiltersPanel({
             value: genre,
             label: genre,
           }))}
-          onValueChange={(genre) => onFiltersChange({ genre, subgenre: LIBRARY_FILTER_ALL })}
+          onValueChange={(genre) =>
+            onFiltersChange({ genre, subgenre: LIBRARY_FILTER_ALL })
+          }
         />
         <FilterSelect
           id="library-filter-subgenre"
@@ -124,7 +126,8 @@ export function LibraryFiltersPanel({
           }))}
           onValueChange={(subgenre) => onFiltersChange({ subgenre })}
           disabled={
-            filters.genre !== LIBRARY_FILTER_ALL && options.subgenres.length === 0
+            filters.genre !== LIBRARY_FILTER_ALL &&
+            options.subgenres.length === 0
           }
         />
         <FilterSelect

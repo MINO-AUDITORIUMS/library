@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { CopyIcon, Trash2Icon } from "lucide-react"
+import { useEffect, useState } from "react"
 
-import { AlbumCover } from "@/components/catalog/album-cover"
 import { AlbumPickerDialog } from "@/app/programmation/_components/album-picker-dialog"
+import { AlbumCover } from "@/components/catalog/album-cover"
 import { DatePickerField } from "@/components/shared/date-picker-field"
 import { TimePickerField } from "@/components/shared/time-picker-field"
 import { Badge } from "@/components/ui/badge"
@@ -116,9 +116,7 @@ export function SessionDetailSheet({
                 <TimePickerField
                   id="edit-time"
                   value={session.startTime}
-                  onChange={(startTime) =>
-                    onUpdate(session.id, { startTime })
-                  }
+                  onChange={(startTime) => onUpdate(session.id, { startTime })}
                 />
               </div>
             </div>
@@ -134,12 +132,14 @@ export function SessionDetailSheet({
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(SESSION_STATUS_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
+                <SelectContent position="popper" align="start">
+                  {Object.entries(SESSION_STATUS_LABELS).map(
+                    ([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    )
+                  )}
                 </SelectContent>
               </Select>
             </div>

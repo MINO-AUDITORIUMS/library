@@ -1,10 +1,5 @@
 "use client"
 
-import {
-  LIBRARY_PAGE_SIZE_OPTIONS,
-  buildPageNumbers,
-  type LibraryPageSize,
-} from "@/lib/catalog/library-pagination"
 import { Button } from "@/components/ui/button"
 import {
   Pagination,
@@ -19,6 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  LIBRARY_PAGE_SIZE_OPTIONS,
+  buildPageNumbers,
+  type LibraryPageSize,
+} from "@/lib/catalog/library-pagination"
 import { cn } from "@/lib/utils"
 
 export type LibraryPaginationBarProps = {
@@ -72,7 +72,7 @@ export function LibraryPaginationBar({
             <SelectTrigger size="sm" className="w-18">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" align="start">
               {LIBRARY_PAGE_SIZE_OPTIONS.map((option) => (
                 <SelectItem key={option} value={String(option)}>
                   {option}
