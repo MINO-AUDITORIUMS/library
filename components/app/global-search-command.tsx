@@ -1,8 +1,8 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
 import { Disc3Icon, Mic2Icon, SearchIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useCallback, useEffect, useState } from "react"
 
 import { AlbumCover } from "@/components/catalog/album-cover"
 import { ArtistAvatar } from "@/components/catalog/artist-avatar"
@@ -123,7 +123,7 @@ export function GlobalSearchCommand() {
       <Button
         variant="outline"
         size="sm"
-        className="hidden h-8 w-52 justify-start gap-2 text-muted-foreground md:inline-flex"
+        className="hidden h-8 w-64 justify-start gap-2 text-muted-foreground md:inline-flex lg:w-96"
         onClick={() => setOpen(true)}
       >
         <SearchIcon className="size-3.5 shrink-0" />
@@ -157,9 +157,7 @@ export function GlobalSearchCommand() {
           ) : loading ? (
             <CommandEmpty>Recherche…</CommandEmpty>
           ) : showEmpty ? (
-            <CommandEmpty>
-              Aucun résultat pour « {trimmedQuery} ».
-            </CommandEmpty>
+            <CommandEmpty>Aucun résultat pour « {trimmedQuery} ».</CommandEmpty>
           ) : (
             <>
               {results.artists.length > 0 ? (
@@ -212,7 +210,9 @@ export function GlobalSearchCommand() {
                         <p className="truncate font-medium">{album.title}</p>
                         <p className="truncate text-xs text-muted-foreground">
                           {album.artist}
-                          {album.releaseYear > 0 ? ` · ${album.releaseYear}` : ""}
+                          {album.releaseYear > 0
+                            ? ` · ${album.releaseYear}`
+                            : ""}
                           {album.label && album.label !== "—"
                             ? ` · ${album.label}`
                             : ""}

@@ -108,12 +108,16 @@ export function AppShell({ email, children }: AppShellProps) {
       </Sidebar>
 
       <SidebarInset className="flex min-h-svh flex-col">
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4 md:px-6">
-          <SidebarTrigger className="md:hidden" />
-          <AppBreadcrumb />
-          <div className="ml-auto flex shrink-0 items-center gap-2">
-            <ThemeToggle />
+        <header className="grid h-12 shrink-0 grid-cols-[auto_1fr_auto] items-center gap-2 border-b px-4 md:px-6">
+          <div className="flex min-w-0 items-center gap-2">
+            <SidebarTrigger className="md:hidden" />
+            <AppBreadcrumb />
+          </div>
+          <div className="flex justify-center">
             <GlobalSearchCommand />
+          </div>
+          <div className="flex shrink-0 items-center justify-end gap-2">
+            <ThemeToggle />
           </div>
         </header>
         <div className="flex min-h-0 flex-1 flex-col p-4 md:p-6">{children}</div>
