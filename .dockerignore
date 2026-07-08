@@ -1,0 +1,9 @@
+.next
+node_modules
+.git
+.github
+.cursor
+.env.local
+.pnpm-store
+*.md
+tsconfig.tsbuildinfo
