@@ -1,4 +1,4 @@
-# LIBRARY
+# BACKSTAGE
 
 Catalogue collaboratif d'albums (MINO / Imagine Nation) — Next.js, Supabase, Shadcn UI.
 

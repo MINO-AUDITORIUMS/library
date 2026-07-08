@@ -56,16 +56,16 @@ jobs:
           docker build \
             --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
             --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" \
-            -t mino-library:ci \
+            -t mino-backstage:ci \
             .
 
       - name: Smoke test container
         shell: bash
         run: |
-          docker run -d --name mino-library-ci -p 3000:3000 \
+          docker run -d --name mino-backstage-ci -p 3000:3000 \
             -e NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
             -e NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="$NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" \
-            mino-library:ci
+            mino-backstage:ci
 
           for i in {1..30}; do
             if curl -fsS "http://localhost:3000/app" >/dev/null; then
@@ -74,9 +74,9 @@ jobs:
             sleep 1
           done
 
-          docker logs mino-library-ci
+          docker logs mino-backstage-ci
           exit 1
 
       - name: Cleanup
         if: always()
-        run: docker rm -f mino-library-ci
+        run: docker rm -f mino-backstage-ci
