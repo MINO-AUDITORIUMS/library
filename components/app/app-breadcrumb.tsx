@@ -115,15 +115,18 @@ export function AppBreadcrumb() {
   }, [pathname])
 
   useEffect(() => {
+    if (!albumId) return
     let cancelled = false
+    const id = albumId
 
     async function loadTitle() {
       try {
-        const response = await fetch(`/api/albums/${albumId}?titleOnly=1`)
+        const response = await fetch(`/api/albums/${id}?titleOnly=1`)
         const data = (await response.json()) as { title?: string }
         if (!cancelled && response.ok && data.title) {
+          const title = data.title
           setAlbumTitles((prev) =>
-            prev[albumId] === data.title ? prev : { ...prev, [albumId]: data.title }
+            prev[id] === title ? prev : { ...prev, [id]: title }
           )
         }
       } catch {
@@ -131,7 +134,7 @@ export function AppBreadcrumb() {
       }
     }
 
-    if (albumId && !albumTitles[albumId]) {
+    if (!albumTitles[id]) {
       loadTitle()
     }
     return () => {
@@ -140,17 +143,20 @@ export function AppBreadcrumb() {
   }, [albumId, albumTitles])
 
   useEffect(() => {
+    if (!artistId) return
     let cancelled = false
+    const id = artistId
 
     async function loadTitle() {
       try {
-        const response = await fetch(`/api/artists/${artistId}?titleOnly=1`)
+        const response = await fetch(`/api/artists/${id}?titleOnly=1`)
         const data = (await response.json()) as { title?: string }
         if (!cancelled && response.ok && data.title) {
+          const title = data.title
           setArtistTitles((prev) =>
-            prev[artistId] === data.title
+            prev[id] === title
               ? prev
-              : { ...prev, [artistId]: data.title }
+              : { ...prev, [id]: title }
           )
         }
       } catch {
@@ -158,7 +164,7 @@ export function AppBreadcrumb() {
       }
     }
 
-    if (artistId && !artistTitles[artistId]) {
+    if (!artistTitles[id]) {
       loadTitle()
     }
     return () => {
