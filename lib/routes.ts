@@ -6,6 +6,7 @@ export const routes = {
   bibliothequeNew: "/bibliotheque/nouveau",
   artistes: "/artistes",
   programmation: "/programmation",
+  locations: "/lieux",
   authCallback: "/auth/callback",
 } as const
 

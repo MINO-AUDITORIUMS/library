@@ -57,6 +57,10 @@ function buildCrumbs(
     ]
   }
 
+  if (pathname === routes.locations) {
+    return [{ label: "Accueil", href: routes.app }, { label: "Lieux" }]
+  }
+
   const artistMatch = pathname.match(/^\/artistes\/([^/]+)$/)
   if (artistMatch) {
     return [
@@ -93,8 +97,8 @@ function buildCrumbs(
 
 export function AppBreadcrumb() {
   const pathname = usePathname()
-  const [albumTitle, setAlbumTitle] = useState<string | null>(null)
-  const [artistTitle, setArtistTitle] = useState<string | null>(null)
+  const [albumTitles, setAlbumTitles] = useState<Record<string, string>>({})
+  const [artistTitles, setArtistTitles] = useState<Record<string, string>>({})
 
   const albumId = useMemo(() => {
     const editMatch = pathname.match(/^\/bibliotheque\/([^/]+)\/modifier$/)
@@ -111,11 +115,6 @@ export function AppBreadcrumb() {
   }, [pathname])
 
   useEffect(() => {
-    if (!albumId) {
-      setAlbumTitle(null)
-      return
-    }
-
     let cancelled = false
 
     async function loadTitle() {
@@ -123,25 +122,24 @@ export function AppBreadcrumb() {
         const response = await fetch(`/api/albums/${albumId}?titleOnly=1`)
         const data = (await response.json()) as { title?: string }
         if (!cancelled && response.ok && data.title) {
-          setAlbumTitle(data.title)
+          setAlbumTitles((prev) =>
+            prev[albumId] === data.title ? prev : { ...prev, [albumId]: data.title }
+          )
         }
       } catch {
-        if (!cancelled) setAlbumTitle(null)
+        return
       }
     }
 
-    loadTitle()
+    if (albumId && !albumTitles[albumId]) {
+      loadTitle()
+    }
     return () => {
       cancelled = true
     }
-  }, [albumId])
+  }, [albumId, albumTitles])
 
   useEffect(() => {
-    if (!artistId) {
-      setArtistTitle(null)
-      return
-    }
-
     let cancelled = false
 
     async function loadTitle() {
@@ -149,18 +147,27 @@ export function AppBreadcrumb() {
         const response = await fetch(`/api/artists/${artistId}?titleOnly=1`)
         const data = (await response.json()) as { title?: string }
         if (!cancelled && response.ok && data.title) {
-          setArtistTitle(data.title)
+          setArtistTitles((prev) =>
+            prev[artistId] === data.title
+              ? prev
+              : { ...prev, [artistId]: data.title }
+          )
         }
       } catch {
-        if (!cancelled) setArtistTitle(null)
+        return
       }
     }
 
-    loadTitle()
+    if (artistId && !artistTitles[artistId]) {
+      loadTitle()
+    }
     return () => {
       cancelled = true
     }
-  }, [artistId])
+  }, [artistId, artistTitles])
+
+  const albumTitle = albumId ? albumTitles[albumId] ?? null : null
+  const artistTitle = artistId ? artistTitles[artistId] ?? null : null
 
   const crumbs = useMemo(
     () => buildCrumbs(pathname, albumTitle, artistTitle),

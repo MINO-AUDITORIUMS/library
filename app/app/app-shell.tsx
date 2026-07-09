@@ -1,6 +1,12 @@
 "use client"
 
-import { CalendarDaysIcon, Disc3Icon, HomeIcon, Mic2Icon } from "lucide-react"
+import {
+  CalendarDaysIcon,
+  Disc3Icon,
+  HomeIcon,
+  MapPinIcon,
+  Mic2Icon,
+} from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -60,6 +66,15 @@ const navItems = [
 
 const libraryItems = navItems
 
+const wipItems = [
+  {
+    href: routes.locations,
+    label: "Lieux",
+    icon: MapPinIcon,
+    match: "locations" as const,
+  },
+] as const
+
 function isNavActive(pathname: string, item: (typeof navItems)[number]) {
   switch (item.match) {
     case "exact":
@@ -70,6 +85,13 @@ function isNavActive(pathname: string, item: (typeof navItems)[number]) {
       return pathname.startsWith("/artistes")
     case "programmation":
       return pathname.startsWith("/programmation")
+  }
+}
+
+function isWipNavActive(pathname: string, item: (typeof wipItems)[number]) {
+  switch (item.match) {
+    case "locations":
+      return pathname.startsWith("/lieux")
   }
 }
 
@@ -93,6 +115,27 @@ export function AppShell({ email, children }: AppShellProps) {
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       isActive={isNavActive(pathname, item)}
+                      asChild
+                    >
+                      <Link href={item.href}>
+                        <item.icon />
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel>[WIP] Sessions & lieux</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-1">
+                {wipItems.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      isActive={isWipNavActive(pathname, item)}
                       asChild
                     >
                       <Link href={item.href}>
