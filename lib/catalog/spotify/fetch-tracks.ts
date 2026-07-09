@@ -44,7 +44,11 @@ export async function fetchSpotifyTracks(albumId: string) {
     path: `/albums/${albumId}`,
   })
   const albumArtistIdSet = new Set(album.artists.map((artist) => artist.id))
-  const rawTracks = await fetchAllAlbumTracks(albumId)
+  const rawTracks = (await fetchAllAlbumTracks(albumId)).sort((a, b) => {
+    if (a.disc_number !== b.disc_number) return a.disc_number - b.disc_number
+    if (a.track_number !== b.track_number) return a.track_number - b.track_number
+    return a.id.localeCompare(b.id)
+  })
   const tracks: ImportedTrack[] = []
 
   let position = 0
@@ -57,7 +61,7 @@ export async function fetchSpotifyTracks(albumId: string) {
       track.duration_ms > 0 ? Math.round(track.duration_ms / 1000) : null
 
     tracks.push({
-      position: track.track_number > 0 ? track.track_number : position,
+      position,
       title,
       duration_seconds: durationSeconds,
       writers: [],
@@ -67,10 +71,5 @@ export async function fetchSpotifyTracks(albumId: string) {
     })
   }
 
-  const seenPositions = new Set<number>()
-  return tracks.filter((track) => {
-    if (seenPositions.has(track.position)) return false
-    seenPositions.add(track.position)
-    return true
-  })
+  return tracks
 }

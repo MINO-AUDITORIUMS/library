@@ -26,6 +26,16 @@ function formatArtist(item: SpotifyAlbumSearchItem) {
     .join(", ")
 }
 
+function normalizeToken(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
 function spotifyReleaseKind(
   albumType: SpotifyAlbumType | string,
   totalTracks: number
@@ -63,6 +73,50 @@ export function mapSpotifyAlbumSearchItem(
   }
 }
 
+function pickBestDuplicateSpotifyAlbum(
+  a: SpotifyAlbumSearchItem,
+  b: SpotifyAlbumSearchItem
+) {
+  if (a.album_type !== b.album_type) {
+    if (a.album_type === "album") return a
+    if (b.album_type === "album") return b
+  }
+
+  if (a.total_tracks !== b.total_tracks) {
+    return a.total_tracks > b.total_tracks ? a : b
+  }
+
+  if (a.images.length !== b.images.length) {
+    return a.images.length > b.images.length ? a : b
+  }
+
+  return a.id.localeCompare(b.id) <= 0 ? a : b
+}
+
+function dedupeSpotifyAlbumSearchItems(items: SpotifyAlbumSearchItem[]) {
+  const groups = new Map<string, SpotifyAlbumSearchItem>()
+
+  for (const item of items) {
+    const artist = item.artists[0]?.name ?? ""
+    const year = parseYear(item.release_date) ?? ""
+    const key = [
+      normalizeToken(stripCatalogDisambiguation(item.name)),
+      normalizeToken(stripCatalogDisambiguation(artist)),
+      year,
+    ].join("|")
+
+    const existing = groups.get(key)
+    if (!existing) {
+      groups.set(key, item)
+      continue
+    }
+
+    groups.set(key, pickBestDuplicateSpotifyAlbum(existing, item))
+  }
+
+  return [...groups.values()]
+}
+
 export async function searchSpotifyAlbums(query: string) {
   const data = await spotifyFetch<SpotifyAlbumSearchResponse>({
     path: "/search",
@@ -74,8 +128,8 @@ export async function searchSpotifyAlbums(query: string) {
     },
   })
 
-  return (data.albums?.items ?? [])
-    .filter(isBrowsableSpotifyRelease)
-    .slice(0, 10)
-    .map(mapSpotifyAlbumSearchItem)
+  const items = (data.albums?.items ?? []).filter(isBrowsableSpotifyRelease)
+  const unique = dedupeSpotifyAlbumSearchItems(items)
+
+  return unique.slice(0, 10).map(mapSpotifyAlbumSearchItem)
 }
