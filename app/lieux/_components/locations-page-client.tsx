@@ -9,6 +9,12 @@ import { LocationsListPanel } from "@/app/lieux/_components/locations-list-panel
 import type { Location } from "@/app/lieux/_components/mock-locations"
 import { mockLocations } from "@/app/lieux/_components/mock-locations"
 import {
+  LocationCreateDialog,
+  type LocationCreateValues,
+} from "@/app/lieux/_components/location-create-dialog"
+import type { LocationEditValues } from "@/app/lieux/_components/location-edit-dialog"
+import { useLocationTypes } from "@/app/lieux/_components/use-location-types"
+import {
   Map,
   MapControls,
   MapMarker,
@@ -57,8 +63,8 @@ function FrenchBasemapLabels() {
   return null
 }
 
-function markerColor(kind: Location["kind"]) {
-  switch (kind) {
+function markerColor(typeId: string) {
+  switch (typeId) {
     case "mino-venue":
       return "bg-primary text-primary-foreground"
     case "cinema":
@@ -66,6 +72,8 @@ function markerColor(kind: Location["kind"]) {
     case "outdoor":
       return "bg-emerald-500 text-white"
     case "other":
+      return "bg-zinc-700 text-white"
+    default:
       return "bg-zinc-700 text-white"
   }
 }
@@ -80,6 +88,8 @@ function nextId(prefix: string) {
 
 export function LocationsPageClient() {
   const mapRef = useRef<MapRef | null>(null)
+  const { types, typeById, addType, removeType, updateTypeLabel } =
+    useLocationTypes()
   const [locations, setLocations] = useState<Location[]>(() => mockLocations)
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
     null,
@@ -87,6 +97,7 @@ export function LocationsPageClient() {
   const [hoveredLocationId, setHoveredLocationId] = useState<string | null>(
     null,
   )
+  const [createOpen, setCreateOpen] = useState(false)
 
   const locationsById = useMemo<LocationById>(() => {
     return Object.fromEntries(locations.map((l) => [l.id, l]))
@@ -95,6 +106,14 @@ export function LocationsPageClient() {
   const selectedLocation = selectedLocationId
     ? locationsById[selectedLocationId]
     : null
+
+  const usageCountByTypeId = useMemo(() => {
+    const counts: Record<string, number> = {}
+    for (const location of locations) {
+      counts[location.typeId] = (counts[location.typeId] ?? 0) + 1
+    }
+    return counts
+  }, [locations])
 
   const defaultViewport = useMemo(
     () => ({
@@ -117,11 +136,6 @@ export function LocationsPageClient() {
 
   const handleCloseDetail = () => {
     setSelectedLocationId(null)
-    mapRef.current?.flyTo({
-      center: defaultViewport.center,
-      zoom: defaultViewport.zoom,
-      duration: 900,
-    })
   }
 
   const handleAddRoom = (locationId: string) => {
@@ -168,6 +182,50 @@ export function LocationsPageClient() {
     )
   }
 
+  const handleUpdateLocation = (locationId: string, values: LocationEditValues) => {
+    setLocations((prev) => {
+      const next = prev.map((location) =>
+        location.id === locationId ? { ...location, ...values } : location,
+      )
+
+      if (selectedLocationId === locationId && values.position) {
+        mapRef.current?.flyTo({
+          center: [values.position.longitude, values.position.latitude],
+          zoom: 12.8,
+          duration: 900,
+        })
+      }
+
+      return next
+    })
+  }
+
+  const handleDeleteLocation = (locationId: string) => {
+    setLocations((prev) => prev.filter((l) => l.id !== locationId))
+    setHoveredLocationId((prev) => (prev === locationId ? null : prev))
+    setSelectedLocationId((prev) => (prev === locationId ? null : prev))
+  }
+
+  const handleCreateLocation = (values: LocationCreateValues) => {
+    const id = nextId("location")
+    const location: Location = {
+      id,
+      name: values.name,
+      typeId: values.typeId,
+      address: values.address,
+      city: values.city,
+      position: values.position,
+      rooms: [],
+    }
+    setLocations((prev) => [location, ...prev])
+    setSelectedLocationId(id)
+    mapRef.current?.flyTo({
+      center: [values.position.longitude, values.position.latitude],
+      zoom: 12.8,
+      duration: 900,
+    })
+  }
+
   return (
     <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[1fr_360px]">
       <div className="relative min-h-[60svh] overflow-hidden rounded-xl border">
@@ -178,6 +236,14 @@ export function LocationsPageClient() {
             onAddRoom={handleAddRoom}
             onRemoveRoom={handleRemoveRoom}
             onUpdateRoomCapacity={handleUpdateRoomCapacity}
+            onUpdateLocation={handleUpdateLocation}
+            onDeleteLocation={handleDeleteLocation}
+            locationTypes={types}
+            locationTypeById={typeById}
+            onAddLocationType={addType}
+            onRemoveLocationType={removeType}
+            onRenameLocationType={updateTypeLabel}
+            usageCountByTypeId={usageCountByTypeId}
           />
         ) : (
           <div className="pointer-events-none absolute top-3 left-3 z-10">
@@ -205,7 +271,7 @@ export function LocationsPageClient() {
                   <div
                     className={[
                       "flex h-8 w-8 items-center justify-center rounded-full border shadow-md transition-transform",
-                      markerColor(location.kind),
+                      markerColor(location.typeId),
                       isSelected
                         ? "scale-110 border-ring ring-2 ring-ring/50"
                         : isHovered
@@ -241,9 +307,22 @@ export function LocationsPageClient() {
           locations={locations}
           selectedLocationId={selectedLocationId}
           onSelectLocation={handleSelectLocation}
+          onCreateLocation={() => setCreateOpen(true)}
           onHoverLocationIdChange={setHoveredLocationId}
+          locationTypeById={typeById}
         />
       </div>
+
+      <LocationCreateDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreate={handleCreateLocation}
+        locationTypes={types}
+        onAddLocationType={addType}
+        onRemoveLocationType={removeType}
+        onRenameLocationType={updateTypeLabel}
+        usageCountByTypeId={usageCountByTypeId}
+      />
     </div>
   )
 }

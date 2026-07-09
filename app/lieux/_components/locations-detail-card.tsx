@@ -1,11 +1,18 @@
 "use client"
 
-import { Building2Icon, MapPinIcon, UsersIcon } from "lucide-react"
+import { Building2Icon, MapPinIcon, PencilIcon, Trash2Icon, UsersIcon } from "lucide-react"
+import { useState } from "react"
 
 import type {
   Location,
   LocationRoom,
 } from "@/app/lieux/_components/mock-locations"
+import { LocationDeleteAlert } from "@/app/lieux/_components/location-delete-alert"
+import {
+  LocationEditDialog,
+  type LocationEditValues,
+} from "@/app/lieux/_components/location-edit-dialog"
+import type { LocationType } from "@/app/lieux/_components/use-location-types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,19 +29,18 @@ export type LocationsDetailCardProps = {
     roomId: string,
     capacity: number | null
   ) => void
+  onUpdateLocation: (locationId: string, values: LocationEditValues) => void
+  onDeleteLocation: (locationId: string) => void
+  locationTypes: LocationType[]
+  locationTypeById: Record<string, LocationType>
+  onAddLocationType: (label: string) => string | null
+  onRemoveLocationType: (id: string) => void
+  onRenameLocationType: (id: string, label: string) => void
+  usageCountByTypeId?: Record<string, number>
 }
 
-function kindLabel(kind: Location["kind"]) {
-  switch (kind) {
-    case "mino-venue":
-      return "Salle MINO"
-    case "cinema":
-      return "Cinéma"
-    case "outdoor":
-      return "Plein air"
-    case "other":
-      return "Autre"
-  }
+function typeLabel(typeId: string, typeById: Record<string, LocationType>) {
+  return typeById[typeId]?.label ?? typeId
 }
 
 function roomsCapacitySummary(rooms: LocationRoom[]) {
@@ -49,8 +55,18 @@ export function LocationsDetailCard({
   onAddRoom,
   onRemoveRoom,
   onUpdateRoomCapacity,
+  onUpdateLocation,
+  onDeleteLocation,
+  locationTypes,
+  locationTypeById,
+  onAddLocationType,
+  onRemoveLocationType,
+  onRenameLocationType,
+  usageCountByTypeId,
 }: LocationsDetailCardProps) {
   const totalCapacity = roomsCapacitySummary(location.rooms)
+  const [editOpen, setEditOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   return (
     <div className="pointer-events-none absolute top-3 left-3 right-3 z-20 flex justify-center">
@@ -62,7 +78,7 @@ export function LocationsDetailCard({
               <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                   <Building2Icon className="h-4 w-4" />
-                  {kindLabel(location.kind)}
+                  {typeLabel(location.typeId, locationTypeById)}
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <MapPinIcon className="h-4 w-4" />
@@ -77,6 +93,22 @@ export function LocationsDetailCard({
                   {totalCapacity} places
                 </Badge>
               )}
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setEditOpen(true)}
+              >
+                <PencilIcon className="mr-1 h-4 w-4" />
+                Modifier
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setDeleteOpen(true)}
+              >
+                <Trash2Icon className="mr-1 h-4 w-4" />
+                Supprimer
+              </Button>
               <Button variant="outline" size="sm" onClick={onClose}>
                 Fermer
               </Button>
@@ -141,6 +173,26 @@ export function LocationsDetailCard({
           </div>
         </CardContent>
       </Card>
+
+      <LocationEditDialog
+        key={`${location.id}-${editOpen ? "open" : "closed"}`}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        location={location}
+        onSave={(values) => onUpdateLocation(location.id, values)}
+        locationTypes={locationTypes}
+        onAddLocationType={onAddLocationType}
+        onRemoveLocationType={onRemoveLocationType}
+        onRenameLocationType={onRenameLocationType}
+        usageCountByTypeId={usageCountByTypeId}
+      />
+
+      <LocationDeleteAlert
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        location={location}
+        onConfirm={() => onDeleteLocation(location.id)}
+      />
     </div>
   )
 }

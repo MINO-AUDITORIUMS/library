@@ -7,7 +7,7 @@ export type LocationRoom = {
 export type Location = {
   id: string
   name: string
-  kind: "mino-venue" | "cinema" | "outdoor" | "other"
+  typeId: string
   address: string
   city: string
   position: { longitude: number; latitude: number }
@@ -18,7 +18,7 @@ export const mockLocations: Location[] = [
   {
     id: "location-1",
     name: "Le Grand Rex — Studio",
-    kind: "cinema",
+    typeId: "cinema",
     address: "1 Bd Poissonnière",
     city: "Paris",
     position: { longitude: 2.3499, latitude: 48.8706 },
@@ -30,7 +30,7 @@ export const mockLocations: Location[] = [
   {
     id: "location-2",
     name: "La Bellevilloise",
-    kind: "other",
+    typeId: "other",
     address: "19-21 Rue Boyer",
     city: "Paris",
     position: { longitude: 2.3859, latitude: 48.8684 },
@@ -39,7 +39,7 @@ export const mockLocations: Location[] = [
   {
     id: "location-3",
     name: "Cinéma Utopia",
-    kind: "cinema",
+    typeId: "cinema",
     address: "5 Pl Camille Jullian",
     city: "Bordeaux",
     position: { longitude: -0.5743, latitude: 44.8387 },
@@ -52,7 +52,7 @@ export const mockLocations: Location[] = [
   {
     id: "location-4",
     name: "Plein air — Parc",
-    kind: "outdoor",
+    typeId: "outdoor",
     address: "Parc (entrée principale)",
     city: "Lyon",
     position: { longitude: 4.8357, latitude: 45.764 },

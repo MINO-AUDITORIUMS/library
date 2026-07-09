@@ -1,0 +1,37 @@
+---
+description: Domain data must be evolvable (no hardcoded enums for business-owned lists)
+globs: ["app/**/*.ts", "app/**/*.tsx", "components/**/*.ts", "components/**/*.tsx", "lib/**/*.ts", "lib/**/*.tsx", "supabase/**/*.sql"]
+alwaysApply: true
+---
+
+# Domain data must be evolvable
+
+If a value is business-owned and likely to evolve (types, tags, categories, statuses, reasons, genres, roles, etc.), do not freeze it in code as a fixed union, enum, or hardcoded list.
+
+## Rules
+
+- Keep UI labels in the UI layer, but keep domain identifiers stable and backend-driven.
+- Prefer a database-backed source of truth for lists shown in Selects and filters.
+- Any Select fed by such a list must support:
+  - loading items from persistence
+  - creating a new item (if the client needs to evolve the list)
+  - updating / deleting items (when appropriate)
+- Provide safe fallbacks in the UI when an unknown value exists (older data, imports, renamed types).
+
+## Implementation pattern
+
+- Create a table for the list (examples):
+  - `location_types` (or `venue_types`) for Location/Place types
+  - `album_tags` for album tags
+- Use columns like:
+  - `id` (uuid) or a short stable `code` (text)
+  - `label` (display)
+  - `sort_order` (optional)
+  - `is_active` (optional)
+- Reference the list from other tables via FK to `id` or by `code` when a stable code is required.
+
+## TypeScript typing
+
+- Do not model these lists as `type X = "a" | "b" | ...`.
+- Use typed records from Supabase (`Database` types) and pass them into UI components as data.
+

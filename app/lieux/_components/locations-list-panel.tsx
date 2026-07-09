@@ -4,6 +4,7 @@ import { MapPinIcon, PlusIcon, SearchIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 
 import type { Location } from "@/app/lieux/_components/mock-locations"
+import type { LocationType } from "@/app/lieux/_components/use-location-types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,27 +14,22 @@ export type LocationsListPanelProps = {
   locations: Location[]
   selectedLocationId: string | null
   onSelectLocation: (locationId: string) => void
+  onCreateLocation: () => void
   onHoverLocationIdChange?: (locationId: string | null) => void
+  locationTypeById: Record<string, LocationType>
 }
 
-function kindLabel(kind: Location["kind"]) {
-  switch (kind) {
-    case "mino-venue":
-      return "Salle MINO"
-    case "cinema":
-      return "Cinéma"
-    case "outdoor":
-      return "Plein air"
-    case "other":
-      return "Autre"
-  }
+function typeLabel(typeId: string, typeById: Record<string, LocationType>) {
+  return typeById[typeId]?.label ?? typeId
 }
 
 export function LocationsListPanel({
   locations,
   selectedLocationId,
   onSelectLocation,
+  onCreateLocation,
   onHoverLocationIdChange,
+  locationTypeById,
 }: LocationsListPanelProps) {
   const handleHoverChange = onHoverLocationIdChange ?? (() => undefined)
   const [query, setQuery] = useState("")
@@ -53,7 +49,7 @@ export function LocationsListPanel({
       <CardHeader className="gap-2">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-base">Lieux</CardTitle>
-          <Button variant="secondary" size="sm" disabled>
+          <Button variant="secondary" size="sm" onClick={onCreateLocation}>
             <PlusIcon className="mr-1 h-4 w-4" />
             Nouveau lieu
           </Button>
@@ -100,7 +96,9 @@ export function LocationsListPanel({
                         </span>
                       </div>
                     </div>
-                    <Badge variant="outline">{kindLabel(location.kind)}</Badge>
+                    <Badge variant="outline">
+                      {typeLabel(location.typeId, locationTypeById)}
+                    </Badge>
                   </div>
                   <div className="mt-2 text-xs text-muted-foreground">
                     {location.rooms.length} salle
