@@ -1,22 +1,15 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import Image from "next/image"
-import { useSearchParams } from "next/navigation"
 import { Loader2, Mail } from "lucide-react"
+import { useSearchParams } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 
-import { GoogleSignInButton } from "@/components/auth/google-sign-in-button"
 import { ThemeToggle } from "@/components/app/theme-toggle"
+import { GoogleSignInButton } from "@/components/auth/google-sign-in-button"
 import { MinoLogo } from "@/components/mino-logo"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
@@ -148,32 +141,11 @@ export default function ConnexionPage() {
       <div className="pointer-events-none absolute -top-32 -right-32 size-96 rounded-full bg-primary/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-32 -left-32 size-96 rounded-full bg-primary/5 blur-3xl" />
 
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-[0.04]">
-        <Image
-          src="/Pictogramme_Mino_Alter1_White.png"
-          alt=""
-          width={480}
-          height={480}
-          className="hidden size-[min(70vw,480px)] dark:block"
-          aria-hidden
-          priority
-        />
-        <Image
-          src="/Pictogramme_Mino_Alter1_Black.png"
-          alt=""
-          width={480}
-          height={480}
-          className="block size-[min(70vw,480px)] dark:hidden"
-          aria-hidden
-          priority
-        />
-      </div>
-
       <div className="relative z-10 w-full max-w-md space-y-8">
         <div className="flex flex-col items-center gap-4 text-center">
-          <MinoLogo variant="full" logoClassName="h-10 sm:h-12" />
+          <MinoLogo variant="full" logoClassName="h-16 sm:h-22" />
           <p className="text-xs font-medium tracking-[0.2em] text-muted-foreground uppercase">
-            Library
+            Backstage
           </p>
         </div>
 
