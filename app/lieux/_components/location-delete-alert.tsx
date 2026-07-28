@@ -1,6 +1,5 @@
 "use client"
 
-import type { Location } from "@/app/lieux/_components/mock-locations"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,12 +11,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import type { Location } from "@/lib/locations/types"
 
 export type LocationDeleteAlertProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   location: Location
-  onConfirm: () => void
+  onConfirm: () => void | Promise<void>
 }
 
 export function LocationDeleteAlert({
@@ -32,8 +32,8 @@ export function LocationDeleteAlert({
         <AlertDialogHeader>
           <AlertDialogTitle>Supprimer le lieu ?</AlertDialogTitle>
           <AlertDialogDescription>
-            Le lieu <span className="font-medium">{location.name}</span> sera
-            supprimé (mock). Cette action est irréversible.
+            Le lieu <span className="font-medium">{location.name}</span> et ses
+            salles seront supprimés. Cette action est irréversible.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -44,8 +44,10 @@ export function LocationDeleteAlert({
             <Button
               variant="destructive"
               onClick={() => {
-                onConfirm()
-                onOpenChange(false)
+                void (async () => {
+                  await onConfirm()
+                  onOpenChange(false)
+                })()
               }}
             >
               Supprimer
@@ -56,4 +58,3 @@ export function LocationDeleteAlert({
     </AlertDialog>
   )
 }
-

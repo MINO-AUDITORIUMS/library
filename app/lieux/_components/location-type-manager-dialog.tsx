@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react"
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react"
 
-import type { LocationType } from "@/app/lieux/_components/use-location-types"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,15 +25,16 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import type { LocationType } from "@/lib/locations/types"
 
 export type LocationTypeManagerDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   types: LocationType[]
   usageCountByTypeId?: Record<string, number>
-  onAddType: (label: string) => string | null
-  onRenameType: (id: string, label: string) => void
-  onDeleteType: (id: string) => void
+  onAddType: (label: string) => Promise<string | null>
+  onRenameType: (id: string, label: string) => void | Promise<void>
+  onDeleteType: (id: string) => void | Promise<void>
 }
 
 type PendingDelete = { id: string; label: string } | null
@@ -52,6 +52,7 @@ export function LocationTypeManagerDialog({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingLabel, setEditingLabel] = useState("")
   const [pendingDelete, setPendingDelete] = useState<PendingDelete>(null)
+  const [busy, setBusy] = useState(false)
 
   const sorted = useMemo(() => {
     return [...types].sort((a, b) => a.label.localeCompare(b.label, "fr"))
@@ -67,19 +68,29 @@ export function LocationTypeManagerDialog({
     setEditingLabel("")
   }
 
-  const commitEdit = () => {
+  const commitEdit = async () => {
     if (!editingId) return
     const next = editingLabel.trim()
     if (!next) return
-    onRenameType(editingId, next)
-    stopEdit()
+    setBusy(true)
+    try {
+      await onRenameType(editingId, next)
+      stopEdit()
+    } finally {
+      setBusy(false)
+    }
   }
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const trimmed = newLabel.trim()
     if (!trimmed) return
-    const id = onAddType(trimmed)
-    if (id) setNewLabel("")
+    setBusy(true)
+    try {
+      const id = await onAddType(trimmed)
+      if (id) setNewLabel("")
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -89,8 +100,7 @@ export function LocationTypeManagerDialog({
           <DialogHeader>
             <DialogTitle>Gérer les types de lieux</DialogTitle>
             <DialogDescription>
-              Ces types sont persistés (localement pour l’instant) et peuvent
-              évoluer dans le temps.
+              Ces types sont stockés en base et peuvent évoluer dans le temps.
             </DialogDescription>
           </DialogHeader>
 
@@ -102,8 +112,15 @@ export function LocationTypeManagerDialog({
                   value={newLabel}
                   onChange={(e) => setNewLabel(e.target.value)}
                   placeholder="Ex: Rooftop, Galerie, Studio…"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") void handleAdd()
+                  }}
                 />
-                <Button variant="secondary" onClick={handleAdd}>
+                <Button
+                  variant="secondary"
+                  disabled={busy}
+                  onClick={() => void handleAdd()}
+                >
                   <PlusIcon className="mr-1 h-4 w-4" />
                   Ajouter
                 </Button>
@@ -131,11 +148,15 @@ export function LocationTypeManagerDialog({
                                 value={editingLabel}
                                 onChange={(e) => setEditingLabel(e.target.value)}
                                 onKeyDown={(e) => {
-                                  if (e.key === "Enter") commitEdit()
+                                  if (e.key === "Enter") void commitEdit()
                                   if (e.key === "Escape") stopEdit()
                                 }}
                               />
-                              <Button variant="secondary" onClick={commitEdit}>
+                              <Button
+                                variant="secondary"
+                                disabled={busy}
+                                onClick={() => void commitEdit()}
+                              >
                                 OK
                               </Button>
                               <Button variant="outline" onClick={stopEdit}>
@@ -148,7 +169,7 @@ export function LocationTypeManagerDialog({
                                 {t.label}
                               </div>
                               <Badge variant="outline" className="shrink-0">
-                                {t.id}
+                                {t.code}
                               </Badge>
                             </div>
                           )}
@@ -172,7 +193,9 @@ export function LocationTypeManagerDialog({
                             <Button
                               variant="ghost"
                               size="icon-sm"
-                              onClick={() => setPendingDelete({ id: t.id, label: t.label })}
+                              onClick={() =>
+                                setPendingDelete({ id: t.id, label: t.label })
+                              }
                               disabled={!canDelete}
                               aria-label="Supprimer"
                             >
@@ -222,8 +245,14 @@ export function LocationTypeManagerDialog({
               <AlertDialogCancel>Annuler</AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => {
-                  onDeleteType(pendingDelete.id)
-                  setPendingDelete(null)
+                  void (async () => {
+                    try {
+                      await onDeleteType(pendingDelete.id)
+                      setPendingDelete(null)
+                    } catch {
+                      setPendingDelete(null)
+                    }
+                  })()
                 }}
               >
                 Supprimer
@@ -235,4 +264,3 @@ export function LocationTypeManagerDialog({
     </>
   )
 }
-

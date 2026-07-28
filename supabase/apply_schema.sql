@@ -7,6 +7,9 @@
 \ir schema/genres.sql
 \ir schema/subgenres.sql
 \ir schema/tags.sql
+\ir schema/location_types.sql
+\ir schema/locations.sql
+\ir schema/location_rooms.sql
 \ir schema/albums.sql
 \ir schema/album_tracks.sql
 \ir schema/album_video_clips.sql

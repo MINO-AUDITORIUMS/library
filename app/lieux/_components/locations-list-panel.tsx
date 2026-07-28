@@ -3,12 +3,11 @@
 import { MapPinIcon, PlusIcon, SearchIcon } from "lucide-react"
 import { useMemo, useState } from "react"
 
-import type { Location } from "@/app/lieux/_components/mock-locations"
-import type { LocationType } from "@/app/lieux/_components/use-location-types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import type { Location, LocationType } from "@/lib/locations/types"
 
 export type LocationsListPanelProps = {
   locations: Location[]
@@ -19,8 +18,11 @@ export type LocationsListPanelProps = {
   locationTypeById: Record<string, LocationType>
 }
 
-function typeLabel(typeId: string, typeById: Record<string, LocationType>) {
-  return typeById[typeId]?.label ?? typeId
+function typeLabel(
+  location: Location,
+  typeById: Record<string, LocationType>
+) {
+  return typeById[location.typeId]?.label ?? location.typeLabel
 }
 
 export function LocationsListPanel({
@@ -97,7 +99,7 @@ export function LocationsListPanel({
                       </div>
                     </div>
                     <Badge variant="outline">
-                      {typeLabel(location.typeId, locationTypeById)}
+                      {typeLabel(location, locationTypeById)}
                     </Badge>
                   </div>
                   <div className="mt-2 text-xs text-muted-foreground">
@@ -113,4 +115,3 @@ export function LocationsListPanel({
     </Card>
   )
 }
-

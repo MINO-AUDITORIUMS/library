@@ -40,6 +40,9 @@ FILES=(
   supabase/schema/genres.sql
   supabase/schema/subgenres.sql
   supabase/schema/tags.sql
+  supabase/schema/location_types.sql
+  supabase/schema/locations.sql
+  supabase/schema/location_rooms.sql
   supabase/schema/artists.sql
   supabase/schema/artists_image_storage.sql
   supabase/schema/albums.sql

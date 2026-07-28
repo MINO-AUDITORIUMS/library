@@ -47,17 +47,20 @@ Exécuter dans le SQL Editor Supabase (dans cet ordre) :
 5. `genres.sql`
 6. `subgenres.sql`
 7. `tags.sql`
-8. `albums.sql`
-9. `album_tracks.sql`
-10. `album_video_clips.sql`
-11. `album_tags.sql`
-12. `album_genres.sql`
-13. `album_subgenres.sql`
-14. `album_lyrics_languages.sql`
-15. `album_comments.sql`
-16. `album_user_ratings.sql`
-17. `album_attachments.sql`
-17. `album_search.sql`
+8. `location_types.sql`
+9. `locations.sql`
+10. `location_rooms.sql`
+11. `albums.sql`
+12. `album_tracks.sql`
+13. `album_video_clips.sql`
+14. `album_tags.sql`
+15. `album_genres.sql`
+16. `album_subgenres.sql`
+17. `album_lyrics_languages.sql`
+18. `album_comments.sql`
+19. `album_user_ratings.sql`
+20. `album_attachments.sql`
+21. `album_search.sql`
 
 Puis : `../storage/album_attachments.sql` et `../storage/album_covers.sql` (buckets Storage).
 
@@ -68,6 +71,9 @@ Auth domaine : `../auth_custom_domain.sql` (déjà présent).
 ```mermaid
 erDiagram
   profiles ||--o{ albums : creates
+  profiles ||--o{ locations : creates
+  location_types ||--o{ locations : classifies
+  locations ||--o{ location_rooms : has
   albums ||--o{ album_tracks : has
   albums ||--o{ album_video_clips : has
   albums ||--o{ album_comments : has

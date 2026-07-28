@@ -21,3 +21,10 @@ insert into public.lyrics_languages (code, name) values
   ('ja', 'Japonais'),
   ('zxx', 'Instrumental')
 on conflict (code) do nothing;
+
+insert into public.location_types (code, label, sort_order) values
+  ('mino-venue', 'Salle MINO', 10),
+  ('cinema', 'Cinéma', 20),
+  ('outdoor', 'Plein air', 30),
+  ('other', 'Autre', 40)
+on conflict (code) do nothing;

@@ -1,132 +1,68 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
+import { toast } from "sonner"
 
-import { MapPinIcon } from "lucide-react"
-
-import { LocationsDetailCard } from "@/app/lieux/_components/locations-detail-card"
-import { LocationsListPanel } from "@/app/lieux/_components/locations-list-panel"
-import type { Location } from "@/app/lieux/_components/mock-locations"
-import { mockLocations } from "@/app/lieux/_components/mock-locations"
 import {
   LocationCreateDialog,
   type LocationCreateValues,
 } from "@/app/lieux/_components/location-create-dialog"
 import type { LocationEditValues } from "@/app/lieux/_components/location-edit-dialog"
-import { useLocationTypes } from "@/app/lieux/_components/use-location-types"
-import {
-  Map,
-  MapControls,
-  MapMarker,
-  MarkerContent,
-  MarkerTooltip,
-  useMap,
-  type MapRef,
-} from "@/components/ui/map"
-import { Badge } from "@/components/ui/badge"
+import { LocationsDetailCard } from "@/app/lieux/_components/locations-detail-card"
+import { LocationsListPanel } from "@/app/lieux/_components/locations-list-panel"
+import { LocationsMap } from "@/app/lieux/_components/locations-map"
+import type { MapRef } from "@/components/ui/map"
+import { useLocations } from "@/hooks/use-locations"
+import type { Location, LocationType } from "@/lib/locations/types"
 
-type LocationById = Record<string, Location>
-
-function FrenchBasemapLabels() {
-  const { map, isLoaded } = useMap()
-
-  useEffect(() => {
-    if (!map || !isLoaded) return
-
-    const frenchTextField: unknown[] = [
-      "coalesce",
-      ["get", "name:fr"],
-      ["get", "name_fr"],
-      ["get", "name"],
-    ]
-
-    const apply = () => {
-      const style = map.getStyle()
-      const layers = style?.layers ?? []
-      for (const layer of layers) {
-        if (!layer || layer.type !== "symbol") continue
-        try {
-          map.setLayoutProperty(layer.id, "text-field", frenchTextField as never)
-        } catch {
-          continue
-        }
-      }
-    }
-
-    apply()
-    map.on("styledata", apply)
-    return () => {
-      map.off("styledata", apply)
-    }
-  }, [map, isLoaded])
-
-  return null
+export type LocationsPageClientProps = {
+  initialLocations: Location[]
+  initialTypes: LocationType[]
 }
 
-function markerColor(typeId: string) {
-  switch (typeId) {
-    case "mino-venue":
-      return "bg-primary text-primary-foreground"
-    case "cinema":
-      return "bg-blue-500 text-white"
-    case "outdoor":
-      return "bg-emerald-500 text-white"
-    case "other":
-      return "bg-zinc-700 text-white"
-    default:
-      return "bg-zinc-700 text-white"
-  }
-}
-
-function createRoomName(roomsCount: number) {
-  return roomsCount === 0 ? "Salle principale" : `Salle ${roomsCount + 1}`
-}
-
-function nextId(prefix: string) {
-  return `${prefix}-${Math.random().toString(16).slice(2)}`
-}
-
-export function LocationsPageClient() {
+export function LocationsPageClient({
+  initialLocations,
+  initialTypes,
+}: LocationsPageClientProps) {
   const mapRef = useRef<MapRef | null>(null)
-  const { types, typeById, addType, removeType, updateTypeLabel } =
-    useLocationTypes()
-  const [locations, setLocations] = useState<Location[]>(() => mockLocations)
+  const {
+    locations,
+    types,
+    typeById,
+    usageCountByTypeId,
+    createLocation,
+    updateLocation,
+    deleteLocation,
+    addRoom,
+    removeRoom,
+    updateRoomCapacity,
+    addType,
+    removeType,
+    updateTypeLabel,
+  } = useLocations({ initialLocations, initialTypes })
+
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(
-    null,
+    null
   )
   const [hoveredLocationId, setHoveredLocationId] = useState<string | null>(
-    null,
+    null
   )
   const [createOpen, setCreateOpen] = useState(false)
 
-  const locationsById = useMemo<LocationById>(() => {
-    return Object.fromEntries(locations.map((l) => [l.id, l]))
-  }, [locations])
+  const locationsById = useMemo(
+    () =>
+      Object.fromEntries(locations.map((l) => [l.id, l])) as Record<
+        string,
+        Location
+      >,
+    [locations]
+  )
 
   const selectedLocation = selectedLocationId
     ? locationsById[selectedLocationId]
     : null
 
-  const usageCountByTypeId = useMemo(() => {
-    const counts: Record<string, number> = {}
-    for (const location of locations) {
-      counts[location.typeId] = (counts[location.typeId] ?? 0) + 1
-    }
-    return counts
-  }, [locations])
-
-  const defaultViewport = useMemo(
-    () => ({
-      center: [2.2137, 46.2276] as [number, number],
-      zoom: 5.2,
-    }),
-    [],
-  )
-
-  const handleSelectLocation = (locationId: string) => {
-    setSelectedLocationId(locationId)
-    const location = locationsById[locationId]
-    if (!location) return
+  const flyToLocation = (location: Location) => {
     mapRef.current?.flyTo({
       center: [location.position.longitude, location.position.latitude],
       zoom: 12.8,
@@ -134,96 +70,130 @@ export function LocationsPageClient() {
     })
   }
 
-  const handleCloseDetail = () => {
-    setSelectedLocationId(null)
+  const handleSelectLocation = (locationId: string) => {
+    setSelectedLocationId(locationId)
+    const location = locationsById[locationId]
+    if (location) flyToLocation(location)
   }
 
-  const handleAddRoom = (locationId: string) => {
-    setLocations((prev) =>
-      prev.map((location) => {
-        if (location.id !== locationId) return location
-        const roomId = nextId("room")
-        const roomName = createRoomName(location.rooms.length)
-        return {
-          ...location,
-          rooms: [...location.rooms, { id: roomId, name: roomName }],
-        }
-      }),
-    )
-  }
-
-  const handleRemoveRoom = (locationId: string, roomId: string) => {
-    setLocations((prev) =>
-      prev.map((location) => {
-        if (location.id !== locationId) return location
-        return {
-          ...location,
-          rooms: location.rooms.filter((r) => r.id !== roomId),
-        }
-      }),
-    )
-  }
-
-  const handleUpdateRoomCapacity = (
-    locationId: string,
-    roomId: string,
-    capacity: number | null,
-  ) => {
-    setLocations((prev) =>
-      prev.map((location) => {
-        if (location.id !== locationId) return location
-        return {
-          ...location,
-          rooms: location.rooms.map((room) =>
-            room.id === roomId ? { ...room, capacity: capacity ?? undefined } : room,
-          ),
-        }
-      }),
-    )
-  }
-
-  const handleUpdateLocation = (locationId: string, values: LocationEditValues) => {
-    setLocations((prev) => {
-      const next = prev.map((location) =>
-        location.id === locationId ? { ...location, ...values } : location,
+  const handleCreateLocation = async (values: LocationCreateValues) => {
+    try {
+      const location = await createLocation({
+        name: values.name,
+        typeId: values.typeId,
+        address: values.address,
+        city: values.city,
+        longitude: values.position.longitude,
+        latitude: values.position.latitude,
+      })
+      setSelectedLocationId(location.id)
+      flyToLocation(location)
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Impossible de créer le lieu."
       )
-
-      if (selectedLocationId === locationId && values.position) {
-        mapRef.current?.flyTo({
-          center: [values.position.longitude, values.position.latitude],
-          zoom: 12.8,
-          duration: 900,
-        })
-      }
-
-      return next
-    })
-  }
-
-  const handleDeleteLocation = (locationId: string) => {
-    setLocations((prev) => prev.filter((l) => l.id !== locationId))
-    setHoveredLocationId((prev) => (prev === locationId ? null : prev))
-    setSelectedLocationId((prev) => (prev === locationId ? null : prev))
-  }
-
-  const handleCreateLocation = (values: LocationCreateValues) => {
-    const id = nextId("location")
-    const location: Location = {
-      id,
-      name: values.name,
-      typeId: values.typeId,
-      address: values.address,
-      city: values.city,
-      position: values.position,
-      rooms: [],
+      throw error
     }
-    setLocations((prev) => [location, ...prev])
-    setSelectedLocationId(id)
-    mapRef.current?.flyTo({
-      center: [values.position.longitude, values.position.latitude],
-      zoom: 12.8,
-      duration: 900,
-    })
+  }
+
+  const handleUpdateLocation = async (
+    locationId: string,
+    values: LocationEditValues
+  ) => {
+    try {
+      const location = await updateLocation(locationId, {
+        name: values.name,
+        typeId: values.typeId,
+        address: values.address,
+        city: values.city,
+        longitude: values.position.longitude,
+        latitude: values.position.latitude,
+      })
+      if (selectedLocationId === locationId) flyToLocation(location)
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Impossible de modifier le lieu."
+      )
+      throw error
+    }
+  }
+
+  const handleDeleteLocation = async (locationId: string) => {
+    try {
+      await deleteLocation(locationId)
+      setHoveredLocationId((prev) => (prev === locationId ? null : prev))
+      setSelectedLocationId((prev) => (prev === locationId ? null : prev))
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Impossible de supprimer le lieu."
+      )
+      throw error
+    }
+  }
+
+  const handleAddRoom = async (locationId: string) => {
+    try {
+      await addRoom(locationId)
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Impossible d’ajouter une salle."
+      )
+    }
+  }
+
+  const handleRemoveRoom = async (locationId: string, roomId: string) => {
+    try {
+      await removeRoom(locationId, roomId)
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Impossible de retirer la salle."
+      )
+    }
+  }
+
+  const handleAddType = async (label: string) => {
+    try {
+      return await addType(label)
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Impossible d’ajouter le type."
+      )
+      return null
+    }
+  }
+
+  const handleRemoveType = async (id: string) => {
+    try {
+      await removeType(id)
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Impossible de supprimer le type."
+      )
+      throw error
+    }
+  }
+
+  const handleRenameType = async (id: string, label: string) => {
+    try {
+      await updateTypeLabel(id, label)
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Impossible de renommer le type."
+      )
+      throw error
+    }
   }
 
   return (
@@ -232,74 +202,28 @@ export function LocationsPageClient() {
         {selectedLocation ? (
           <LocationsDetailCard
             location={selectedLocation}
-            onClose={handleCloseDetail}
+            onClose={() => setSelectedLocationId(null)}
             onAddRoom={handleAddRoom}
             onRemoveRoom={handleRemoveRoom}
-            onUpdateRoomCapacity={handleUpdateRoomCapacity}
+            onUpdateRoomCapacity={updateRoomCapacity}
             onUpdateLocation={handleUpdateLocation}
             onDeleteLocation={handleDeleteLocation}
             locationTypes={types}
             locationTypeById={typeById}
-            onAddLocationType={addType}
-            onRemoveLocationType={removeType}
-            onRenameLocationType={updateTypeLabel}
+            onAddLocationType={handleAddType}
+            onRemoveLocationType={handleRemoveType}
+            onRenameLocationType={handleRenameType}
             usageCountByTypeId={usageCountByTypeId}
           />
-        ) : (
-          <div className="pointer-events-none absolute top-3 left-3 z-10">
-            <Badge variant="outline">Clique un marker pour zoomer</Badge>
-          </div>
-        )}
+        ) : null}
 
-        <Map ref={mapRef} className="h-full" {...defaultViewport}>
-          <FrenchBasemapLabels />
-          <MapControls showZoom showLocate />
-          {locations.map((location) => {
-            const isSelected = selectedLocationId === location.id
-            const isHovered = hoveredLocationId === location.id
-            const priority = isSelected ? 2 : isHovered ? 1 : 0
-
-            return (
-              <MapMarker
-                key={`${location.id}-${priority}`}
-              longitude={location.position.longitude}
-              latitude={location.position.latitude}
-              onClick={() => handleSelectLocation(location.id)}
-              >
-              <MarkerContent className="group">
-                <div className="relative -translate-y-2">
-                  <div
-                    className={[
-                      "flex h-8 w-8 items-center justify-center rounded-full border shadow-md transition-transform",
-                      markerColor(location.typeId),
-                      isSelected
-                        ? "scale-110 border-ring ring-2 ring-ring/50"
-                        : isHovered
-                          ? "scale-125 border-ring ring-2 ring-ring/50"
-                        : "border-white/40 hover:scale-105",
-                    ].join(" ")}
-                  >
-                    <MapPinIcon className="h-3.5 w-3.5" />
-                  </div>
-                  <div className="absolute -right-2 -bottom-2">
-                    <span
-                      className={[
-                        "inline-flex h-4 min-w-4 items-center justify-center rounded-full border bg-background px-1 text-[10px] font-medium shadow-sm",
-                        isSelected || isHovered
-                          ? "border-ring"
-                          : "border-border",
-                      ].join(" ")}
-                    >
-                      {location.rooms.length}
-                    </span>
-                  </div>
-                </div>
-              </MarkerContent>
-              <MarkerTooltip>{location.name}</MarkerTooltip>
-            </MapMarker>
-            )
-          })}
-        </Map>
+        <LocationsMap
+          mapRef={mapRef}
+          locations={locations}
+          selectedLocationId={selectedLocationId}
+          hoveredLocationId={hoveredLocationId}
+          onSelectLocation={handleSelectLocation}
+        />
       </div>
 
       <div className="min-h-0">
@@ -318,12 +242,11 @@ export function LocationsPageClient() {
         onOpenChange={setCreateOpen}
         onCreate={handleCreateLocation}
         locationTypes={types}
-        onAddLocationType={addType}
-        onRemoveLocationType={removeType}
-        onRenameLocationType={updateTypeLabel}
+        onAddLocationType={handleAddType}
+        onRemoveLocationType={handleRemoveType}
+        onRenameLocationType={handleRenameType}
         usageCountByTypeId={usageCountByTypeId}
       />
     </div>
   )
 }
-

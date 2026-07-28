@@ -3,48 +3,52 @@
 import { Building2Icon, MapPinIcon, PencilIcon, Trash2Icon, UsersIcon } from "lucide-react"
 import { useState } from "react"
 
-import type {
-  Location,
-  LocationRoom,
-} from "@/app/lieux/_components/mock-locations"
 import { LocationDeleteAlert } from "@/app/lieux/_components/location-delete-alert"
 import {
   LocationEditDialog,
   type LocationEditValues,
 } from "@/app/lieux/_components/location-edit-dialog"
-import type { LocationType } from "@/app/lieux/_components/use-location-types"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+import type { Location, LocationRoom, LocationType } from "@/lib/locations/types"
 
 export type LocationsDetailCardProps = {
   location: Location
   onClose: () => void
-  onAddRoom: (locationId: string) => void
-  onRemoveRoom: (locationId: string, roomId: string) => void
+  onAddRoom: (locationId: string) => void | Promise<void>
+  onRemoveRoom: (locationId: string, roomId: string) => void | Promise<void>
   onUpdateRoomCapacity: (
     locationId: string,
     roomId: string,
     capacity: number | null
   ) => void
-  onUpdateLocation: (locationId: string, values: LocationEditValues) => void
-  onDeleteLocation: (locationId: string) => void
+  onUpdateLocation: (
+    locationId: string,
+    values: LocationEditValues
+  ) => void | Promise<void>
+  onDeleteLocation: (locationId: string) => void | Promise<void>
   locationTypes: LocationType[]
   locationTypeById: Record<string, LocationType>
-  onAddLocationType: (label: string) => string | null
-  onRemoveLocationType: (id: string) => void
-  onRenameLocationType: (id: string, label: string) => void
+  onAddLocationType: (label: string) => Promise<string | null>
+  onRemoveLocationType: (id: string) => void | Promise<void>
+  onRenameLocationType: (id: string, label: string) => void | Promise<void>
   usageCountByTypeId?: Record<string, number>
 }
 
-function typeLabel(typeId: string, typeById: Record<string, LocationType>) {
-  return typeById[typeId]?.label ?? typeId
+function typeLabel(
+  location: Location,
+  typeById: Record<string, LocationType>
+) {
+  return typeById[location.typeId]?.label ?? location.typeLabel
 }
 
 function roomsCapacitySummary(rooms: LocationRoom[]) {
-  const capacities = rooms.map((r) => r.capacity).filter((c) => c != null)
+  const capacities = rooms
+    .map((r) => r.capacity)
+    .filter((c): c is number => c != null)
   if (capacities.length === 0) return null
   return capacities.reduce((a, b) => a + b, 0)
 }
@@ -78,7 +82,7 @@ export function LocationsDetailCard({
               <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                   <Building2Icon className="h-4 w-4" />
-                  {typeLabel(location.typeId, locationTypeById)}
+                  {typeLabel(location, locationTypeById)}
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <MapPinIcon className="h-4 w-4" />
@@ -124,7 +128,7 @@ export function LocationsDetailCard({
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => onAddRoom(location.id)}
+              onClick={() => void onAddRoom(location.id)}
             >
               Ajouter une salle
             </Button>
@@ -145,7 +149,7 @@ export function LocationsDetailCard({
                     <Input
                       type="number"
                       inputMode="numeric"
-                      min={0}
+                      min={1}
                       placeholder="Capacité"
                       value={room.capacity ?? ""}
                       onChange={(e) => {
@@ -156,14 +160,18 @@ export function LocationsDetailCard({
                         }
                         const n = Number(raw)
                         if (!Number.isFinite(n)) return
-                        onUpdateRoomCapacity(location.id, room.id, Math.max(0, Math.floor(n)))
+                        onUpdateRoomCapacity(
+                          location.id,
+                          room.id,
+                          Math.max(1, Math.floor(n))
+                        )
                       }}
                     />
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onRemoveRoom(location.id, room.id)}
+                    onClick={() => void onRemoveRoom(location.id, room.id)}
                   >
                     Retirer
                   </Button>
@@ -196,4 +204,3 @@ export function LocationsDetailCard({
     </div>
   )
 }
-

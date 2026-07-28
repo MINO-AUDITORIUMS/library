@@ -1,4 +1,7 @@
 drop table if exists public.seances cascade;
+drop table if exists public.location_rooms cascade;
+drop table if exists public.locations cascade;
+drop table if exists public.location_types cascade;
 drop table if exists public.album_attachments cascade;
 drop table if exists public.album_user_ratings cascade;
 drop table if exists public.album_comments cascade;
