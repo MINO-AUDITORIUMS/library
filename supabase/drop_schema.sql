@@ -1,4 +1,7 @@
 drop table if exists public.seances cascade;
+drop table if exists public.projects cascade;
+drop table if exists public.project_statuses cascade;
+drop table if exists public.project_types cascade;
 drop table if exists public.location_rooms cascade;
 drop table if exists public.locations cascade;
 drop table if exists public.location_types cascade;

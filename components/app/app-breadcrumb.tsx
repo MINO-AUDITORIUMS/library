@@ -61,6 +61,19 @@ function buildCrumbs(
     return [{ label: "Accueil", href: routes.app }, { label: "Lieux" }]
   }
 
+  if (pathname === routes.projects) {
+    return [{ label: "Accueil", href: routes.app }, { label: "Projets" }]
+  }
+
+  const projectMatch = pathname.match(/^\/projets\/([^/]+)$/)
+  if (projectMatch) {
+    return [
+      { label: "Accueil", href: routes.app },
+      { label: "Projets", href: routes.projects },
+      { label: "Projet" },
+    ]
+  }
+
   const artistMatch = pathname.match(/^\/artistes\/([^/]+)$/)
   if (artistMatch) {
     return [

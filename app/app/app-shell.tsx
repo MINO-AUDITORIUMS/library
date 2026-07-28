@@ -3,6 +3,7 @@
 import {
   CalendarDaysIcon,
   Disc3Icon,
+  FolderKanbanIcon,
   HomeIcon,
   MapPinIcon,
   Mic2Icon,
@@ -68,6 +69,12 @@ const libraryItems = navItems
 
 const wipItems = [
   {
+    href: routes.projects,
+    label: "Projets",
+    icon: FolderKanbanIcon,
+    match: "projects" as const,
+  },
+  {
     href: routes.locations,
     label: "Lieux",
     icon: MapPinIcon,
@@ -90,6 +97,8 @@ function isNavActive(pathname: string, item: (typeof navItems)[number]) {
 
 function isWipNavActive(pathname: string, item: (typeof wipItems)[number]) {
   switch (item.match) {
+    case "projects":
+      return pathname.startsWith("/projets")
     case "locations":
       return pathname.startsWith("/lieux")
   }
@@ -129,7 +138,7 @@ export function AppShell({ email, children }: AppShellProps) {
           </SidebarGroup>
 
           <SidebarGroup>
-            <SidebarGroupLabel>[WIP] Sessions & lieux</SidebarGroupLabel>
+            <SidebarGroupLabel>[WIP] Workspace</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-1">
                 {wipItems.map((item) => (

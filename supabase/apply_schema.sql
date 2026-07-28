@@ -10,6 +10,8 @@
 \ir schema/location_types.sql
 \ir schema/locations.sql
 \ir schema/location_rooms.sql
+\ir schema/project_types.sql
+\ir schema/project_statuses.sql
 \ir schema/albums.sql
 \ir schema/album_tracks.sql
 \ir schema/album_video_clips.sql
@@ -20,6 +22,7 @@
 \ir schema/album_comments.sql
 \ir schema/album_attachments.sql
 \ir schema/album_search.sql
+\ir schema/projects.sql
 \ir schema/grants_api_roles.sql
 \ir schema/library_list.sql
 \ir schema/album_drop_description.sql

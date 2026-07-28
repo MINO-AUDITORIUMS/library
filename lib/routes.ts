@@ -7,6 +7,7 @@ export const routes = {
   artistes: "/artistes",
   programmation: "/programmation",
   locations: "/lieux",
+  projects: "/projets",
   authCallback: "/auth/callback",
 } as const
 
@@ -24,6 +25,10 @@ export function artistDetailRoute(id: string) {
 
 export function artistEditRoute(id: string) {
   return `/artistes/${id}/modifier` as const
+}
+
+export function projectDetailRoute(id: string) {
+  return `/projets/${id}` as const
 }
 
 export type AppRoute = (typeof routes)[keyof typeof routes]

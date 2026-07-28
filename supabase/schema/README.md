@@ -50,7 +50,9 @@ Exécuter dans le SQL Editor Supabase (dans cet ordre) :
 8. `location_types.sql`
 9. `locations.sql`
 10. `location_rooms.sql`
-11. `albums.sql`
+11. `project_types.sql`
+12. `project_statuses.sql`
+13. `albums.sql`
 12. `album_tracks.sql`
 13. `album_video_clips.sql`
 14. `album_tags.sql`

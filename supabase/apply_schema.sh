@@ -43,6 +43,8 @@ FILES=(
   supabase/schema/location_types.sql
   supabase/schema/locations.sql
   supabase/schema/location_rooms.sql
+  supabase/schema/project_types.sql
+  supabase/schema/project_statuses.sql
   supabase/schema/artists.sql
   supabase/schema/artists_image_storage.sql
   supabase/schema/albums.sql
@@ -64,6 +66,7 @@ FILES=(
   supabase/schema/library_list.sql
   supabase/schema/album_drop_description.sql
   supabase/schema/seances.sql
+  supabase/schema/projects.sql
   supabase/schema/grants_api_roles.sql
   supabase/storage/album_attachments.sql
   supabase/storage/album_covers.sql

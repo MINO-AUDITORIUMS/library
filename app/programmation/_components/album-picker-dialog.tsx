@@ -26,12 +26,14 @@ export type AlbumPickerDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSelect: (album: ProgrammationAlbumRef) => void
+  description?: string
 }
 
 export function AlbumPickerDialog({
   open,
   onOpenChange,
   onSelect,
+  description = "Sélectionne un album du catalogue pour programmer une séance.",
 }: AlbumPickerDialogProps) {
   const [query, setQuery] = useState("")
   const [albums, setAlbums] = useState<ProgrammationAlbumRef[]>([])
@@ -87,9 +89,7 @@ export function AlbumPickerDialog({
       <DialogContent className="overflow-hidden p-0 sm:max-w-lg">
         <DialogHeader className="px-4 pt-4">
           <DialogTitle>Choisir un album</DialogTitle>
-          <DialogDescription>
-            Sélectionne un album du catalogue pour programmer une séance.
-          </DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <Command shouldFilter={false}>
           <CommandInput
@@ -97,7 +97,7 @@ export function AlbumPickerDialog({
             value={query}
             onValueChange={setQuery}
           />
-          <CommandList>
+          <CommandList className="h-72">
             {loading ? (
               <div className="space-y-2 p-4">
                 <Skeleton className="h-10 w-full" />

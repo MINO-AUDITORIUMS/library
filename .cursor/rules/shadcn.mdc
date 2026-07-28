@@ -25,3 +25,4 @@ If you need any of these interfaces, use the corresponding Shadcn component. If 
 - For forms, ALWAYS use the combined Shadcn `Form` structure with `zod` for validation.
 - Use Tailwind CSS for all additional styling via the `className` prop and the Shadcn `cn()` utility function.
 - Maintain consistency with the CSS variables (primary colors, radius) defined in `globals.css`.
+- **Select:** `SelectContent` defaults to `position="popper"` and `align="start"`. Keep these values (explicitly or via defaults). Do not switch back to `item-aligned` / `center` unless there is a deliberate exception.
