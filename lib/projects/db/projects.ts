@@ -7,6 +7,7 @@ import {
   mapProjectStatusRow,
 } from "@/lib/projects/db/project-statuses"
 import { mapProjectTypeRow } from "@/lib/projects/db/project-types"
+import { ensureProjectBudget } from "@/lib/projects/db/budgets"
 import type {
   Project,
   ProjectCreateInput,
@@ -187,7 +188,9 @@ export async function createProject(
     .single()
 
   if (error) throw error
-  return mapProjectRow(data as unknown as ProjectRow)
+  const project = mapProjectRow(data as unknown as ProjectRow)
+  await ensureProjectBudget(supabase, user, project.id)
+  return project
 }
 
 export async function updateProject(

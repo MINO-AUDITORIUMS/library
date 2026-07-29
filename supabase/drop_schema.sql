@@ -1,4 +1,8 @@
 drop table if exists public.seances cascade;
+drop table if exists public.project_ticket_lines cascade;
+drop table if exists public.project_budget_lines cascade;
+drop table if exists public.project_budgets cascade;
+drop table if exists public.budget_categories cascade;
 drop table if exists public.projects cascade;
 drop table if exists public.project_statuses cascade;
 drop table if exists public.project_types cascade;

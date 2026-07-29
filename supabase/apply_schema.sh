@@ -67,6 +67,10 @@ FILES=(
   supabase/schema/album_drop_description.sql
   supabase/schema/seances.sql
   supabase/schema/projects.sql
+  supabase/schema/budget_categories.sql
+  supabase/schema/project_budgets.sql
+  supabase/schema/project_budget_lines.sql
+  supabase/schema/project_ticket_lines.sql
   supabase/schema/grants_api_roles.sql
   supabase/storage/album_attachments.sql
   supabase/storage/album_covers.sql

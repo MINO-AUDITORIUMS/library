@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
@@ -12,15 +12,24 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
+import { ProjectBudgetSection } from "@/app/projets/_components/project-budget-section"
+import type { ProjectLocationOption } from "@/app/projets/_components/project-create-dialog"
 import { ProjectDeleteAlert } from "@/app/projets/_components/project-delete-alert"
 import { ProjectEditDialog } from "@/app/projets/_components/project-edit-dialog"
-import type { ProjectLocationOption } from "@/app/projets/_components/project-create-dialog"
+import { ProjectPnlCard } from "@/app/projets/_components/project-pnl-card"
+import { ProjectTicketsSection } from "@/app/projets/_components/project-tickets-section"
 import { AlbumCover } from "@/components/catalog/album-cover"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { formatProjectDateRange } from "@/lib/projects/format-date"
+import { computeProjectFinanceSummary } from "@/lib/projects/finance-summary"
+import type {
+  BudgetCategory,
+  ProjectBudget,
+  ProjectTicketLine,
+} from "@/lib/projects/finance-types"
 import type {
   Project,
   ProjectStatus,
@@ -33,6 +42,9 @@ export type ProjectDetailClientProps = {
   types: ProjectType[]
   statuses: ProjectStatus[]
   locations: ProjectLocationOption[]
+  initialBudget: ProjectBudget
+  initialTicketLines: ProjectTicketLine[]
+  budgetCategories: BudgetCategory[]
 }
 
 export function ProjectDetailClient({
@@ -40,9 +52,14 @@ export function ProjectDetailClient({
   types,
   statuses,
   locations,
+  initialBudget,
+  initialTicketLines,
+  budgetCategories,
 }: ProjectDetailClientProps) {
   const router = useRouter()
   const [project, setProject] = useState(initialProject)
+  const [budget, setBudget] = useState(initialBudget)
+  const [ticketLines, setTicketLines] = useState(initialTicketLines)
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
@@ -51,8 +68,13 @@ export function ProjectDetailClient({
     project.eventEndDate
   )
 
+  const summary = useMemo(
+    () => computeProjectFinanceSummary(budget, ticketLines),
+    [budget, ticketLines]
+  )
+
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Button variant="ghost" size="sm" asChild>
           <Link href={routes.projects}>
@@ -130,11 +152,24 @@ export function ProjectDetailClient({
               {project.comment}
             </div>
           ) : null}
-          <div className="pt-2 text-xs text-muted-foreground">
-            Budgets, billetterie et P&L arriveront dans une prochaine itération.
-          </div>
         </CardContent>
       </Card>
+
+      <ProjectPnlCard summary={summary} />
+
+      <ProjectBudgetSection
+        projectId={project.id}
+        initialBudget={budget}
+        categories={budgetCategories}
+        onBudgetChange={setBudget}
+      />
+
+      <ProjectTicketsSection
+        projectId={project.id}
+        initialLines={ticketLines}
+        locations={locations}
+        onLinesChange={setTicketLines}
+      />
 
       <ProjectEditDialog
         key={`${project.id}-${editOpen ? "open" : "closed"}`}

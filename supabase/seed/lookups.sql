@@ -41,3 +41,10 @@ insert into public.project_statuses (code, label, sort_order) values
   ('completed', 'Completed', 30),
   ('archived', 'Archived', 40)
 on conflict (code) do nothing;
+
+insert into public.budget_categories (code, label, sort_order) values
+  ('venue', 'Venue', 10),
+  ('creative-production', 'Creative production', 20),
+  ('technical-production', 'Technical production', 30),
+  ('other', 'Autre', 40)
+on conflict (code) do nothing;

@@ -23,6 +23,10 @@
 \ir schema/album_attachments.sql
 \ir schema/album_search.sql
 \ir schema/projects.sql
+\ir schema/budget_categories.sql
+\ir schema/project_budgets.sql
+\ir schema/project_budget_lines.sql
+\ir schema/project_ticket_lines.sql
 \ir schema/grants_api_roles.sql
 \ir schema/library_list.sql
 \ir schema/album_drop_description.sql
